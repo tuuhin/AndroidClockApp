@@ -1,3 +1,5 @@
 <resources>
   <string name="app_name">ClockApp</string>
+  <string name="ante_meridian">am</string>
+  <string name="post_meridian">pm</string>
 </resources>

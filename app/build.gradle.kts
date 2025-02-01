@@ -8,11 +8,11 @@ plugins {
 }
 
 android {
-	namespace = "com.eva.alarmclockapp"
+	namespace = "com.eva.clockapp"
 	compileSdk = 35
 
 	defaultConfig {
-		applicationId = "com.eva.alarmclockapp"
+		applicationId = "com.eva.clockapp"
 		minSdk = 26
 		targetSdk = 35
 		versionCode = 1
@@ -87,6 +87,13 @@ dependencies {
 	implementation(libs.androidx.room.runtime)
 	implementation(libs.androidx.room.ktx)
 	ksp(libs.androidx.room.compiler)
+
+	//koin
+	implementation(libs.koin.android)
+
+	//others
+	implementation(libs.androidx.core.splashscreen)
+	implementation(libs.androidx.ui.text.google.fonts)
 
 	//testing
 	testImplementation(libs.junit)
