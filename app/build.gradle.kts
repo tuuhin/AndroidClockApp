@@ -90,10 +90,12 @@ dependencies {
 
 	//koin
 	implementation(libs.koin.android)
+	implementation(libs.koin.compose.viewmodel)
 
 	//others
 	implementation(libs.androidx.core.splashscreen)
 	implementation(libs.androidx.ui.text.google.fonts)
+	implementation(libs.androidx.icons.extended)
 
 	//testing
 	testImplementation(libs.junit)
