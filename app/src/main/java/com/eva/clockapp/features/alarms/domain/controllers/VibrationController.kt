@@ -1,8 +1,10 @@
 package com.eva.clockapp.features.alarms.domain.controllers
 
-import com.eva.clockapp.features.alarms.domain.enums.VibrationPattern
+import com.eva.clockapp.features.alarms.domain.models.VibrationPattern
 
-fun interface VibrationController {
+interface VibrationController {
 
-	fun invoke(pattern: VibrationPattern)
+	fun startVibration(pattern: VibrationPattern, repeat: Boolean = false)
+
+	fun stopVibration()
 }

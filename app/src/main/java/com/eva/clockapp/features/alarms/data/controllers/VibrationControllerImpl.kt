@@ -9,7 +9,7 @@ import android.os.Vibrator
 import android.os.VibratorManager
 import androidx.core.content.getSystemService
 import com.eva.clockapp.features.alarms.domain.controllers.VibrationController
-import com.eva.clockapp.features.alarms.domain.enums.VibrationPattern
+import com.eva.clockapp.features.alarms.domain.models.VibrationPattern
 
 class VibrationControllerImpl(private val context: Context) : VibrationController {
 
@@ -17,9 +17,10 @@ class VibrationControllerImpl(private val context: Context) : VibrationControlle
 	private val vibrator by lazy { context.getSystemService<Vibrator>() }
 
 
-	override fun invoke(pattern: VibrationPattern) {
+	override fun startVibration(pattern: VibrationPattern, repeat: Boolean) {
 		try {
-			val effect = VibrationEffect.createWaveform(pattern.patterns, 1)
+			val repeatInterval = if (repeat) 0 else -1
+			val effect = VibrationEffect.createWaveform(pattern.patterns, repeatInterval)
 			if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
 
 				val vibration = CombinedVibration.createParallel(effect)
@@ -33,5 +34,11 @@ class VibrationControllerImpl(private val context: Context) : VibrationControlle
 		} catch (e: Exception) {
 			e.printStackTrace()
 		}
+	}
+
+	override fun stopVibration() {
+		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S)
+			manager?.cancel()
+		else vibrator?.cancel()
 	}
 }

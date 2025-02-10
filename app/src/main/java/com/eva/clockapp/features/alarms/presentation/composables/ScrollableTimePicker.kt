@@ -13,9 +13,8 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.sizeIn
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
-import androidx.compose.material3.CardColors
+import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.ElevatedCard
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -28,6 +27,8 @@ import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
@@ -54,10 +55,12 @@ fun ScrollableTimePicker(
 	is24HrFormat: Boolean = false,
 	startTime: LocalTime = LocalTime(0, 0),
 	handsStyle: TextStyle = MaterialTheme.typography.displayMedium,
-	colors: CardColors = CardDefaults.elevatedCardColors(),
+	containerColor: Color = MaterialTheme.colorScheme.surfaceContainer,
+	contentColor: Color = MaterialTheme.colorScheme.onSurface,
 	numberFontFamily: FontFamily? = FontFamily.SansSerif,
+	shape: Shape = MaterialTheme.shapes.large,
 ) {
-	val clockMinuteRange = 0..<60
+	val clockMinuteRange = remember { 0..<60 }
 
 	val clockHourRange = remember(is24HrFormat) {
 		if (is24HrFormat) 0..<24
@@ -97,9 +100,13 @@ fun ScrollableTimePicker(
 			.collectLatest { time -> updatedOnTimeSelected(time) }
 	}
 
-	ElevatedCard(
-		colors = colors,
-		shape = MaterialTheme.shapes.medium,
+	Card(
+		shape = shape,
+		elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
+		colors = CardDefaults.cardColors(
+			containerColor = containerColor,
+			contentColor = contentColor
+		),
 		modifier = modifier.sizeIn(maxWidth = 320.dp),
 	) {
 		Row(
@@ -112,8 +119,8 @@ fun ScrollableTimePicker(
 			CircularRangedNumberPicker(
 				range = clockHourRange,
 				selectedIndex = selectedIndexForHour,
-				contentColor = colors.contentColor,
-				containerColor = colors.containerColor,
+				contentColor = contentColor,
+				containerColor = containerColor,
 				onFocusItem = { idx ->
 					clockHourRange.toList().getOrNull(idx)?.let { hour ->
 						val converted = if (isTimeInAm || is24HrFormat) hour else 12 + hour
@@ -135,15 +142,15 @@ fun ScrollableTimePicker(
 			Text(
 				text = ":",
 				style = MaterialTheme.typography.displayMedium,
-				color = colors.contentColor,
+				color = contentColor,
 				modifier = Modifier.align(Alignment.CenterVertically)
 			)
 			Spacer(modifier = Modifier.width(16.dp))
 			CircularRangedNumberPicker(
 				range = clockMinuteRange,
 				selectedIndex = selectedIndexForMinute,
-				contentColor = colors.contentColor,
-				containerColor = colors.containerColor,
+				contentColor = contentColor,
+				containerColor = containerColor,
 				onFocusItem = { idx ->
 					clockMinuteRange.toList().getOrNull(idx)?.let { minute ->
 						newTimeSelection = LocalTime(newTimeSelection.hour, minute)
@@ -169,8 +176,8 @@ fun ScrollableTimePicker(
 				CircularRangedNumberPicker(
 					range = 0..1,
 					selectedIndex = 0,
-					contentColor = colors.contentColor,
-					containerColor = colors.containerColor,
+					contentColor = contentColor,
+					containerColor = containerColor,
 					endLess = false,
 					onFocusItem = { option -> isTimeInAm = option == 0 },
 					modifier = Modifier.padding(start = 16.dp)

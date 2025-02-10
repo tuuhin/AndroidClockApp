@@ -1,5 +1,39 @@
 <resources>
   <string name="app_name">ClockApp</string>
+  <string name="back_arrow">back arrow</string>
   <string name="ante_meridian">am</string>
   <string name="post_meridian">pm</string>
+  <string name="all_week_days">Everyday</string>
+  <string name="every_week_day">Every</string>
+  <string name="tomorrow">Tomorrow</string>
+  <string name="create_alarm_screen_title">Create Alarm</string>
+  <string name="save_action">Save</string>
+  <!--  Vibration Patterns-->
+  <string name="vibration_pattern_short">Short</string>
+  <string name="vibration_pattern_medium">Medium</string>
+  <string name="vibration_pattern_call">Basic Call</string>
+  <string name="vibration_pattern_heart_beat">Heart Beat</string>
+  <string name="vibration_pattern_silent">Silent</string>
+  <string name="vibration_pattern_intense">Intense</string>
+  <string name="vibration_pattern_morse_code">Morse Code</string>
+  <string name="vibration_pattern_slow_pulse">Slow pulse</string>
+  <string name="vibration_pattern_gentle">Gentle</string>
+
+  <string name="alarms_screen_title">Alarms</string>
+  <string name="create_action">Create</string>
+  <string name="done_action">Done</string>
+  <string name="select_vibration_mode_screen_title">Select Vibration Pattern</string>
+  <string name="vibration_pattern_title">Vibration</string>
+  <string name="option_enabled">Enabled</string>
+  <string name="repeat_options_number">%d times</string>
+  <string name="repeat_option_forever">Forever</string>
+  <string name="repeat_option_no_repeat">None</string>
+  <string name="snooze_interval_custom">Custom</string>
+  <string name="snooze_repeat_options_title">Repeat</string>
+  <string name="snooze_options_title">Snooze</string>
+  <string name="clock_minutes">Minute</string>
+  <string name="select_snooze_option_screen_title">Snooze Options</string>
+  <string name="select_alarm_sound_screen_title">Alarm Sound</string>
+  <string name="snooze_interval_title">Snooze</string>
+  <string name="create_alarm_label_placeholder">Description</string>
 </resources>
