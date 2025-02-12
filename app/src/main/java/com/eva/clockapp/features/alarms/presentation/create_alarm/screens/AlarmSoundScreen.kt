@@ -21,7 +21,6 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.MediumTopAppBar
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.SliderState
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
@@ -57,6 +56,7 @@ import com.eva.clockapp.features.alarms.presentation.composables.ConfigureAlarmS
 import com.eva.clockapp.features.alarms.presentation.composables.RadioButtonWithTextItem
 import com.eva.clockapp.features.alarms.presentation.create_alarm.state.AlarmSoundOptions
 import com.eva.clockapp.features.alarms.presentation.create_alarm.state.CreateAlarmEvents
+import com.eva.clockapp.features.alarms.presentation.create_alarm.state.AlarmFlagsChangeEvent
 import com.eva.clockapp.features.alarms.presentation.util.AlarmPreviewFakes
 import com.eva.clockapp.ui.theme.ClockAppTheme
 import kotlinx.collections.immutable.ImmutableList
@@ -70,8 +70,10 @@ private fun AlarmSoundScreen(
 	localRingtones: ImmutableList<RingtoneMusicFile>,
 	deviceRingtone: ImmutableList<RingtoneMusicFile>,
 	onItemSelected: (RingtoneMusicFile) -> Unit,
+	onVolumeChange: (Float) -> Unit,
 	modifier: Modifier = Modifier,
 	enabled: Boolean = true,
+	onIncreaseVolumeByStep: (Boolean) -> Unit = {},
 	onLoadExternalRingtones: () -> Unit = {},
 	onEnableChange: (Boolean) -> Unit = {},
 	navigation: @Composable () -> Unit = {},
@@ -97,8 +99,9 @@ private fun AlarmSoundScreen(
 		) {
 			ConfigureAlarmSoundSheet(
 				isVolumeStepIncrease = flags.isVolumeStepIncrease,
-				onVolumeStepIncreaseChange = {},
-				sliderState = SliderState(valueRange = 0f..100f, value = flags.alarmVolume)
+				volume = flags.alarmVolume,
+				onVolumeStepIncreaseChange = onIncreaseVolumeByStep,
+				onVolumeChange = onVolumeChange,
 			)
 		}
 	}
@@ -203,7 +206,7 @@ private fun AlarmSoundScreen(
 							)
 							Spacer(modifier = Modifier.height(20.dp))
 							Text(
-								text = "No music files with alarm type",
+								text = stringResource(R.string.no_music_files_type_alarm),
 								style = MaterialTheme.typography.bodyMedium
 							)
 						}
@@ -219,19 +222,21 @@ fun AlarmSoundScreen(
 	flags: AssociateAlarmFlags,
 	soundOptions: AlarmSoundOptions,
 	onEvent: (CreateAlarmEvents) -> Unit,
+	onFlagsEvent: (AlarmFlagsChangeEvent) -> Unit,
 	modifier: Modifier = Modifier,
-	enabled: Boolean = true,
 	navigation: @Composable () -> Unit = {},
 ) {
 	AlarmSoundScreen(
 		flags = flags,
 		deviceRingtone = soundOptions.external,
 		localRingtones = soundOptions.local,
-		onItemSelected = { onEvent(CreateAlarmEvents.OnSoundSelected(it)) },
-		onEnableChange = { onEvent(CreateAlarmEvents.OnSoundOptionEnabled(it)) },
+		enabled = flags.isSoundEnabled,
+		onItemSelected = { onFlagsEvent(AlarmFlagsChangeEvent.OnSoundSelected(it)) },
+		onEnableChange = { onFlagsEvent(AlarmFlagsChangeEvent.OnSoundOptionEnabled(it)) },
 		onLoadExternalRingtones = { onEvent(CreateAlarmEvents.LoadDeviceRingtoneFiles) },
+		onIncreaseVolumeByStep = { onFlagsEvent(AlarmFlagsChangeEvent.OnIncreaseVolumeByStep(it)) },
+		onVolumeChange = { onFlagsEvent(AlarmFlagsChangeEvent.OnSoundVolumeChange(it)) },
 		modifier = modifier,
-		enabled = enabled,
 		selectedOption = soundOptions.selectedSound,
 		navigation = navigation,
 	)
@@ -253,6 +258,7 @@ private fun AlarmsSoundsScreenPreview(
 	AlarmSoundScreen(
 		flags = AlarmPreviewFakes.FAKE_ASSOCIATE_FLAGS_STATE,
 		soundOptions = soundOptions,
+		onFlagsEvent = {},
 		onEvent = {},
 		navigation = {
 			Icon(

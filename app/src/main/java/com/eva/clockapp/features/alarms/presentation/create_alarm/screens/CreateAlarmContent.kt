@@ -11,7 +11,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.outlined.Check
+import androidx.compose.material.icons.outlined.TextFields
 import androidx.compose.material3.Icon
 import androidx.compose.material3.ListItem
 import androidx.compose.material3.ListItemColors
@@ -42,6 +42,7 @@ import com.eva.clockapp.features.alarms.presentation.composables.WeekDayPicker
 import com.eva.clockapp.features.alarms.presentation.create_alarm.state.AlarmSoundOptions
 import com.eva.clockapp.features.alarms.presentation.create_alarm.state.CreateAlarmEvents
 import com.eva.clockapp.features.alarms.presentation.create_alarm.state.CreateAlarmState
+import com.eva.clockapp.features.alarms.presentation.create_alarm.state.AlarmFlagsChangeEvent
 import com.eva.clockapp.features.alarms.presentation.util.toText
 import kotlinx.collections.immutable.ImmutableSet
 import kotlinx.datetime.DayOfWeek
@@ -99,14 +100,11 @@ private fun CreateAlarmContent(
 					imeAction = ImeAction.Done,
 					keyboardType = KeyboardType.Text,
 				),
-				modifier = Modifier
-					.fillMaxWidth()
-					.imeNestedScroll(),
-				shape = MaterialTheme.shapes.small,
-				leadingIcon = {
+				prefix = {
 					Icon(
-						imageVector = Icons.Outlined.Check,
-						contentDescription = null
+						imageVector = Icons.Outlined.TextFields,
+						contentDescription = null,
+						tint = MaterialTheme.colorScheme.secondary,
 					)
 				},
 				colors = TextFieldDefaults.colors(
@@ -114,11 +112,17 @@ private fun CreateAlarmContent(
 					focusedContainerColor = Color.Transparent,
 					unfocusedIndicatorColor = MaterialTheme.colorScheme.outlineVariant,
 					focusedIndicatorColor = MaterialTheme.colorScheme.outline
-				)
+				),
+				shape = MaterialTheme.shapes.small,
+				modifier = Modifier
+					.fillMaxWidth()
+					.imeNestedScroll(),
 			)
 		}
 		item {
-			Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
+			Column(
+				verticalArrangement = Arrangement.spacedBy(2.dp)
+			) {
 				ListItem(
 					headlineContent = { Text(text = stringResource(R.string.alarm_sound_title)) },
 					supportingContent = { Text(selectedRingtone.name) },
@@ -172,6 +176,7 @@ fun CreateAlarmContent(
 	flags: AssociateAlarmFlags,
 	soundOptions: AlarmSoundOptions,
 	onEvent: (CreateAlarmEvents) -> Unit,
+	onFlagsEvent: (AlarmFlagsChangeEvent) -> Unit,
 	modifier: Modifier = Modifier,
 	contentPadding: PaddingValues = PaddingValues(0.dp),
 	onNavigateVibrationScreen: () -> Unit = {},
@@ -190,9 +195,10 @@ fun CreateAlarmContent(
 		selectedRingtone = soundOptions.selectedSound,
 		onWeekDaySelected = { onEvent(CreateAlarmEvents.OnAddOrRemoveWeekDay(it)) },
 		onTimeChange = { onEvent(CreateAlarmEvents.OnAlarmTimeSelected(it)) },
-		onSnoozeEnabledChange = { onEvent(CreateAlarmEvents.OnSnoozeEnabled(it)) },
-		onVibrationEnabledChange = { onEvent(CreateAlarmEvents.OnVibrationEnabled(it)) },
 		onLabelStateChange = { onEvent(CreateAlarmEvents.OnLabelValueChange(it)) },
+		onSnoozeEnabledChange = { onFlagsEvent(AlarmFlagsChangeEvent.OnSnoozeEnabled(it)) },
+		onVibrationEnabledChange = { onFlagsEvent(AlarmFlagsChangeEvent.OnVibrationEnabled(it)) },
+		onSoundEnabledChange = { onFlagsEvent(AlarmFlagsChangeEvent.OnSoundOptionEnabled(it)) },
 		onSelectVibrationOption = onNavigateVibrationScreen,
 		onSelectSnoozeOption = onNavigateSnoozeScreen,
 		onSelectAlarmSound = onNavigateSoundScreen,

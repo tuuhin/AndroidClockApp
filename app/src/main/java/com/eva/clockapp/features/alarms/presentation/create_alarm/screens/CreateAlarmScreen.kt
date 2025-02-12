@@ -25,6 +25,7 @@ import com.eva.clockapp.features.alarms.domain.models.AssociateAlarmFlags
 import com.eva.clockapp.features.alarms.presentation.create_alarm.state.AlarmSoundOptions
 import com.eva.clockapp.features.alarms.presentation.create_alarm.state.CreateAlarmEvents
 import com.eva.clockapp.features.alarms.presentation.create_alarm.state.CreateAlarmState
+import com.eva.clockapp.features.alarms.presentation.create_alarm.state.AlarmFlagsChangeEvent
 import com.eva.clockapp.features.alarms.presentation.util.AlarmPreviewFakes
 import com.eva.clockapp.ui.theme.ClockAppTheme
 
@@ -35,6 +36,7 @@ fun CreateAlarmScreen(
 	flags: AssociateAlarmFlags,
 	soundOptions: AlarmSoundOptions,
 	onEvent: (CreateAlarmEvents) -> Unit,
+	onFlagsEvent: (AlarmFlagsChangeEvent) -> Unit,
 	modifier: Modifier = Modifier,
 	navigation: @Composable () -> Unit = {},
 	onNavigateVibrationScreen: () -> Unit = {},
@@ -66,6 +68,7 @@ fun CreateAlarmScreen(
 			flags = flags,
 			soundOptions = soundOptions,
 			onEvent = onEvent,
+			onFlagsEvent = onFlagsEvent,
 			onNavigateVibrationScreen = onNavigateVibrationScreen,
 			onNavigateSnoozeScreen = onNavigateSnoozeScreen,
 			onNavigateSoundScreen = onNavigateSoundScreen,
@@ -86,6 +89,7 @@ private fun AlarmScreenPreview() = ClockAppTheme {
 		soundOptions = AlarmPreviewFakes.FAKE_ALARM_SOUND_STATE,
 		flags = AlarmPreviewFakes.FAKE_ASSOCIATE_FLAGS_STATE,
 		onEvent = {},
+		onFlagsEvent = {},
 		navigation = {
 			Icon(
 				imageVector = Icons.AutoMirrored.Default.ArrowBack,

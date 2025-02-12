@@ -12,6 +12,7 @@ import com.eva.clockapp.features.alarms.domain.models.RingtoneMusicFile
 import com.eva.clockapp.features.alarms.presentation.create_alarm.state.AlarmSoundOptions
 import com.eva.clockapp.features.alarms.presentation.create_alarm.state.CreateAlarmEvents
 import com.eva.clockapp.features.alarms.presentation.create_alarm.state.CreateAlarmState
+import com.eva.clockapp.features.alarms.presentation.create_alarm.state.AlarmFlagsChangeEvent
 import kotlinx.collections.immutable.toImmutableList
 import kotlinx.collections.immutable.toImmutableSet
 import kotlinx.coroutines.flow.MutableSharedFlow
@@ -65,7 +66,7 @@ class CreateAlarmViewModel(
 			initialValue = AlarmSoundOptions(localRingtoneProvider.default)
 		)
 
-	val newAlarmState: StateFlow<CreateAlarmState>
+	val createAlarmState: StateFlow<CreateAlarmState>
 		get() = combine(_selectedDays, _selectedTime, _alarmLabel) { weekDays, localTime, label ->
 			CreateAlarmState(
 				selectedDays = weekDays.toImmutableSet(),
@@ -96,17 +97,39 @@ class CreateAlarmViewModel(
 				if (event.dayOfWeek in days) days.filterNot { it == event.dayOfWeek }.toSet()
 				else days + event.dayOfWeek
 			}
+			CreateAlarmEvents.OnSaveAlarm -> onSaveAlarm()
+			CreateAlarmEvents.LoadDeviceRingtoneFiles -> loadContentRingtone()
+		}
+	}
 
-			is CreateAlarmEvents.OnSnoozeEnabled ->
-				_alarmFlags.update { state -> state.copy(isSnoozeEnabled = event.isEnabled) }
+	fun onFlagsEvent(event: AlarmFlagsChangeEvent) {
+		when (event) {
+			is AlarmFlagsChangeEvent.OnIncreaseVolumeByStep -> _alarmFlags.update { state ->
+				state.copy(isVolumeStepIncrease = event.isEnabled)
+			}
 
-			is CreateAlarmEvents.OnSnoozeIntervalChange ->
-				_alarmFlags.update { state -> state.copy(snoozeInterval = event.intervalOptions) }
+			is AlarmFlagsChangeEvent.OnSnoozeEnabled -> _alarmFlags.update { state ->
+				state.copy(isSnoozeEnabled = event.isEnabled)
+			}
 
-			is CreateAlarmEvents.OnSnoozeRepeatModeChange ->
-				_alarmFlags.update { state -> state.copy(snoozeRepeatMode = event.mode) }
+			is AlarmFlagsChangeEvent.OnSnoozeIntervalChange -> _alarmFlags.update { state ->
+				state.copy(snoozeInterval = event.interval)
+			}
 
-			is CreateAlarmEvents.OnVibrationEnabled -> {
+			is AlarmFlagsChangeEvent.OnSnoozeRepeatModeChange -> _alarmFlags.update { state ->
+				state.copy(snoozeRepeatMode = event.mode)
+			}
+
+			is AlarmFlagsChangeEvent.OnSoundOptionEnabled -> _alarmFlags.update { state ->
+				state.copy(isSoundEnabled = event.isEnabled)
+			}
+
+			is AlarmFlagsChangeEvent.OnSoundSelected -> _selectedSound.update { event.sound }
+			is AlarmFlagsChangeEvent.OnSoundVolumeChange -> _alarmFlags.update { state ->
+				state.copy(alarmVolume = event.volume)
+			}
+
+			is AlarmFlagsChangeEvent.OnVibrationEnabled -> {
 				val flags = _alarmFlags.updateAndGet { state ->
 					state.copy(isVibrationEnabled = event.isEnabled)
 				}
@@ -114,21 +137,13 @@ class CreateAlarmViewModel(
 				if (!flags.isVibrationEnabled) vibrationController.stopVibration()
 			}
 
-			is CreateAlarmEvents.OnVibrationPatternSelected -> {
+			is AlarmFlagsChangeEvent.OnVibrationPatternSelected -> {
 				val flags = _alarmFlags.updateAndGet { state ->
 					state.copy(vibrationPattern = event.pattern)
 				}
 				// make a vibration pattern
 				vibrationController.startVibration(flags.vibrationPattern)
 			}
-
-			is CreateAlarmEvents.OnSoundOptionEnabled -> _alarmFlags.update { state ->
-				state.copy(isSoundEnabled = event.isEnabled)
-			}
-
-			is CreateAlarmEvents.OnSoundSelected -> _selectedSound.update { event.sound }
-			CreateAlarmEvents.OnSaveAlarm -> onSaveAlarm()
-			CreateAlarmEvents.LoadDeviceRingtoneFiles -> loadContentRingtone()
 		}
 	}
 

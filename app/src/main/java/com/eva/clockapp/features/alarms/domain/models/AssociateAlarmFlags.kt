@@ -8,5 +8,5 @@ data class AssociateAlarmFlags(
 	val isVibrationEnabled: Boolean = true,
 	val isSoundEnabled: Boolean = true,
 	val isVolumeStepIncrease: Boolean = false,
-	val alarmVolume: Float = 1f,
+	val alarmVolume: Float = 100f,
 )

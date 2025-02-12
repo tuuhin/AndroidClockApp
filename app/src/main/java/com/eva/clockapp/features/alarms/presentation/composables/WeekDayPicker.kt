@@ -1,20 +1,34 @@
 package com.eva.clockapp.features.alarms.presentation.composables
 
+import androidx.compose.animation.animateColorAsState
+import androidx.compose.animation.core.EaseIn
+import androidx.compose.animation.core.tween
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.lazy.LazyRow
-import androidx.compose.foundation.lazy.itemsIndexed
-import androidx.compose.material3.FilterChip
-import androidx.compose.material3.FilterChipDefaults
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.contentColorFor
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.tooling.preview.PreviewLightDark
 import androidx.compose.ui.tooling.preview.PreviewParameter
 import androidx.compose.ui.tooling.preview.datasource.CollectionPreviewParameterProvider
@@ -30,14 +44,19 @@ import kotlinx.datetime.DayOfWeek
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.plus
 import kotlinx.datetime.toLocalDateTime
-import java.time.format.TextStyle
+import java.time.format.TextStyle as FormatStyles
 import java.util.Locale
 
+
+@OptIn(ExperimentalLayoutApi::class)
 @Composable
 fun WeekDayPicker(
 	selectedDays: ImmutableSet<DayOfWeek>,
 	onSelectDay: (DayOfWeek) -> Unit,
 	modifier: Modifier = Modifier,
+	selectedWeekDayColor: Color = MaterialTheme.colorScheme.secondaryContainer,
+	unSelectedWeekDayColor: Color = Color.Transparent,
+	textStyle: TextStyle = MaterialTheme.typography.titleMedium,
 ) {
 	val context = LocalContext.current
 	val locale = remember { Locale.getDefault() }
@@ -49,9 +68,9 @@ fun WeekDayPicker(
 				val tomorrow = today.date.plus(DatePeriod(days = 1))
 
 				val dayOfWeek = tomorrow.dayOfWeek
-					.getDisplayName(TextStyle.SHORT_STANDALONE, locale)
+					.getDisplayName(FormatStyles.SHORT_STANDALONE, locale)
 				val monthName = tomorrow.month
-					.getDisplayName(TextStyle.SHORT_STANDALONE, locale)
+					.getDisplayName(FormatStyles.SHORT_STANDALONE, locale)
 
 				append(context.getString(R.string.tomorrow))
 				append("-$dayOfWeek")
@@ -63,9 +82,10 @@ fun WeekDayPicker(
 
 			else -> buildString {
 				append(context.getString(R.string.every_week_day))
+				append(" ")
 				val days = selectedDays.sorted()
 				days.forEachIndexed { idx, week ->
-					val name = week.getDisplayName(TextStyle.SHORT_STANDALONE, locale)
+					val name = week.getDisplayName(FormatStyles.SHORT_STANDALONE, locale)
 					append(name)
 					if (idx != days.size - 1) append(", ")
 				}
@@ -79,36 +99,44 @@ fun WeekDayPicker(
 	) {
 		Text(
 			text = selectedDayText,
-			style = MaterialTheme.typography.titleMedium,
+			style = textStyle,
 			color = MaterialTheme.colorScheme.secondary
 		)
-		LazyRow(
+		FlowRow(
 			modifier = Modifier.fillMaxWidth(),
-			horizontalArrangement = Arrangement.spacedBy(6.dp)
+			horizontalArrangement = Arrangement.SpaceEvenly,
 		) {
-			itemsIndexed(
-				items = DayOfWeek.entries,
-				key = { _, weekday -> weekday.value },
-				contentType = { _, _ -> DayOfWeek::class.simpleName },
-			) { _, weekDay ->
+			DayOfWeek.entries.forEach { weekDay ->
 
-				val shortName = weekDay.getDisplayName(TextStyle.SHORT_STANDALONE, locale)
+				val shortName = weekDay.getDisplayName(FormatStyles.NARROW_STANDALONE, locale)
+				val isSelected = selectedDays.contains(weekDay)
 
-				FilterChip(
-					selected = selectedDays.contains(weekDay),
-					onClick = { onSelectDay(weekDay) },
-					label = { Text(shortName) },
-					border = FilterChipDefaults.filterChipBorder(
-						enabled = true,
-						selected = selectedDays.contains(weekDay),
-						selectedBorderWidth = 1.5.dp
-					),
-					shape = MaterialTheme.shapes.large,
-					colors = FilterChipDefaults.filterChipColors(
-						selectedContainerColor = MaterialTheme.colorScheme.secondaryContainer,
-						selectedLabelColor = MaterialTheme.colorScheme.onSecondaryContainer
-					)
+				val color by animateColorAsState(
+					targetValue = if (isSelected) selectedWeekDayColor else unSelectedWeekDayColor,
+					animationSpec = tween(durationMillis = 200, easing = EaseIn)
 				)
+
+				Box(
+					modifier = Modifier
+						.size(40.dp)
+						.clip(CircleShape)
+						.then(
+							if (!isSelected) Modifier.border(
+								width = 1.dp,
+								color = MaterialTheme.colorScheme.outline,
+								shape = CircleShape
+							) else Modifier
+						)
+						.background(color = color, shape = CircleShape)
+						.clickable(role = Role.Checkbox) { onSelectDay(weekDay) },
+					contentAlignment = Alignment.Center
+				) {
+					Text(
+						text = shortName,
+						style = MaterialTheme.typography.titleMedium,
+						color = contentColorFor(color)
+					)
+				}
 			}
 		}
 	}
@@ -133,7 +161,9 @@ private fun WeekDayPickerPreview(
 		WeekDayPicker(
 			selectedDays = selectedDays,
 			onSelectDay = {},
-			modifier = Modifier.padding(10.dp)
+			modifier = Modifier
+				.fillMaxWidth()
+				.padding(10.dp)
 		)
 	}
 }

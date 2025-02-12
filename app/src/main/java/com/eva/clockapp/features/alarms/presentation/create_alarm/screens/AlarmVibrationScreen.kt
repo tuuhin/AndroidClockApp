@@ -36,7 +36,7 @@ import com.eva.clockapp.core.presentation.LocalSnackBarHostState
 import com.eva.clockapp.features.alarms.domain.models.AssociateAlarmFlags
 import com.eva.clockapp.features.alarms.domain.models.VibrationPattern
 import com.eva.clockapp.features.alarms.presentation.composables.RadioButtonWithTextItem
-import com.eva.clockapp.features.alarms.presentation.create_alarm.state.CreateAlarmEvents
+import com.eva.clockapp.features.alarms.presentation.create_alarm.state.AlarmFlagsChangeEvent
 import com.eva.clockapp.features.alarms.presentation.util.toText
 import com.eva.clockapp.ui.theme.ClockAppTheme
 
@@ -106,14 +106,14 @@ private fun AlarmVibrationScreen(
 @Composable
 fun AlarmVibrationScreen(
 	state: AssociateAlarmFlags,
-	onEvent: (CreateAlarmEvents) -> Unit,
+	onEvent: (AlarmFlagsChangeEvent) -> Unit,
 	modifier: Modifier = Modifier,
 	navigation: @Composable () -> Unit = {},
 ) = AlarmVibrationScreen(
 	selected = state.vibrationPattern,
 	enabled = state.isVibrationEnabled,
-	onEnableChange = { onEvent(CreateAlarmEvents.OnVibrationEnabled(it)) },
-	onPatternChange = { onEvent(CreateAlarmEvents.OnVibrationPatternSelected(it)) },
+	onEnableChange = { onEvent(AlarmFlagsChangeEvent.OnVibrationEnabled(it)) },
+	onPatternChange = { onEvent(AlarmFlagsChangeEvent.OnVibrationPatternSelected(it)) },
 	modifier = modifier,
 	navigation = navigation
 )

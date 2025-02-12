@@ -46,4 +46,5 @@
   <string name="alarm_sound_configure">Configure</string>
   <string name="increase_volume_by_steps">Gradually Increase Volume</string>
   <string name="alarm_sound_volume">Alarm Volume</string>
+  <string name="no_music_files_type_alarm">No music files with type alarm</string>
 </resources>

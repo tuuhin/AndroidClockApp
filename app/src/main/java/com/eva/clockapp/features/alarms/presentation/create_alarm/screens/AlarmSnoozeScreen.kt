@@ -1,6 +1,5 @@
 package com.eva.clockapp.features.alarms.presentation.create_alarm.screens
 
-import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.calculateEndPadding
@@ -36,10 +35,10 @@ import com.eva.clockapp.features.alarms.domain.models.SnoozeIntervalOption
 import com.eva.clockapp.features.alarms.domain.models.SnoozeRepeatMode
 import com.eva.clockapp.features.alarms.presentation.composables.SnoozeIntervalPicker
 import com.eva.clockapp.features.alarms.presentation.composables.SnoozeRepeatModePicker
-import com.eva.clockapp.features.alarms.presentation.create_alarm.state.CreateAlarmEvents
+import com.eva.clockapp.features.alarms.presentation.create_alarm.state.AlarmFlagsChangeEvent
 import com.eva.clockapp.ui.theme.ClockAppTheme
 
-@OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun AlarmSnoozeScreen(
 	repeat: SnoozeRepeatMode,
@@ -113,16 +112,16 @@ private fun AlarmSnoozeScreen(
 @Composable
 fun AlarmSnoozeScreen(
 	state: AssociateAlarmFlags,
-	onEvent: (CreateAlarmEvents) -> Unit,
+	onEvent: (AlarmFlagsChangeEvent) -> Unit,
 	modifier: Modifier = Modifier,
 	navigation: @Composable () -> Unit = {},
 ) = AlarmSnoozeScreen(
 	repeat = state.snoozeRepeatMode,
 	snooze = state.snoozeInterval,
 	enabled = state.isSnoozeEnabled,
-	onIntervalOptionChange = { onEvent(CreateAlarmEvents.OnSnoozeIntervalChange(it)) },
-	onRepeatModeChange = { onEvent(CreateAlarmEvents.OnSnoozeRepeatModeChange(it)) },
-	onEnableChange = { onEvent(CreateAlarmEvents.OnSnoozeEnabled(it)) },
+	onIntervalOptionChange = { onEvent(AlarmFlagsChangeEvent.OnSnoozeIntervalChange(it)) },
+	onRepeatModeChange = { onEvent(AlarmFlagsChangeEvent.OnSnoozeRepeatModeChange(it)) },
+	onEnableChange = { onEvent(AlarmFlagsChangeEvent.OnSnoozeEnabled(it)) },
 	navigation = navigation,
 	modifier = modifier,
 )

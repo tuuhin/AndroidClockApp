@@ -47,7 +47,7 @@ fun NavGraphBuilder.creteAlarmsNavGraph(controller: NavController) =
 
 			val viewModel = backStack.sharedViewModel<CreateAlarmViewModel>(controller)
 
-			val state by viewModel.newAlarmState.collectAsStateWithLifecycle()
+			val state by viewModel.createAlarmState.collectAsStateWithLifecycle()
 			val soundOptions by viewModel.soundOptions.collectAsStateWithLifecycle()
 			val flagsState by viewModel.flagsState.collectAsStateWithLifecycle()
 
@@ -58,6 +58,7 @@ fun NavGraphBuilder.creteAlarmsNavGraph(controller: NavController) =
 				soundOptions = soundOptions,
 				flags = flagsState,
 				onEvent = viewModel::onEvent,
+				onFlagsEvent = viewModel::onFlagsEvent,
 				onNavigateSnoozeScreen = dropUnlessResumed {
 					controller.navigate(CreateAlarmNavRoute.SelectSnoozeOptionRoute)
 				},
@@ -89,11 +90,9 @@ fun NavGraphBuilder.creteAlarmsNavGraph(controller: NavController) =
 
 			AlarmVibrationScreen(
 				state = flagsState,
-				onEvent = viewModel::onEvent,
+				onEvent = viewModel::onFlagsEvent,
 				navigation = {
-					IconButton(
-						onClick = dropUnlessResumed(block = controller::popBackStack)
-					) {
+					IconButton(onClick = dropUnlessResumed(block = controller::popBackStack)) {
 						Icon(
 							imageVector = Icons.AutoMirrored.Default.ArrowBack,
 							contentDescription = stringResource(R.string.back_arrow)
@@ -112,11 +111,9 @@ fun NavGraphBuilder.creteAlarmsNavGraph(controller: NavController) =
 
 			AlarmSnoozeScreen(
 				state = flagsState,
-				onEvent = viewModel::onEvent,
+				onEvent = viewModel::onFlagsEvent,
 				navigation = {
-					IconButton(
-						onClick = dropUnlessResumed(block = controller::popBackStack)
-					) {
+					IconButton(onClick = dropUnlessResumed(block = controller::popBackStack)) {
 						Icon(
 							imageVector = Icons.AutoMirrored.Default.ArrowBack,
 							contentDescription = stringResource(R.string.back_arrow)
@@ -137,11 +134,10 @@ fun NavGraphBuilder.creteAlarmsNavGraph(controller: NavController) =
 			AlarmSoundScreen(
 				flags = flags,
 				soundOptions = soundsOption,
+				onFlagsEvent = viewModel::onFlagsEvent,
 				onEvent = viewModel::onEvent,
 				navigation = {
-					IconButton(
-						onClick = dropUnlessResumed(block = controller::popBackStack)
-					) {
+					IconButton(onClick = dropUnlessResumed(block = controller::popBackStack)) {
 						Icon(
 							imageVector = Icons.AutoMirrored.Default.ArrowBack,
 							contentDescription = stringResource(R.string.back_arrow)
