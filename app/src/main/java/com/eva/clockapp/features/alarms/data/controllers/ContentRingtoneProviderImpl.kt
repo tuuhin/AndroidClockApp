@@ -1,41 +1,56 @@
 package com.eva.clockapp.features.alarms.data.controllers
 
-import android.Manifest
 import android.content.ContentResolver
 import android.content.ContentUris
 import android.content.Context
+import android.database.ContentObserver
 import android.database.Cursor
 import android.net.Uri
 import android.os.Build
 import android.provider.MediaStore
-import androidx.core.content.ContextCompat
-import androidx.core.content.PermissionChecker
 import androidx.core.os.bundleOf
-import com.eva.clockapp.features.alarms.domain.controllers.RingtoneProvider
+import com.eva.clockapp.core.utils.checkMusicReadPermission
+import com.eva.clockapp.features.alarms.domain.controllers.ContentRingtoneProvider
 import com.eva.clockapp.features.alarms.domain.exceptions.FileReadPermissionNotFound
 import com.eva.clockapp.features.alarms.domain.exceptions.NoMatchingIdInDatabaseException
 import com.eva.clockapp.features.alarms.domain.models.RingtoneMusicFile
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.channels.awaitClose
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.callbackFlow
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import kotlin.time.Duration.Companion.seconds
 
-class RingtoneProviderImpl(private val context: Context) : RingtoneProvider {
+class ContentRingtoneProviderImpl(private val context: Context) : ContentRingtoneProvider {
 
 	private val checkPermission: Boolean
-		get() {
-			val permission = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU)
-				Manifest.permission.READ_MEDIA_AUDIO
-			else Manifest.permission.READ_EXTERNAL_STORAGE
-
-			return ContextCompat.checkSelfPermission(context, permission) ==
-					PermissionChecker.PERMISSION_GRANTED
-		}
+		get() = context.checkMusicReadPermission
 
 	private val volume: Uri
 		get() = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q)
 			MediaStore.Audio.Media.getContentUri(MediaStore.VOLUME_EXTERNAL)
 		else MediaStore.Audio.Media.EXTERNAL_CONTENT_URI
 
+
+	override val loadRingtonesAsFlow: Flow<Result<List<RingtoneMusicFile>>>
+		get() = callbackFlow {
+
+			// load the recordings initially
+			launch(Dispatchers.IO) { send(loadRingtones()) }
+
+			val observer = object : ContentObserver(null) {
+				override fun onChange(selfChange: Boolean) {
+					// on any change load the recordings again
+					launch(Dispatchers.IO) { send(loadRingtones()) }
+				}
+			}
+			// add content observer for the volume
+			context.contentResolver.registerContentObserver(volume, true, observer)
+			awaitClose {
+				// remove the content observer
+				context.contentResolver.unregisterContentObserver(observer)
+			}
+		}
 
 	override suspend fun loadRingtones(): Result<List<RingtoneMusicFile>> {
 
@@ -52,6 +67,7 @@ class RingtoneProviderImpl(private val context: Context) : RingtoneProvider {
 			append(" = ? ")
 			append(" OR ")
 			append(MediaStore.Audio.AudioColumns.IS_RINGTONE)
+			append(" = ? ")
 		}
 		val selectionArgs = arrayOf("1", "1")
 		val queryArgs = bundleOf(
@@ -81,7 +97,6 @@ class RingtoneProviderImpl(private val context: Context) : RingtoneProvider {
 		val projection = arrayOf(
 			MediaStore.Audio.AudioColumns._ID,
 			MediaStore.Audio.AudioColumns.DISPLAY_NAME,
-			MediaStore.Audio.AudioColumns.DURATION,
 		)
 
 		val selection = buildString {
@@ -117,18 +132,15 @@ class RingtoneProviderImpl(private val context: Context) : RingtoneProvider {
 		val idColumn = cursor.getColumnIndexOrThrow(MediaStore.Audio.AudioColumns._ID)
 		val displayNameColumn =
 			cursor.getColumnIndexOrThrow(MediaStore.Audio.AudioColumns.DISPLAY_NAME)
-		val durationColumn = cursor.getColumnIndexOrThrow(MediaStore.Audio.AudioColumns.DURATION)
 
 		return buildList {
 			while (cursor.moveToNext()) {
 				val id = cursor.getLong(idColumn)
 				val name = cursor.getString(displayNameColumn)
-				val duration = cursor.getLong(durationColumn)
 
 				val ringtone = RingtoneMusicFile(
 					name = name,
 					uri = ContentUris.withAppendedId(volume, id).toString(),
-					duration = duration.seconds
 				)
 				add(ringtone)
 			}

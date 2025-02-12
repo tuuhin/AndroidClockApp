@@ -36,4 +36,14 @@
   <string name="select_alarm_sound_screen_title">Alarm Sound</string>
   <string name="snooze_interval_title">Snooze</string>
   <string name="create_alarm_label_placeholder">Description</string>
+  <string name="allow_permission_short_hand">Allow </string>
+  <string name="read_music_permission_title">Allow device files</string>
+  <string name="read_music_permission_desc">Allow permission to read external files or music</string>
+  <string name="alarm_sound_title">Alarm Sound</string>
+  <string name="alarm_sound_system_default">System Default</string>
+  <string name="alarm_sound_defined_title">Predefined</string>
+  <string name="alarm_sound_external_title">Device</string>
+  <string name="alarm_sound_configure">Configure</string>
+  <string name="increase_volume_by_steps">Gradually Increase Volume</string>
+  <string name="alarm_sound_volume">Alarm Volume</string>
 </resources>

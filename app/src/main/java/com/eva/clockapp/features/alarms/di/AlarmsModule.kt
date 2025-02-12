@@ -1,8 +1,10 @@
 package com.eva.clockapp.features.alarms.di
 
-import com.eva.clockapp.features.alarms.data.controllers.RingtoneProviderImpl
+import com.eva.clockapp.features.alarms.data.controllers.AppRingtoneProviderImpl
+import com.eva.clockapp.features.alarms.data.controllers.ContentRingtoneProviderImpl
 import com.eva.clockapp.features.alarms.data.controllers.VibrationControllerImpl
-import com.eva.clockapp.features.alarms.domain.controllers.RingtoneProvider
+import com.eva.clockapp.features.alarms.domain.controllers.AppRingtoneProvider
+import com.eva.clockapp.features.alarms.domain.controllers.ContentRingtoneProvider
 import com.eva.clockapp.features.alarms.domain.controllers.VibrationController
 import com.eva.clockapp.features.alarms.presentation.create_alarm.CreateAlarmViewModel
 import com.eva.clockapp.features.alarms.presentation.alarms.AlarmsViewModel
@@ -15,7 +17,8 @@ val alarmsModule = module {
 
 	// singletons
 	singleOf(::VibrationControllerImpl) bind VibrationController::class
-	singleOf(::RingtoneProviderImpl) bind RingtoneProvider::class
+	singleOf(::ContentRingtoneProviderImpl) bind ContentRingtoneProvider::class
+	singleOf(::AppRingtoneProviderImpl) bind AppRingtoneProvider::class
 
 	// view models
 	viewModelOf(::CreateAlarmViewModel)
