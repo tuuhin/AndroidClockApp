@@ -12,4 +12,7 @@ interface CreateAlarmNavRoute {
 
 	@Serializable
 	data object SelectSnoozeOptionRoute : CreateAlarmNavRoute
+
+	@Serializable
+	data object SelectSoundOptionRoute : CreateAlarmNavRoute
 }

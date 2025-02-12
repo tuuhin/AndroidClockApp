@@ -1,9 +1,7 @@
 package com.eva.clockapp.features.alarms.presentation.create_alarm.screens
 
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.calculateEndPadding
 import androidx.compose.foundation.layout.calculateStartPadding
 import androidx.compose.foundation.layout.fillMaxSize
@@ -15,10 +13,8 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.ListItem
 import androidx.compose.material3.ListItemDefaults
-import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.MediumTopAppBar
-import androidx.compose.material3.RadioButton
 import androidx.compose.material3.RadioButtonColors
 import androidx.compose.material3.RadioButtonDefaults
 import androidx.compose.material3.Scaffold
@@ -27,20 +23,19 @@ import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.tooling.preview.PreviewLightDark
 import androidx.compose.ui.unit.dp
 import com.eva.clockapp.R
 import com.eva.clockapp.core.presentation.LocalSnackBarHostState
-import com.eva.clockapp.features.alarms.domain.models.VibrationPattern
 import com.eva.clockapp.features.alarms.domain.models.AssociateAlarmFlags
+import com.eva.clockapp.features.alarms.domain.models.VibrationPattern
+import com.eva.clockapp.features.alarms.presentation.composables.RadioButtonWithTextItem
 import com.eva.clockapp.features.alarms.presentation.create_alarm.state.CreateAlarmEvents
 import com.eva.clockapp.features.alarms.presentation.util.toText
 import com.eva.clockapp.ui.theme.ClockAppTheme
@@ -95,28 +90,14 @@ private fun AlarmVibrationScreen(
 				modifier = Modifier.clip(MaterialTheme.shapes.extraLarge)
 			)
 			VibrationPattern.entries.forEach { pattern ->
-				Row(
-					verticalAlignment = Alignment.CenterVertically,
-					modifier = Modifier
-						.fillMaxWidth()
-						.clip(MaterialTheme.shapes.medium)
-						.clickable(role = Role.RadioButton, enabled = enabled) {
-							onPatternChange(pattern)
-						}
-				) {
-					RadioButton(
-						enabled = enabled,
-						selected = pattern == selected,
-						onClick = { onPatternChange(pattern) },
-						colors = optionsColor
-					)
-					Text(
-						text = pattern.toText,
-						style = MaterialTheme.typography.bodyMedium,
-						color = if (enabled) LocalContentColor.current
-						else optionsColor.disabledUnselectedColor
-					)
-				}
+				RadioButtonWithTextItem(
+					text = pattern.toText,
+					enabled = enabled,
+					isSelected = pattern == selected,
+					onClick = { onPatternChange(pattern) },
+					colors = optionsColor,
+					modifier = Modifier.fillMaxWidth()
+				)
 			}
 		}
 	}

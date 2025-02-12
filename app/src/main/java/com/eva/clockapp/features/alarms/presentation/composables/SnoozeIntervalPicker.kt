@@ -5,7 +5,6 @@ import androidx.compose.animation.expandVertically
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.shrinkVertically
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -16,9 +15,7 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.material3.ListItem
 import androidx.compose.material3.ListItemDefaults
-import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.RadioButton
 import androidx.compose.material3.RadioButtonColors
 import androidx.compose.material3.RadioButtonDefaults
 import androidx.compose.material3.Surface
@@ -27,10 +24,8 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.PreviewLightDark
@@ -77,48 +72,21 @@ fun SnoozeIntervalPicker(
 		)
 
 		staticOptions.forEach { option ->
-			Row(
-				verticalAlignment = Alignment.CenterVertically,
-				modifier = Modifier
-					.fillMaxWidth()
-					.clip(MaterialTheme.shapes.medium)
-					.clickable { onIntervalChange(option) }
-			) {
-				RadioButton(
-					selected = option == interval,
-					onClick = { onIntervalChange(option) },
-					enabled = enabled,
-					colors = optionColors,
-				)
-				Text(
-					text = "${option.duration}",
-					style = MaterialTheme.typography.bodyMedium,
-					color = if (enabled) LocalContentColor.current else optionColors.disabledUnselectedColor
-				)
-			}
-		}
-		Row(
-			verticalAlignment = Alignment.CenterVertically,
-			modifier = Modifier
-				.fillMaxWidth()
-				.clip(MaterialTheme.shapes.medium)
-				.clickable(
-					role = Role.RadioButton,
-					onClick = { onIntervalChange(SnoozeIntervalOption.IntervalCustomMinutes(0)) },
-				)
-		) {
-			RadioButton(
-				selected = isCustomModeSelected,
-				onClick = { onIntervalChange(SnoozeIntervalOption.IntervalCustomMinutes(0)) },
-				colors = optionColors,
+			RadioButtonWithTextItem(
+				text = "${option.duration}",
+				isSelected = option == interval,
+				onClick = { onIntervalChange(option) },
 				enabled = enabled,
-			)
-			Text(
-				text = stringResource(R.string.snooze_interval_custom),
-				style = MaterialTheme.typography.bodyMedium,
-				color = if (enabled) LocalContentColor.current else optionColors.disabledUnselectedColor
+				colors = optionColors,
 			)
 		}
+		RadioButtonWithTextItem(
+			isSelected = isCustomModeSelected,
+			enabled = enabled,
+			text = stringResource(R.string.snooze_interval_custom),
+			onClick = { onIntervalChange(SnoozeIntervalOption.IntervalCustomMinutes(0)) },
+			colors = optionColors,
+		)
 		AnimatedVisibility(
 			visible = isCustomModeSelected && enabled,
 			enter = expandVertically() + fadeIn(),

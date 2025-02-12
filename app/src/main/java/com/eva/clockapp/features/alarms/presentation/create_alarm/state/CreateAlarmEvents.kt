@@ -1,5 +1,6 @@
 package com.eva.clockapp.features.alarms.presentation.create_alarm.state
 
+import com.eva.clockapp.features.alarms.domain.models.RingtoneMusicFile
 import com.eva.clockapp.features.alarms.domain.models.SnoozeIntervalOption
 import com.eva.clockapp.features.alarms.domain.models.SnoozeRepeatMode
 import com.eva.clockapp.features.alarms.domain.models.VibrationPattern
@@ -18,6 +19,10 @@ sealed interface CreateAlarmEvents {
 	data class OnSnoozeEnabled(val isEnabled: Boolean) : CreateAlarmEvents
 
 	data class OnLabelValueChange(val newValue: String) : CreateAlarmEvents
+
+	data object LoadDeviceRingtoneFiles : CreateAlarmEvents
+	data class OnSoundSelected(val sound: RingtoneMusicFile) : CreateAlarmEvents
+	data class OnSoundOptionEnabled(val isEnabled: Boolean) : CreateAlarmEvents
 
 	data object OnSaveAlarm : CreateAlarmEvents
 }

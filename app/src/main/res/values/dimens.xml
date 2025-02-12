@@ -3,4 +3,5 @@
   <dimen name="card_internal_padding_large">16dp</dimen>
   <dimen name="sc_padding">12dp</dimen>
   <dimen name="scrollable_dialog_height">200dp</dimen>
+  <dimen name="sheet_padding">16dp</dimen>
 </resources>

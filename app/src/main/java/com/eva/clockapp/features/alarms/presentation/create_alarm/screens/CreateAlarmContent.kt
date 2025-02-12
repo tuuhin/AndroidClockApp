@@ -32,11 +32,16 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import com.eva.clockapp.R
+import com.eva.clockapp.features.alarms.domain.models.AssociateAlarmFlags
+import com.eva.clockapp.features.alarms.domain.models.RingtoneMusicFile
 import com.eva.clockapp.features.alarms.domain.models.SnoozeIntervalOption
 import com.eva.clockapp.features.alarms.domain.models.SnoozeRepeatMode
 import com.eva.clockapp.features.alarms.domain.models.VibrationPattern
 import com.eva.clockapp.features.alarms.presentation.composables.ScrollableTimePicker
 import com.eva.clockapp.features.alarms.presentation.composables.WeekDayPicker
+import com.eva.clockapp.features.alarms.presentation.create_alarm.state.AlarmSoundOptions
+import com.eva.clockapp.features.alarms.presentation.create_alarm.state.CreateAlarmEvents
+import com.eva.clockapp.features.alarms.presentation.create_alarm.state.CreateAlarmState
 import com.eva.clockapp.features.alarms.presentation.util.toText
 import kotlinx.collections.immutable.ImmutableSet
 import kotlinx.datetime.DayOfWeek
@@ -44,8 +49,9 @@ import kotlinx.datetime.LocalTime
 
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
-fun CreateAlarmContent(
+private fun CreateAlarmContent(
 	selectedDays: ImmutableSet<DayOfWeek>,
+	selectedRingtone: RingtoneMusicFile,
 	vibrationPattern: VibrationPattern,
 	snoozeInterval: SnoozeIntervalOption,
 	repeatMode: SnoozeRepeatMode,
@@ -62,6 +68,7 @@ fun CreateAlarmContent(
 	onSoundEnabledChange: (Boolean) -> Unit = {},
 	onSelectSnoozeOption: () -> Unit = {},
 	onSelectVibrationOption: () -> Unit = {},
+	onSelectAlarmSound: () -> Unit = {},
 	contentPadding: PaddingValues = PaddingValues(),
 	optionsColors: ListItemColors = ListItemDefaults.colors(containerColor = Color.Transparent),
 ) {
@@ -113,8 +120,8 @@ fun CreateAlarmContent(
 		item {
 			Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
 				ListItem(
-					headlineContent = { Text("Alarm Sounds") },
-					supportingContent = { Text("Short") },
+					headlineContent = { Text(text = stringResource(R.string.alarm_sound_title)) },
+					supportingContent = { Text(selectedRingtone.name) },
 					trailingContent = {
 						Switch(
 							checked = isSoundEnabled,
@@ -122,6 +129,9 @@ fun CreateAlarmContent(
 						)
 					},
 					colors = optionsColors,
+					modifier = Modifier
+						.clip(MaterialTheme.shapes.medium)
+						.clickable(role = Role.Button, onClick = onSelectAlarmSound)
 				)
 				ListItem(
 					headlineContent = { Text(text = stringResource(R.string.snooze_interval_title)) },
@@ -154,4 +164,39 @@ fun CreateAlarmContent(
 			}
 		}
 	}
+}
+
+@Composable
+fun CreateAlarmContent(
+	state: CreateAlarmState,
+	flags: AssociateAlarmFlags,
+	soundOptions: AlarmSoundOptions,
+	onEvent: (CreateAlarmEvents) -> Unit,
+	modifier: Modifier = Modifier,
+	contentPadding: PaddingValues = PaddingValues(0.dp),
+	onNavigateVibrationScreen: () -> Unit = {},
+	onNavigateSnoozeScreen: () -> Unit = {},
+	onNavigateSoundScreen: () -> Unit = {},
+) {
+	CreateAlarmContent(
+		selectedDays = state.selectedDays,
+		labelState = state.labelState,
+		repeatMode = flags.snoozeRepeatMode,
+		vibrationPattern = flags.vibrationPattern,
+		isVibrationEnabled = flags.isVibrationEnabled,
+		isSoundEnabled = flags.isSoundEnabled,
+		isSnoozeEnabled = flags.isSnoozeEnabled,
+		snoozeInterval = flags.snoozeInterval,
+		selectedRingtone = soundOptions.selectedSound,
+		onWeekDaySelected = { onEvent(CreateAlarmEvents.OnAddOrRemoveWeekDay(it)) },
+		onTimeChange = { onEvent(CreateAlarmEvents.OnAlarmTimeSelected(it)) },
+		onSnoozeEnabledChange = { onEvent(CreateAlarmEvents.OnSnoozeEnabled(it)) },
+		onVibrationEnabledChange = { onEvent(CreateAlarmEvents.OnVibrationEnabled(it)) },
+		onLabelStateChange = { onEvent(CreateAlarmEvents.OnLabelValueChange(it)) },
+		onSelectVibrationOption = onNavigateVibrationScreen,
+		onSelectSnoozeOption = onNavigateSnoozeScreen,
+		onSelectAlarmSound = onNavigateSoundScreen,
+		contentPadding = contentPadding,
+		modifier = modifier,
+	)
 }
