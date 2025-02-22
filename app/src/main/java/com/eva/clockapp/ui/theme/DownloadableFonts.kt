@@ -1,5 +1,7 @@
 package com.eva.clockapp.ui.theme
 
+import androidx.compose.ui.text.font.FontFamily
+import androidx.compose.ui.text.googlefonts.Font
 import androidx.compose.ui.text.googlefonts.GoogleFont
 import com.eva.clockapp.R
 
@@ -11,4 +13,7 @@ private val provider = GoogleFont.Provider(
 
 object DownloadableFonts {
 
+	val CHELSEA_MARKET = FontFamily(
+		Font(googleFont = GoogleFont("Chelsea Market"), fontProvider = provider)
+	)
 }

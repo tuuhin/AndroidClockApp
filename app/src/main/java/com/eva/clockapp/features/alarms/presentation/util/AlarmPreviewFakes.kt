@@ -1,5 +1,6 @@
 package com.eva.clockapp.features.alarms.presentation.util
 
+import com.eva.clockapp.features.alarms.domain.models.AlarmsModel
 import com.eva.clockapp.features.alarms.domain.models.AssociateAlarmFlags
 import com.eva.clockapp.features.alarms.domain.models.RingtoneMusicFile
 import com.eva.clockapp.features.alarms.domain.models.VibrationPattern
@@ -7,6 +8,8 @@ import com.eva.clockapp.features.alarms.presentation.create_alarm.state.AlarmSou
 import com.eva.clockapp.features.alarms.presentation.create_alarm.state.CreateAlarmState
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.collections.immutable.toImmutableList
+import kotlinx.datetime.LocalTime
+import java.time.DayOfWeek
 
 object AlarmPreviewFakes {
 
@@ -31,4 +34,19 @@ object AlarmPreviewFakes {
 		isSnoozeEnabled = true,
 		vibrationPattern = VibrationPattern.CALL_PATTERN
 	)
+
+	val FAKE_ALARMS_MODEL = AlarmsModel(
+		id = -1,
+		time = LocalTime(0, 0),
+		weekDays = setOf(DayOfWeek.MONDAY, DayOfWeek.FRIDAY),
+		flags = AssociateAlarmFlags(),
+		isAlarmEnabled = true,
+		label = "Something..."
+	)
+
+	val FAKE_ALARMS_MODEL_LIST = List(10) {
+		FAKE_ALARMS_MODEL.copy(id = it)
+	}.toImmutableList()
+
+	val FAKE_ALARMS_MODEL_LIST_EMPTY = persistentListOf<AlarmsModel>()
 }

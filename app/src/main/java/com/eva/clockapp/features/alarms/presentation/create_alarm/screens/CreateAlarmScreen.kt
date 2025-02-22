@@ -44,7 +44,7 @@ fun CreateAlarmScreen(
 	onNavigateSoundScreen: () -> Unit = {},
 ) {
 	val snackBarHostState = LocalSnackBarHostState.current
-	val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior()
+	val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
 
 	Scaffold(
 		topBar = {

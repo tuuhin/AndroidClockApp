@@ -1,5 +1,7 @@
 package com.eva.clockapp.core.navigation.routes
 
+import androidx.compose.runtime.getValue
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.compose.dropUnlessResumed
 import androidx.navigation.NavController
 import androidx.navigation.NavGraphBuilder
@@ -15,9 +17,13 @@ fun NavGraphBuilder.alarmsRoute(controller: NavController) =
 
 		val viewModel = koinViewModel<AlarmsViewModel>()
 
+		val alarms by viewModel.alarms.collectAsStateWithLifecycle()
+
 		UIEventsSideEffect(eventsFlow = viewModel.uiEvents)
 
 		AlarmScreen(
+			alarms = alarms,
+			onEvent = viewModel::onEvent,
 			onCreateNewAlarm = dropUnlessResumed {
 				controller.navigate(NavRoutes.CreateAlarmRoute)
 			},
