@@ -44,6 +44,7 @@ import com.eva.clockapp.features.alarms.presentation.create_alarm.state.CreateAl
 import com.eva.clockapp.features.alarms.presentation.create_alarm.state.CreateAlarmState
 import com.eva.clockapp.features.alarms.presentation.create_alarm.state.AlarmFlagsChangeEvent
 import com.eva.clockapp.features.alarms.presentation.util.toText
+import com.eva.clockapp.ui.theme.DownloadableFonts
 import kotlinx.collections.immutable.ImmutableSet
 import kotlinx.datetime.DayOfWeek
 import kotlinx.datetime.LocalTime
@@ -73,6 +74,7 @@ private fun CreateAlarmContent(
 	contentPadding: PaddingValues = PaddingValues(),
 	optionsColors: ListItemColors = ListItemDefaults.colors(containerColor = Color.Transparent),
 ) {
+
 	LazyColumn(
 		modifier = modifier,
 		contentPadding = contentPadding,
@@ -80,7 +82,10 @@ private fun CreateAlarmContent(
 		horizontalAlignment = Alignment.CenterHorizontally
 	) {
 		item {
-			ScrollableTimePicker(onTimeSelected = onTimeChange)
+			ScrollableTimePicker(
+				onTimeSelected = onTimeChange,
+				numberFontFamily = DownloadableFonts.CHELSEA_MARKET,
+			)
 		}
 		item {
 			WeekDayPicker(

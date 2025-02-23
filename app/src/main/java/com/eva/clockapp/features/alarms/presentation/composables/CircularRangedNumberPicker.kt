@@ -43,7 +43,7 @@ import kotlinx.coroutines.flow.collectLatest
 fun CircularRangedNumberPicker(
 	range: IntRange,
 	onFocusItem: (Int) -> Unit,
-	selectedIndex: Int = range.first,
+	startIndex: Int = range.first,
 	elementSize: DpSize = DpSize(64.dp, 64.dp),
 	modifier: Modifier = Modifier,
 	selectEffectEnabled: Boolean = true,
@@ -56,7 +56,9 @@ fun CircularRangedNumberPicker(
 	content: @Composable LazyItemScope.(Int) -> Unit,
 ) {
 	// selected number  should be in the given range
-	check(selectedIndex in range, lazyMessage = { "Selected index should be inside range" })
+	check(
+		value = startIndex in range,
+		lazyMessage = { "Selected index should be inside range INDEX:$startIndex RANGE : $range" })
 
 	val haptic = LocalHapticFeedback.current
 	val updatedOnFocusItem by rememberUpdatedState(onFocusItem)
@@ -72,8 +74,8 @@ fun CircularRangedNumberPicker(
 
 	LaunchedEffect(key1 = itemCount) {
 		// if endless scroll to a certain section beforehand
-		if (endLess) lazyListState.scrollToItem(selectedIndex + 1_000 * itemCount)
-		else lazyListState.scrollToItem(selectedIndex)
+		if (endLess) lazyListState.scrollToItem(startIndex + 1_000 * itemCount - 1)
+		else lazyListState.scrollToItem(startIndex)
 	}
 
 	LaunchedEffect(key1 = isScrollInProgress, key2 = containerSize) {

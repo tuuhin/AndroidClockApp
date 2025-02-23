@@ -2,11 +2,10 @@ package com.eva.clockapp.features.alarms.presentation.create_alarm.screens
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.calculateEndPadding
-import androidx.compose.foundation.layout.calculateStartPadding
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -26,7 +25,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.input.nestedscroll.nestedScroll
-import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.PreviewLightDark
@@ -52,7 +50,6 @@ private fun AlarmVibrationScreen(
 	optionsColor: RadioButtonColors = RadioButtonDefaults.colors(),
 ) {
 
-	val layoutDirection = LocalLayoutDirection.current
 	val snackBarHostState = LocalSnackBarHostState.current
 	val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
 
@@ -69,13 +66,9 @@ private fun AlarmVibrationScreen(
 	) { scPadding ->
 		Column(
 			modifier = Modifier
-				.padding(
-					top = scPadding.calculateTopPadding() + dimensionResource(R.dimen.sc_padding),
-					bottom = scPadding.calculateBottomPadding() + dimensionResource(R.dimen.sc_padding),
-					start = scPadding.calculateStartPadding(layoutDirection) + dimensionResource(R.dimen.sc_padding),
-					end = scPadding.calculateEndPadding(layoutDirection) + dimensionResource(R.dimen.sc_padding)
-				)
-				.fillMaxSize(),
+				.padding(paddingValues = scPadding)
+				.padding(all = dimensionResource(R.dimen.sc_padding))
+				.fillMaxWidth(),
 			verticalArrangement = Arrangement.spacedBy(8.dp)
 		) {
 			ListItem(
@@ -89,15 +82,20 @@ private fun AlarmVibrationScreen(
 				colors = ListItemDefaults.colors(containerColor = MaterialTheme.colorScheme.surfaceContainer),
 				modifier = Modifier.clip(MaterialTheme.shapes.extraLarge)
 			)
-			VibrationPattern.entries.forEach { pattern ->
-				RadioButtonWithTextItem(
-					text = pattern.toText,
-					enabled = enabled,
-					isSelected = pattern == selected,
-					onClick = { onPatternChange(pattern) },
-					colors = optionsColor,
-					modifier = Modifier.fillMaxWidth()
-				)
+			LazyColumn(
+				modifier = Modifier.weight(1f),
+				verticalArrangement = Arrangement.spacedBy(4.dp)
+			) {
+				itemsIndexed(items = VibrationPattern.entries) { _, pattern ->
+					RadioButtonWithTextItem(
+						text = pattern.toText,
+						enabled = enabled,
+						isSelected = pattern == selected,
+						onClick = { onPatternChange(pattern) },
+						colors = optionsColor,
+						modifier = Modifier.fillMaxWidth()
+					)
+				}
 			}
 		}
 	}

@@ -45,6 +45,7 @@ import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.datetime.LocalTime
+import java.text.NumberFormat
 import kotlin.time.Duration.Companion.milliseconds
 
 @OptIn(FlowPreview::class)
@@ -53,6 +54,7 @@ fun ScrollableTimePicker(
 	onTimeSelected: (LocalTime) -> Unit,
 	modifier: Modifier = Modifier,
 	is24HrFormat: Boolean = false,
+	numberFormatLocale: Boolean = true,
 	startTime: LocalTime = LocalTime(0, 0),
 	handsStyle: TextStyle = MaterialTheme.typography.displayMedium,
 	containerColor: Color = MaterialTheme.colorScheme.surfaceContainer,
@@ -60,44 +62,37 @@ fun ScrollableTimePicker(
 	numberFontFamily: FontFamily? = FontFamily.SansSerif,
 	shape: Shape = MaterialTheme.shapes.large,
 ) {
-	val clockMinuteRange = remember { 0..<60 }
-
-	val clockHourRange = remember(is24HrFormat) {
-		if (is24HrFormat) 0..<24
-		else 1..12
-	}
+	val clockMinuteRange = 0..<60
+	val clockHourRange = 0..<24
 
 	val updatedOnTimeSelected by rememberUpdatedState(onTimeSelected)
-
-	val selectedIndexForHour = remember(is24HrFormat, startTime) {
-		val currentHourAsFormat = with(startTime) {
-			when {
-				is24HrFormat -> hour
-				hour == 0 || hour == 24 -> hour
-				else -> hour % 12
-			}
-		}
-		clockHourRange.indexOf(currentHourAsFormat).let { idx ->
-			if (idx == -1) clockHourRange.first
-			else idx
-		}
-	}
-
-	val selectedIndexForMinute = remember(startTime) {
-		clockMinuteRange.indexOf(startTime.minute).let { idx ->
-			if (idx == -1) clockMinuteRange.first
-			else idx
-		}
-	}
+	val formatter = remember { NumberFormat.getInstance() }
 
 	var newTimeSelection by remember { mutableStateOf(startTime) }
-	var isTimeInAm by remember { mutableStateOf(false) }
+	var isTimeInAm by remember { mutableStateOf(startTime.hour < 12) }
 
-	LaunchedEffect(newTimeSelection) {
-		snapshotFlow { newTimeSelection }
+	LaunchedEffect(newTimeSelection, isTimeInAm, is24HrFormat) {
+
+		val newTime = when {
+			is24HrFormat -> newTimeSelection
+			!isTimeInAm && newTimeSelection.hour in 0..<12 -> LocalTime(
+				newTimeSelection.hour + 12,
+				newTimeSelection.minute
+			)
+
+			isTimeInAm && newTimeSelection.hour in 12..23 -> LocalTime(
+				newTimeSelection.hour - 12,
+				newTimeSelection.minute
+			)
+
+			else -> newTimeSelection
+		}
+
+		snapshotFlow { newTime }
 			.debounce(200.milliseconds)
 			.distinctUntilChanged()
 			.collectLatest { time -> updatedOnTimeSelected(time) }
+
 	}
 
 	Card(
@@ -118,54 +113,52 @@ fun ScrollableTimePicker(
 		) {
 			CircularRangedNumberPicker(
 				range = clockHourRange,
-				selectedIndex = selectedIndexForHour,
+				startIndex = startTime.hour,
 				contentColor = contentColor,
 				containerColor = containerColor,
 				onFocusItem = { idx ->
-					clockHourRange.toList().getOrNull(idx)?.let { hour ->
-						val converted = if (isTimeInAm || is24HrFormat) hour else 12 + hour
-						newTimeSelection = LocalTime(converted, newTimeSelection.minute)
-					}
+					val hour = idx % 24
+					newTimeSelection = LocalTime(hour, newTimeSelection.minute)
 				},
 			) { idx ->
-				clockHourRange.toList().getOrNull(idx)?.let { hour ->
-					Text(
-						text = "$hour".padStart(2, '0'),
-						textAlign = TextAlign.Center,
-						fontFamily = numberFontFamily,
-						style = handsStyle,
-						modifier = Modifier.widthIn(min = 40.dp)
-					)
-				}
+				val hour = if (is24HrFormat) idx % 24 else if (idx % 12 == 0) 12 else idx % 12
+				val hourText = if (numberFormatLocale) formatter.format(hour) else "$hour"
+				Text(
+					text = hourText.padStart(2, '0'),
+					textAlign = TextAlign.Center,
+					fontFamily = numberFontFamily,
+					style = handsStyle,
+					modifier = Modifier.widthIn(min = 40.dp)
+				)
 			}
 			Spacer(modifier = Modifier.width(16.dp))
 			Text(
 				text = ":",
 				style = MaterialTheme.typography.displayMedium,
+				fontFamily = numberFontFamily,
 				color = contentColor,
 				modifier = Modifier.align(Alignment.CenterVertically)
 			)
 			Spacer(modifier = Modifier.width(16.dp))
 			CircularRangedNumberPicker(
 				range = clockMinuteRange,
-				selectedIndex = selectedIndexForMinute,
+				startIndex = startTime.minute,
 				contentColor = contentColor,
 				containerColor = containerColor,
 				onFocusItem = { idx ->
-					clockMinuteRange.toList().getOrNull(idx)?.let { minute ->
-						newTimeSelection = LocalTime(newTimeSelection.hour, minute)
-					}
+					val minute = idx % 60
+					newTimeSelection = LocalTime(newTimeSelection.hour, minute)
 				},
 			) { idx ->
-				clockMinuteRange.toList().getOrNull(idx)?.let { minute ->
-					Text(
-						text = "$minute".padStart(2, '0'),
-						textAlign = TextAlign.Center,
-						fontFamily = numberFontFamily,
-						style = handsStyle,
-						modifier = Modifier.widthIn(min = 40.dp)
-					)
-				}
+				val minute = idx % 60
+				val minuteText = if (numberFormatLocale) formatter.format(minute) else "$minute"
+				Text(
+					text = minuteText.padStart(2, '0'),
+					textAlign = TextAlign.Center,
+					fontFamily = numberFontFamily,
+					style = handsStyle,
+					modifier = Modifier.widthIn(min = 40.dp)
+				)
 			}
 			AnimatedVisibility(
 				visible = !is24HrFormat,
@@ -175,11 +168,11 @@ fun ScrollableTimePicker(
 			) {
 				CircularRangedNumberPicker(
 					range = 0..1,
-					selectedIndex = 0,
+					startIndex = if (startTime.hour > 12) 1 else 0,
 					contentColor = contentColor,
 					containerColor = containerColor,
 					endLess = false,
-					onFocusItem = { option -> isTimeInAm = option == 0 },
+					onFocusItem = { option -> isTimeInAm = option != 0 },
 					modifier = Modifier.padding(start = 16.dp)
 				) { option ->
 
@@ -190,6 +183,7 @@ fun ScrollableTimePicker(
 						text = text,
 						textAlign = TextAlign.Center,
 						style = MaterialTheme.typography.headlineLarge,
+						fontFamily = numberFontFamily,
 						modifier = Modifier.widthIn(min = 40.dp)
 					)
 				}
@@ -210,5 +204,6 @@ private fun ScrollableTimePickerPreview(
 	ScrollableTimePicker(
 		is24HrFormat = is24HrFormat,
 		onTimeSelected = {},
+		startTime = LocalTime(14, 10)
 	)
 }

@@ -22,7 +22,10 @@ import com.eva.clockapp.R
 import com.eva.clockapp.ui.theme.ClockAppTheme
 
 @Composable
-fun NoAlarmsFoundPlaceHolder(onCreateNew: () -> Unit, modifier: Modifier = Modifier) {
+fun NoAlarmsFoundPlaceHolder(
+	onCreateNew: () -> Unit,
+	modifier: Modifier = Modifier,
+) {
 	Column(
 		modifier = modifier,
 		horizontalAlignment = Alignment.CenterHorizontally,
@@ -34,7 +37,7 @@ fun NoAlarmsFoundPlaceHolder(onCreateNew: () -> Unit, modifier: Modifier = Modif
 			colorFilter = ColorFilter.tint(color = MaterialTheme.colorScheme.secondary),
 			modifier = Modifier.sizeIn(maxWidth = 120.dp, maxHeight = 120.dp)
 		)
-		Spacer(modifier = Modifier.height(8.dp))
+		Spacer(modifier = Modifier.height(16.dp))
 		Text(
 			text = stringResource(R.string.no_alarm_title),
 			style = MaterialTheme.typography.headlineSmall,
@@ -47,7 +50,8 @@ fun NoAlarmsFoundPlaceHolder(onCreateNew: () -> Unit, modifier: Modifier = Modif
 		Spacer(modifier = Modifier.height(8.dp))
 		Button(
 			onClick = onCreateNew,
-			shape = MaterialTheme.shapes.large, modifier = Modifier.sizeIn(minWidth = 120.dp)
+			shape = MaterialTheme.shapes.medium,
+			modifier = Modifier.sizeIn(minWidth = 120.dp)
 		) {
 			Text(
 				text = stringResource(R.string.create_action),

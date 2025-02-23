@@ -10,4 +10,5 @@ data class AlarmsModel(
 	val flags: AssociateAlarmFlags,
 	val isAlarmEnabled: Boolean,
 	val label: String? = null,
+	val soundUri: String? = null,
 )

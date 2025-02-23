@@ -16,6 +16,8 @@ import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.PreviewLightDark
+import androidx.compose.ui.tooling.preview.PreviewParameter
+import androidx.compose.ui.tooling.preview.datasource.CollectionPreviewParameterProvider
 import com.eva.clockapp.R
 import com.eva.clockapp.core.presentation.LocalSnackBarHostState
 import com.eva.clockapp.features.alarms.domain.models.AlarmsModel
@@ -55,8 +57,8 @@ fun AlarmScreen(
 	) { scPadding ->
 		AlarmsScreenContent(
 			alarms = alarms,
-			onEnableAlarm = { isEnabled, alarm ->
-				onEvent(AlarmsScreenEvents.OnEnableOrDisAbleAlarm(isEnabled, alarm))
+			onEnableAlarm = { isEnableChange, alarm ->
+				onEvent(AlarmsScreenEvents.OnEnableOrDisAbleAlarm(isEnableChange, alarm))
 			},
 			onAlarmClick = {},
 			onCreateNew = onCreateNewAlarm,
@@ -68,9 +70,20 @@ fun AlarmScreen(
 	}
 }
 
+private class AlarmsListPreviewParams :
+	CollectionPreviewParameterProvider<ImmutableList<AlarmsModel>>(
+		listOf(
+			AlarmPreviewFakes.FAKE_ALARMS_MODEL_LIST,
+			AlarmPreviewFakes.FAKE_ALARMS_MODEL_LIST_EMPTY
+		)
+	)
+
 
 @PreviewLightDark
 @Composable
-private fun AlarmScreenPreview() = ClockAppTheme {
-	AlarmScreen(alarms = AlarmPreviewFakes.FAKE_ALARMS_MODEL_LIST, onEvent = {})
+private fun AlarmScreenPreview(
+	@PreviewParameter(AlarmsListPreviewParams::class)
+	alarm: ImmutableList<AlarmsModel>,
+) = ClockAppTheme {
+	AlarmScreen(alarms = alarm, onEvent = {})
 }

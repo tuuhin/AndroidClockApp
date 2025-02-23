@@ -1,8 +1,5 @@
 package com.eva.clockapp.core.navigation.routes
 
-import androidx.compose.animation.AnimatedContentTransitionScope
-import androidx.compose.animation.fadeIn
-import androidx.compose.animation.fadeOut
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.Icon
@@ -13,9 +10,9 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.compose.dropUnlessResumed
 import androidx.navigation.NavController
 import androidx.navigation.NavGraphBuilder
-import androidx.navigation.compose.composable
 import androidx.navigation.compose.navigation
 import com.eva.clockapp.R
+import com.eva.clockapp.core.navigation.animatedComposable
 import com.eva.clockapp.core.navigation.navgraphs.CreateAlarmNavRoute
 import com.eva.clockapp.core.navigation.navgraphs.NavRoutes
 import com.eva.clockapp.core.presentation.UIEventsSideEffect
@@ -27,23 +24,9 @@ import com.eva.clockapp.features.alarms.presentation.create_alarm.screens.AlarmV
 import com.eva.clockapp.features.alarms.presentation.create_alarm.screens.CreateAlarmScreen
 
 fun NavGraphBuilder.creteAlarmsNavGraph(controller: NavController) =
-	navigation<NavRoutes.CreateAlarmRoute>(
-		startDestination = CreateAlarmNavRoute.CreateRoute,
-		enterTransition = {
-			slideIntoContainer(AnimatedContentTransitionScope.SlideDirection.Left) + fadeIn()
-		},
-		exitTransition = {
-			slideOutOfContainer(AnimatedContentTransitionScope.SlideDirection.Left) + fadeOut()
-		},
-		popEnterTransition = {
-			slideIntoContainer(AnimatedContentTransitionScope.SlideDirection.Left) + fadeIn()
-		},
-		popExitTransition = {
-			slideOutOfContainer(AnimatedContentTransitionScope.SlideDirection.Left) + fadeOut()
-		},
-	) {
+	navigation<NavRoutes.CreateAlarmRoute>(startDestination = CreateAlarmNavRoute.CreateRoute) {
 
-		composable<CreateAlarmNavRoute.CreateRoute> { backStack ->
+		animatedComposable<CreateAlarmNavRoute.CreateRoute> { backStack ->
 
 			val viewModel = backStack.sharedViewModel<CreateAlarmViewModel>(controller)
 
@@ -81,7 +64,7 @@ fun NavGraphBuilder.creteAlarmsNavGraph(controller: NavController) =
 			)
 		}
 
-		composable<CreateAlarmNavRoute.SelectVibrationRoute> { backStack ->
+		animatedComposable<CreateAlarmNavRoute.SelectVibrationRoute> { backStack ->
 
 			val viewModel = backStack.sharedViewModel<CreateAlarmViewModel>(controller)
 			val flagsState by viewModel.flagsState.collectAsStateWithLifecycle()
@@ -102,7 +85,7 @@ fun NavGraphBuilder.creteAlarmsNavGraph(controller: NavController) =
 			)
 		}
 
-		composable<CreateAlarmNavRoute.SelectSnoozeOptionRoute> { backStack ->
+		animatedComposable<CreateAlarmNavRoute.SelectSnoozeOptionRoute> { backStack ->
 
 			val viewModel = backStack.sharedViewModel<CreateAlarmViewModel>(controller)
 			val flagsState by viewModel.flagsState.collectAsStateWithLifecycle()
@@ -123,7 +106,7 @@ fun NavGraphBuilder.creteAlarmsNavGraph(controller: NavController) =
 			)
 		}
 
-		composable<CreateAlarmNavRoute.SelectSoundOptionRoute> { backStack ->
+		animatedComposable<CreateAlarmNavRoute.SelectSoundOptionRoute> { backStack ->
 
 			val viewModel = backStack.sharedViewModel<CreateAlarmViewModel>(controller)
 			val soundsOption by viewModel.soundOptions.collectAsStateWithLifecycle()

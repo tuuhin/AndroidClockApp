@@ -60,7 +60,6 @@ fun SnoozeIntervalPicker(
 		interval is SnoozeIntervalOption.IntervalCustomMinutes
 	}
 
-	val clockRange = remember { 0..<60 }
 
 	Column(
 		modifier = modifier,
@@ -101,27 +100,26 @@ fun SnoozeIntervalPicker(
 					.padding(vertical = 4.dp),
 			) {
 				CircularRangedNumberPicker(
-					range = clockRange,
+					range = 0..<60,
 					contentColor = contentColor,
 					containerColor = containerColor,
-					selectedIndex = (interval as? SnoozeIntervalOption.IntervalCustomMinutes)?.minutes
-						?: 0,
+					startIndex = (interval as? SnoozeIntervalOption.IntervalCustomMinutes)?.minutes
+						?: 10,
 					elementSize = DpSize(48.dp, 48.dp),
 					onFocusItem = { idx ->
-						clockRange.toList().getOrNull(idx)?.let { minute ->
-							onIntervalChange(SnoozeIntervalOption.IntervalCustomMinutes(minute))
-						}
+						val minute = idx % 60
+						onIntervalChange(SnoozeIntervalOption.IntervalCustomMinutes(minute))
 					},
 				) { idx ->
-					clockRange.toList().getOrNull(idx)?.let { minute ->
-						Text(
-							text = "$minute".padStart(2, '0'),
-							textAlign = TextAlign.Center,
-							fontFamily = FontFamily.SansSerif,
-							style = MaterialTheme.typography.titleLarge,
-							modifier = Modifier.widthIn(min = 40.dp)
-						)
-					}
+					val minute = idx % 60
+					Text(
+						text = "$minute".padStart(2, '0'),
+						textAlign = TextAlign.Center,
+						fontFamily = FontFamily.SansSerif,
+						style = MaterialTheme.typography.titleLarge,
+						modifier = Modifier.widthIn(min = 40.dp)
+					)
+
 				}
 				Spacer(modifier = Modifier.width(36.dp))
 				Text(

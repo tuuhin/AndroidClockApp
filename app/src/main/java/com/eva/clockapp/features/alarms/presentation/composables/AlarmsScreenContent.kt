@@ -16,8 +16,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalInspectionMode
 import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.tooling.preview.PreviewLightDark
-import androidx.compose.ui.tooling.preview.PreviewParameter
-import androidx.compose.ui.tooling.preview.datasource.CollectionPreviewParameterProvider
 import androidx.compose.ui.unit.dp
 import com.eva.clockapp.R
 import com.eva.clockapp.features.alarms.domain.models.AlarmsModel
@@ -53,6 +51,7 @@ fun AlarmsScreenContent(
 
 	Crossfade(
 		targetState = isAlarmsEmpty,
+		label = "Alarms list empty or filled",
 		modifier = modifier
 	) { isEmpty ->
 		if (isEmpty) {
@@ -86,25 +85,16 @@ fun AlarmsScreenContent(
 	}
 }
 
-private class AlarmsListPreviewParams :
-	CollectionPreviewParameterProvider<ImmutableList<AlarmsModel>>(
-		listOf(
-			AlarmPreviewFakes.FAKE_ALARMS_MODEL_LIST,
-			AlarmPreviewFakes.FAKE_ALARMS_MODEL_LIST_EMPTY
-		)
-	)
 
 @PreviewLightDark
 @Composable
-private fun AlarmsScreenContentPreview(
-	@PreviewParameter(AlarmsListPreviewParams::class)
-	alarm: ImmutableList<AlarmsModel>,
-) = ClockAppTheme {
+private fun AlarmsScreenContentPreview() = ClockAppTheme {
 	AlarmsScreenContent(
-		alarms = alarm,
+		alarms = AlarmPreviewFakes.FAKE_ALARMS_MODEL_LIST,
 		onAlarmClick = {},
 		onEnableAlarm = { _, _ -> },
 		contentPadding = PaddingValues(20.dp),
 		modifier = Modifier.fillMaxSize()
 	)
+
 }
