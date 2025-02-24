@@ -3,11 +3,14 @@ package com.eva.clockapp.features.alarms.di
 import com.eva.clockapp.features.alarms.data.controllers.AppRingtoneProviderImpl
 import com.eva.clockapp.features.alarms.data.controllers.ContentRingtoneProviderImpl
 import com.eva.clockapp.features.alarms.data.controllers.VibrationControllerImpl
+import com.eva.clockapp.features.alarms.data.repository.AlarmsRepositoryImpl
 import com.eva.clockapp.features.alarms.domain.controllers.AppRingtoneProvider
 import com.eva.clockapp.features.alarms.domain.controllers.ContentRingtoneProvider
 import com.eva.clockapp.features.alarms.domain.controllers.VibrationController
+import com.eva.clockapp.features.alarms.domain.repository.AlarmsRepository
 import com.eva.clockapp.features.alarms.presentation.alarms.AlarmsViewModel
 import com.eva.clockapp.features.alarms.presentation.create_alarm.CreateAlarmViewModel
+import org.koin.core.module.dsl.factoryOf
 import org.koin.core.module.dsl.singleOf
 import org.koin.core.module.dsl.viewModelOf
 import org.koin.dsl.bind
@@ -20,6 +23,8 @@ val alarmsModule = module {
 	singleOf(::ContentRingtoneProviderImpl).bind<ContentRingtoneProvider>()
 	singleOf(::AppRingtoneProviderImpl).bind<AppRingtoneProvider>()
 
+	//factory
+	factoryOf(::AlarmsRepositoryImpl).bind<AlarmsRepository>()
 	// view models
 	viewModelOf(::CreateAlarmViewModel)
 	viewModelOf(::AlarmsViewModel)
