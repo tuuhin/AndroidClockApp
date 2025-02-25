@@ -6,6 +6,7 @@ import com.eva.clockapp.core.presentation.UiEvents
 import com.eva.clockapp.core.utils.Resource
 import com.eva.clockapp.features.alarms.domain.models.AlarmsModel
 import com.eva.clockapp.features.alarms.domain.repository.AlarmsRepository
+import com.eva.clockapp.features.alarms.presentation.alarms.state.SelectableAlarmModel
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.collections.immutable.toImmutableList
 import kotlinx.coroutines.flow.MutableSharedFlow
@@ -25,10 +26,10 @@ class AlarmsViewModel(
 	private val repository: AlarmsRepository,
 ) : AppViewModel() {
 
-	private val _alarms = MutableStateFlow<List<AlarmsModel>>(emptyList())
+	private val _alarms = MutableStateFlow<List<SelectableAlarmModel>>(emptyList())
 	private val _isAlarmsLoaded = MutableStateFlow(false)
 
-	val alarms = _alarms.map { it.toImmutableList() }
+	val selectableAlarms = _alarms.map { it.toImmutableList() }
 		.onStart { fillSavedAlarms() }
 		.stateIn(
 			scope = viewModelScope,
@@ -44,7 +45,11 @@ class AlarmsViewModel(
 	fun onEvent(event: AlarmsScreenEvents) {
 		when (event) {
 			is AlarmsScreenEvents.OnEnableOrDisAbleAlarm ->
-				updateEnableAlarm(event.isEnabled, event.alarmsModel)
+				updateEnableAlarm(event.enabled, event.model)
+
+			is AlarmsScreenEvents.ToggleAlarmSelection -> updateAlarmSelection(event.alarm)
+			AlarmsScreenEvents.DeleteSelectedAlarms -> deleteSelectedAlarms()
+			AlarmsScreenEvents.DeSelectAllAlarms -> deSelectAllItems()
 		}
 	}
 
@@ -52,10 +57,11 @@ class AlarmsViewModel(
 		when (res) {
 			is Resource.Error -> _uiEvents.emit(UiEvents.ShowSnackBar(res.message ?: "ERROR"))
 			Resource.Loading -> _isAlarmsLoaded.update { false }
-			is Resource.Success -> _alarms.update { res.data }
+			is Resource.Success -> updateAlarmsOnLoad(res.data)
 		}
 		_isAlarmsLoaded.update { true }
 	}.launchIn(viewModelScope)
+
 
 	private fun updateEnableAlarm(isEnabled: Boolean, model: AlarmsModel) {
 		viewModelScope.launch {
@@ -65,4 +71,34 @@ class AlarmsViewModel(
 			}
 		}
 	}
+
+
+	private fun updateAlarmsOnLoad(alarms: List<AlarmsModel>) = _alarms.update { oldAlarms ->
+		alarms.map { model ->
+			val isSelected = oldAlarms.find { it.model.id == model.id }?.isSelected ?: false
+			SelectableAlarmModel(model = model, isSelected = isSelected)
+		}
+	}
+
+
+	private fun updateAlarmSelection(alarm: AlarmsModel) = _alarms.update { oldAlarms ->
+		oldAlarms.map { selectableModel ->
+			if (selectableModel.model.id == alarm.id)
+				selectableModel.copy(isSelected = !selectableModel.isSelected)
+			else selectableModel
+		}
+	}
+
+	private fun deSelectAllItems() = _alarms.update { oldAlarms ->
+		oldAlarms.map { selectableModel -> selectableModel.copy(isSelected = false) }
+	}
+
+	private fun deleteSelectedAlarms() = viewModelScope.launch {
+		val alarmsToRemove = _alarms.value.filter { it.isSelected }.map { it.model }
+		when (val result = repository.deleteAlarms(alarmsToRemove)) {
+			is Resource.Error -> _uiEvents.emit(UiEvents.ShowSnackBar(result.message ?: ""))
+			else -> {}
+		}
+	}
+
 }

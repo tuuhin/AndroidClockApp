@@ -67,4 +67,31 @@ class AlarmsRepositoryImpl(private val alarmsDao: AlarmsDao) : AlarmsRepository 
 			Resource.Error(e, message = "SOME KIND OF EXCEPTION")
 		}
 	}
+
+	override suspend fun deleteAlarm(model: AlarmsModel): Resource<Unit, Exception> {
+		return try {
+			alarmsDao.deleteAlarm(model.toEntity())
+			Resource.Success(Unit)
+		} catch (e: SQLiteConstraintException) {
+			Resource.Error(e, message = "Constraint Error")
+		} catch (e: SQLiteException) {
+			Resource.Error(e, "SQLITE exception")
+		} catch (e: Exception) {
+			Resource.Error(e, message = "SOME KIND OF EXCEPTION")
+		}
+	}
+
+	override suspend fun deleteAlarms(models: List<AlarmsModel>): Resource<Unit, Exception> {
+		return try {
+			val entities = models.map { it.toEntity() }
+			alarmsDao.deleteAlarmBulk(entities)
+			Resource.Success(Unit)
+		} catch (e: SQLiteConstraintException) {
+			Resource.Error(e, message = "Constraint Error")
+		} catch (e: SQLiteException) {
+			Resource.Error(e, "SQLITE exception")
+		} catch (e: Exception) {
+			Resource.Error(e, message = "SOME KIND OF EXCEPTION")
+		}
+	}
 }

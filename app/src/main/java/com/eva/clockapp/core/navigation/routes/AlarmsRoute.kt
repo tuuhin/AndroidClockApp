@@ -17,7 +17,7 @@ fun NavGraphBuilder.alarmsRoute(controller: NavController) =
 
 		val viewModel = koinViewModel<AlarmsViewModel>()
 
-		val alarms by viewModel.alarms.collectAsStateWithLifecycle()
+		val alarms by viewModel.selectableAlarms.collectAsStateWithLifecycle()
 
 		UIEventsSideEffect(eventsFlow = viewModel.uiEvents)
 

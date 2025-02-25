@@ -6,7 +6,7 @@ import kotlinx.datetime.format.Padding
 
 val LocalTime.Formats.HH_MM_A: DateTimeFormat<LocalTime>
 	get() = LocalTime.Format {
-		hour(padding = Padding.ZERO)
+		amPmHour(padding = Padding.ZERO)
 		chars(":")
 		minute(padding = Padding.ZERO)
 		chars(" ")

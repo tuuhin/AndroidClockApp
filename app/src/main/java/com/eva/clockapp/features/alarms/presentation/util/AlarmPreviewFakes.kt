@@ -4,6 +4,7 @@ import com.eva.clockapp.features.alarms.domain.models.AlarmsModel
 import com.eva.clockapp.features.alarms.domain.models.AssociateAlarmFlags
 import com.eva.clockapp.features.alarms.domain.models.RingtoneMusicFile
 import com.eva.clockapp.features.alarms.domain.models.VibrationPattern
+import com.eva.clockapp.features.alarms.presentation.alarms.state.SelectableAlarmModel
 import com.eva.clockapp.features.alarms.presentation.create_alarm.state.AlarmSoundOptions
 import com.eva.clockapp.features.alarms.presentation.create_alarm.state.CreateAlarmState
 import kotlinx.collections.immutable.persistentListOf
@@ -44,9 +45,16 @@ object AlarmPreviewFakes {
 		label = "Something..."
 	)
 
-	val FAKE_ALARMS_MODEL_LIST = List(10) {
-		FAKE_ALARMS_MODEL.copy(id = it)
-	}.toImmutableList()
+	val FAKE_SELECTABLE_ALARM_MODEL = SelectableAlarmModel(model = FAKE_ALARMS_MODEL)
 
-	val FAKE_ALARMS_MODEL_LIST_EMPTY = persistentListOf<AlarmsModel>()
+	val FAKE_SELECTABLE_ALARM_MODEL_LIST =
+		List(10) { FAKE_SELECTABLE_ALARM_MODEL }.toImmutableList()
+
+	val FAKE_SELECTABLE_ALARMS_LIST_SELECTED =
+		List(10) {
+			if (it < 6) FAKE_SELECTABLE_ALARM_MODEL.copy(isSelected = true)
+			else FAKE_SELECTABLE_ALARM_MODEL
+		}.toImmutableList()
+
+	val FAKE_ALARMS_MODEL_LIST_EMPTY = persistentListOf<SelectableAlarmModel>()
 }

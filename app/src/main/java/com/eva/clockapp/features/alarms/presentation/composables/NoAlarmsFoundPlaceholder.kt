@@ -5,6 +5,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.sizeIn
 import androidx.compose.material3.Button
 import androidx.compose.material3.MaterialTheme
@@ -23,7 +24,7 @@ import com.eva.clockapp.ui.theme.ClockAppTheme
 
 @Composable
 fun NoAlarmsFoundPlaceHolder(
-	onCreateNew: () -> Unit,
+	onCreateNew: () -> Unit = {},
 	modifier: Modifier = Modifier,
 ) {
 	Column(
@@ -35,7 +36,7 @@ fun NoAlarmsFoundPlaceHolder(
 			painter = painterResource(R.drawable.ic_alam_clock),
 			contentDescription = "Alarm Clock",
 			colorFilter = ColorFilter.tint(color = MaterialTheme.colorScheme.secondary),
-			modifier = Modifier.sizeIn(maxWidth = 120.dp, maxHeight = 120.dp)
+			modifier = Modifier.size(120.dp)
 		)
 		Spacer(modifier = Modifier.height(16.dp))
 		Text(
@@ -45,13 +46,14 @@ fun NoAlarmsFoundPlaceHolder(
 		)
 		Text(
 			text = stringResource(R.string.no_alarm_desc),
-			style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.outline
+			style = MaterialTheme.typography.bodyMedium,
+			color = MaterialTheme.colorScheme.outline
 		)
-		Spacer(modifier = Modifier.height(8.dp))
+		Spacer(modifier = Modifier.height(12.dp))
 		Button(
 			onClick = onCreateNew,
 			shape = MaterialTheme.shapes.medium,
-			modifier = Modifier.sizeIn(minWidth = 120.dp)
+			modifier = Modifier.sizeIn(minWidth = 180.dp)
 		) {
 			Text(
 				text = stringResource(R.string.create_action),

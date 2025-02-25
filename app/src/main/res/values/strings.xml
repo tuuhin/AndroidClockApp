@@ -49,4 +49,9 @@
   <string name="no_music_files_type_alarm">No music files with type alarm</string>
   <string name="no_alarm_title">No Alarms found</string>
   <string name="no_alarm_desc">No alarms are being added start by creating one</string>
+  <string name="n_number_selected">%d selected</string>
+  <string name="delete_action">Delete</string>
+  <string name="cancel_action">Cancel</string>
+  <string name="delete_alarm_dialog_title">Are you sure to delete alarms</string>
+  <string name="delete_alarm_dialog_desc">Deleting an alarm will remove and cancel this alarm</string>
 </resources>

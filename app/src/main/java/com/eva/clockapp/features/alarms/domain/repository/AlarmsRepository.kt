@@ -13,4 +13,8 @@ interface AlarmsRepository {
 			: Resource<AlarmsModel, Exception>
 
 	suspend fun createAlarm(model: CreateAlarmModel): Resource<AlarmsModel, Exception>
+
+	suspend fun deleteAlarm(model: AlarmsModel): Resource<Unit, Exception>
+
+	suspend fun deleteAlarms(models: List<AlarmsModel>): Resource<Unit, Exception>
 }
