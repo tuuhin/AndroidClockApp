@@ -46,6 +46,7 @@ import androidx.compose.ui.tooling.preview.PreviewLightDark
 import androidx.compose.ui.tooling.preview.PreviewParameter
 import androidx.compose.ui.tooling.preview.datasource.CollectionPreviewParameterProvider
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.compose.LifecycleStartEffect
 import com.eva.clockapp.R
 import com.eva.clockapp.core.presentation.LocalSnackBarHostState
 import com.eva.clockapp.core.utils.checkMusicReadPermission
@@ -54,9 +55,9 @@ import com.eva.clockapp.features.alarms.domain.models.RingtoneMusicFile
 import com.eva.clockapp.features.alarms.presentation.composables.CheckReadMusicPermission
 import com.eva.clockapp.features.alarms.presentation.composables.ConfigureAlarmSoundSheet
 import com.eva.clockapp.features.alarms.presentation.composables.RadioButtonWithTextItem
+import com.eva.clockapp.features.alarms.presentation.create_alarm.state.AlarmFlagsChangeEvent
 import com.eva.clockapp.features.alarms.presentation.create_alarm.state.AlarmSoundOptions
 import com.eva.clockapp.features.alarms.presentation.create_alarm.state.CreateAlarmEvents
-import com.eva.clockapp.features.alarms.presentation.create_alarm.state.AlarmFlagsChangeEvent
 import com.eva.clockapp.features.alarms.presentation.util.AlarmPreviewFakes
 import com.eva.clockapp.ui.theme.ClockAppTheme
 import kotlinx.collections.immutable.ImmutableList
@@ -226,6 +227,13 @@ fun AlarmSoundScreen(
 	modifier: Modifier = Modifier,
 	navigation: @Composable () -> Unit = {},
 ) {
+	LifecycleStartEffect(Unit) {
+		onStopOrDispose {
+			// called on-stop or disposed
+			onEvent(CreateAlarmEvents.OnExitAlarmSoundScreen)
+		}
+	}
+
 	AlarmSoundScreen(
 		flags = flags,
 		deviceRingtone = soundOptions.external,

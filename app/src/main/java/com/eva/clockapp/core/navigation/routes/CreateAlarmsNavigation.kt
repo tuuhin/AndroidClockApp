@@ -34,7 +34,10 @@ fun NavGraphBuilder.creteAlarmsNavGraph(controller: NavController) =
 			val soundOptions by viewModel.soundOptions.collectAsStateWithLifecycle()
 			val flagsState by viewModel.flagsState.collectAsStateWithLifecycle()
 
-			UIEventsSideEffect(eventsFlow = viewModel.uiEvents)
+			UIEventsSideEffect(
+				eventsFlow = viewModel.uiEvents,
+				onBack = dropUnlessResumed { controller.popBackStack() },
+			)
 
 			CreateAlarmScreen(
 				state = state,

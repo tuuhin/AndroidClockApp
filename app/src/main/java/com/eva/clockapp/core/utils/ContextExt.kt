@@ -14,3 +14,11 @@ val Context.checkMusicReadPermission: Boolean
 			ContextCompat.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE)
 		return permission == PermissionChecker.PERMISSION_GRANTED
 	}
+
+val Context.checkPostNotificationPermission: Boolean
+	get() = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU)
+		ContextCompat.checkSelfPermission(
+			this,
+			Manifest.permission.POST_NOTIFICATIONS
+		) == PermissionChecker.PERMISSION_GRANTED
+	else true

@@ -11,7 +11,7 @@ import androidx.lifecycle.repeatOnLifecycle
 import kotlinx.coroutines.flow.Flow
 
 @Composable
-fun UIEventsSideEffect(eventsFlow: Flow<UiEvents>) {
+fun UIEventsSideEffect(eventsFlow: Flow<UiEvents>, onBack: () -> Unit = {}) {
 
 	val context = LocalContext.current
 	val lifecyleOwner = LocalLifecycleOwner.current
@@ -32,6 +32,8 @@ fun UIEventsSideEffect(eventsFlow: Flow<UiEvents>) {
 						Toast.LENGTH_SHORT
 					)
 						.show()
+
+					UiEvents.NavigateBack -> onBack()
 				}
 			}
 		}

@@ -44,9 +44,7 @@ class AlarmsViewModel(
 
 	fun onEvent(event: AlarmsScreenEvents) {
 		when (event) {
-			is AlarmsScreenEvents.OnEnableOrDisAbleAlarm ->
-				updateEnableAlarm(event.enabled, event.model)
-
+			is AlarmsScreenEvents.OnEnableOrDisAbleAlarm -> enableAlarms(event.enabled, event.model)
 			is AlarmsScreenEvents.ToggleAlarmSelection -> updateAlarmSelection(event.alarm)
 			AlarmsScreenEvents.DeleteSelectedAlarms -> deleteSelectedAlarms()
 			AlarmsScreenEvents.DeSelectAllAlarms -> deSelectAllItems()
@@ -55,7 +53,10 @@ class AlarmsViewModel(
 
 	private fun fillSavedAlarms() = repository.alarmsFlow.onEach { res ->
 		when (res) {
-			is Resource.Error -> _uiEvents.emit(UiEvents.ShowSnackBar(res.message ?: "ERROR"))
+			is Resource.Error -> res.message?.let { message ->
+				_uiEvents.emit(UiEvents.ShowSnackBar(message))
+			}
+
 			Resource.Loading -> _isAlarmsLoaded.update { false }
 			is Resource.Success -> updateAlarmsOnLoad(res.data)
 		}
@@ -63,10 +64,13 @@ class AlarmsViewModel(
 	}.launchIn(viewModelScope)
 
 
-	private fun updateEnableAlarm(isEnabled: Boolean, model: AlarmsModel) {
+	private fun enableAlarms(isEnabled: Boolean, model: AlarmsModel) {
 		viewModelScope.launch {
 			when (val result = repository.toggleIsAlarmEnabled(isEnabled, model)) {
-				is Resource.Error -> _uiEvents.emit(UiEvents.ShowSnackBar(result.message ?: ""))
+				is Resource.Error -> result.message?.let { message ->
+					_uiEvents.emit(UiEvents.ShowSnackBar(message))
+				}
+
 				else -> {}
 			}
 		}
@@ -94,9 +98,14 @@ class AlarmsViewModel(
 	}
 
 	private fun deleteSelectedAlarms() = viewModelScope.launch {
-		val alarmsToRemove = _alarms.value.filter { it.isSelected }.map { it.model }
-		when (val result = repository.deleteAlarms(alarmsToRemove)) {
-			is Resource.Error -> _uiEvents.emit(UiEvents.ShowSnackBar(result.message ?: ""))
+
+		val selectedAlarms = _alarms.value.filter { it.isSelected }.map { it.model }
+
+		when (val result = repository.deleteAlarms(selectedAlarms)) {
+			is Resource.Error -> result.message?.let { message ->
+				_uiEvents.emit(UiEvents.ShowSnackBar(message))
+			}
+
 			else -> {}
 		}
 	}

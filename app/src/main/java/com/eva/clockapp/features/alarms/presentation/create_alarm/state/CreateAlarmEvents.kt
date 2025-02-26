@@ -11,4 +11,5 @@ sealed interface CreateAlarmEvents {
 
 	data object LoadDeviceRingtoneFiles : CreateAlarmEvents
 	data object OnSaveAlarm : CreateAlarmEvents
+	data object OnExitAlarmSoundScreen : CreateAlarmEvents
 }

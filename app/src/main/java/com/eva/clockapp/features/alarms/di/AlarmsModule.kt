@@ -1,9 +1,11 @@
 package com.eva.clockapp.features.alarms.di
 
+import com.eva.clockapp.features.alarms.data.controllers.AlarmSoundPlayerImpl
 import com.eva.clockapp.features.alarms.data.controllers.AppRingtoneProviderImpl
 import com.eva.clockapp.features.alarms.data.controllers.ContentRingtoneProviderImpl
 import com.eva.clockapp.features.alarms.data.controllers.VibrationControllerImpl
 import com.eva.clockapp.features.alarms.data.repository.AlarmsRepositoryImpl
+import com.eva.clockapp.features.alarms.domain.controllers.AlarmsSoundPlayer
 import com.eva.clockapp.features.alarms.domain.controllers.AppRingtoneProvider
 import com.eva.clockapp.features.alarms.domain.controllers.ContentRingtoneProvider
 import com.eva.clockapp.features.alarms.domain.controllers.VibrationController
@@ -22,9 +24,11 @@ val alarmsModule = module {
 	singleOf(::VibrationControllerImpl).bind<VibrationController>()
 	singleOf(::ContentRingtoneProviderImpl).bind<ContentRingtoneProvider>()
 	singleOf(::AppRingtoneProviderImpl).bind<AppRingtoneProvider>()
+	singleOf(::AlarmSoundPlayerImpl).bind<AlarmsSoundPlayer>()
 
 	//factory
 	factoryOf(::AlarmsRepositoryImpl).bind<AlarmsRepository>()
+
 	// view models
 	viewModelOf(::CreateAlarmViewModel)
 	viewModelOf(::AlarmsViewModel)
