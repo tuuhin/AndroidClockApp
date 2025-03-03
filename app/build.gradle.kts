@@ -77,6 +77,7 @@ dependencies {
 	// navigation and lifecycle
 	implementation(libs.androidx.navigation.compose)
 	implementation(libs.androidx.lifecycle.runtime.compose)
+	implementation(libs.androidx.lifecycle.service)
 
 	//kotlinx-library
 	implementation(libs.kotlinx.collections.immutable)

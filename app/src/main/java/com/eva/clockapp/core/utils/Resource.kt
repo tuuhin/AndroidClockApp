@@ -14,4 +14,17 @@ sealed class Resource<out S, out E> {
 	) : Resource<S, E>()
 
 	data object Loading : Resource<Nothing, Nothing>()
+
+	fun fold(
+		onSuccess: (S) -> Unit = {},
+		onError: (E, String?) -> Unit = { _, _ -> },
+		onLoading: () -> Unit = {},
+	) {
+		when (this) {
+			is Error -> onError(this.error, this.message)
+			Loading -> onLoading()
+			is Success -> onSuccess(this.data)
+		}
+	}
+
 }

@@ -54,4 +54,8 @@
   <string name="cancel_action">Cancel</string>
   <string name="delete_alarm_dialog_title">Are you sure to delete alarms</string>
   <string name="delete_alarm_dialog_desc">Deleting an alarm will remove and cancel this alarm</string>
+  <string name="notification_action_dismiss">Dismiss</string>
+  <string name="notification_action_snooze">Snooze</string>
+  <string name="notification_text_swipe_to_dismiss">Swipe to dismiss</string>
+  <string name="notification_title_alarms">Alarms</string>
 </resources>
