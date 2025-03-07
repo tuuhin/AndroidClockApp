@@ -1,6 +1,7 @@
 package com.eva.clockapp.features.alarms.presentation.composables
 
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.animateContentSize
 import androidx.compose.animation.slideInHorizontally
 import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.foundation.Canvas
@@ -9,9 +10,7 @@ import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.wrapContentWidth
@@ -40,6 +39,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.PreviewLightDark
 import androidx.compose.ui.unit.dp
 import com.eva.clockapp.R
+import com.eva.clockapp.core.utils.HH_MM
 import com.eva.clockapp.core.utils.HH_MM_A
 import com.eva.clockapp.features.alarms.domain.models.AlarmsModel
 import com.eva.clockapp.features.alarms.presentation.alarms.state.SelectableAlarmModel
@@ -49,7 +49,6 @@ import com.eva.clockapp.ui.theme.DownloadableFonts
 import kotlinx.datetime.DayOfWeek
 import kotlinx.datetime.LocalTime
 import kotlinx.datetime.format
-import java.time.format.TextStyle
 import java.util.Locale
 
 @OptIn(ExperimentalFoundationApi::class)
@@ -58,16 +57,15 @@ fun AlarmsCompactCard(
 	selectableModel: SelectableAlarmModel,
 	onClick: () -> Unit,
 	onLongClick: () -> Unit,
-	onEnabledChange: (Boolean) -> Unit = {},
 	modifier: Modifier = Modifier,
-	isOthersSelected: Boolean = false,
-	colors: CardColors = CardDefaults.cardColors(),
+	onEnabledChange: (Boolean) -> Unit = {},
+	isSelectableMode: Boolean = false,
+	isStartOfWeekSunday: Boolean = true,
+	is24HrsFormat: Boolean = false,
+	colors: CardColors = CardDefaults.elevatedCardColors(),
 	shape: Shape = MaterialTheme.shapes.large,
 	overlayColor: Color = MaterialTheme.colorScheme.primary,
 ) {
-
-	val alarmModel = selectableModel.model
-
 	Card(
 		shape = shape,
 		colors = colors,
@@ -76,82 +74,115 @@ fun AlarmsCompactCard(
 			.combinedClickable(
 				onClick = onClick,
 				onLongClick = onLongClick,
-				onLongClickLabel = "Select the item"
-			),
+				onLongClickLabel = "Select alarms to bulk enable or delete",
+				onClickLabel = "Click to edit alarm"
+			)
+			.animateContentSize(),
 	) {
-		Row(
+		Column(
 			modifier = Modifier
 				.fillMaxWidth()
 				.padding(all = dimensionResource(R.dimen.card_internal_padding_large)),
-			horizontalArrangement = Arrangement.spacedBy(4.dp),
-			verticalAlignment = Alignment.CenterVertically,
+			verticalArrangement = Arrangement.spacedBy(2.dp)
 		) {
-			AnimatedVisibility(
-				visible = isOthersSelected,
-				enter = slideInHorizontally(),
-				exit = slideOutHorizontally()
-			) {
-				RadioButton(
-					selected = selectableModel.isSelected,
-					onClick = {},
-					colors = RadioButtonDefaults
-						.colors(selectedColor = MaterialTheme.colorScheme.secondary)
+			selectableModel.model.label?.let { labelText ->
+				Text(
+					text = labelText,
+					overflow = TextOverflow.Ellipsis,
+					style = MaterialTheme.typography.labelLarge,
+					color = MaterialTheme.colorScheme.secondary,
+					maxLines = 2,
 				)
 			}
-			AlarmsCardTimeAndDays(model = alarmModel, modifier = Modifier.weight(1f))
-			AnimatedVisibility(
-				visible = !isOthersSelected,
-				enter = slideInHorizontally { width -> width },
-				exit = slideOutHorizontally { width -> width }
+			Row(
+				horizontalArrangement = Arrangement.spacedBy(4.dp),
+				verticalAlignment = Alignment.CenterVertically,
 			) {
-				Switch(
-					checked = alarmModel.isAlarmEnabled,
-					onCheckedChange = onEnabledChange,
-					colors = SwitchDefaults.colors(checkedTrackColor = overlayColor),
+				AnimatedVisibility(
+					visible = isSelectableMode,
+					enter = slideInHorizontally(),
+					exit = slideOutHorizontally()
+				) {
+					RadioButton(
+						selected = selectableModel.isSelected,
+						onClick = {},
+						colors = RadioButtonDefaults
+							.colors(selectedColor = MaterialTheme.colorScheme.secondary)
+					)
+				}
+				AlarmsTimeAndWeekdays(
+					model = selectableModel.model,
+					is24HrsFormat = is24HrsFormat,
+					isStartOfWeekSunday = isStartOfWeekSunday,
+					modifier = Modifier.weight(1f)
 				)
+				AnimatedVisibility(
+					visible = !isSelectableMode,
+					enter = slideInHorizontally { width -> width },
+					exit = slideOutHorizontally { width -> width }
+				) {
+					Switch(
+						checked = selectableModel.model.isAlarmEnabled,
+						onCheckedChange = onEnabledChange,
+						colors = SwitchDefaults.colors(checkedTrackColor = overlayColor),
+					)
+				}
 			}
 		}
 	}
 }
 
+
 @Composable
-private fun AlarmsCardTimeAndDays(
+private fun AlarmsTimeAndWeekdays(
 	model: AlarmsModel,
 	modifier: Modifier = Modifier,
+	isStartOfWeekSunday: Boolean = true,
+	is24HrsFormat: Boolean = false,
 	textColor: Color = MaterialTheme.colorScheme.primary,
 	overlayColor: Color = MaterialTheme.colorScheme.secondary,
 ) {
 	val locale = remember { Locale.getDefault() }
 	val textMeasurer = rememberTextMeasurer()
 
-	val textFormat = remember(model.time) {
-		model.time.format(LocalTime.Formats.HH_MM_A)
+	val textFormat = remember(model.time, is24HrsFormat) {
+		val format = if (is24HrsFormat) LocalTime.Formats.HH_MM
+		else LocalTime.Formats.HH_MM_A
+
+		model.time.format(format)
 	}
 
-	val rearrangedDayOfWeekEntries = remember {
+	val dayOfWeeks = remember {
+		if (!isStartOfWeekSunday) return@remember DayOfWeek.entries
+
 		buildSet {
 			add(DayOfWeek.SUNDAY)
 			val others = DayOfWeek.entries.toMutableList()
 				.apply { remove(DayOfWeek.SUNDAY) }
 			addAll(others)
 		}
+
 	}
 
-	Column(modifier = modifier) {
+	Column(
+		modifier = modifier,
+		verticalArrangement = Arrangement.spacedBy(8.dp)
+	) {
 		Text(
 			text = textFormat,
-			style = MaterialTheme.typography.headlineMedium,
+			style = MaterialTheme.typography.headlineLarge,
 			color = textColor,
+			fontWeight = FontWeight.SemiBold,
 			fontFamily = DownloadableFonts.CHELSEA_MARKET
 		)
-		Spacer(modifier = Modifier.height(6.dp))
 		Row(
 			modifier = Modifier.wrapContentWidth(),
 			horizontalArrangement = Arrangement.spacedBy(4.dp)
 		) {
-			rearrangedDayOfWeekEntries.forEach { day ->
-				val weekDayTextStyle =
-					MaterialTheme.typography.labelLarge.copy(fontWeight = FontWeight.SemiBold)
+			dayOfWeeks.forEach { day ->
+
+				val textStyle = MaterialTheme.typography.labelLarge
+					.copy(fontWeight = FontWeight.SemiBold)
 
 				val color = if (day in model.weekDays) overlayColor
 				else MaterialTheme.colorScheme.outline
@@ -159,15 +190,19 @@ private fun AlarmsCardTimeAndDays(
 				Canvas(
 					modifier = Modifier.size(width = 12.dp, height = 20.dp)
 				) {
-					val weekDay = day.getDisplayName(TextStyle.NARROW_STANDALONE, locale)
-
-					drawCircle(
-						color = color,
-						radius = 2.dp.toPx(),
-						center = Offset(size.width * .5f, 0f),
+					val weekDay = day.getDisplayName(
+						java.time.format.TextStyle.NARROW_STANDALONE, locale
 					)
 
-					val textResult = textMeasurer.measure(weekDay, style = weekDayTextStyle)
+					if (day in model.weekDays) {
+						drawCircle(
+							color = color,
+							radius = 2.dp.toPx(),
+							center = Offset(size.width * .5f, 0f),
+						)
+					}
+
+					val textResult = textMeasurer.measure(weekDay, style = textStyle)
 					val offset = with(textResult.size) {
 						Offset(width * .5f, height * .5f)
 					}
@@ -175,30 +210,31 @@ private fun AlarmsCardTimeAndDays(
 					drawText(
 						textLayoutResult = textResult,
 						topLeft = center - offset,
-						color = color,
-
-						)
+						color = color
+					)
 				}
 			}
-		}
-		Spacer(modifier = Modifier.height(4.dp))
-		model.label?.let { labelText ->
-			Text(
-				text = labelText,
-				style = MaterialTheme.typography.labelMedium,
-				color = MaterialTheme.colorScheme.secondary,
-				maxLines = 2,
-				overflow = TextOverflow.Ellipsis,
-			)
 		}
 	}
 }
 
+
 @PreviewLightDark
 @Composable
-private fun AlarmsCompactCardPreview() = ClockAppTheme {
+private fun AlarmsCompactCardNormalPreview() = ClockAppTheme {
 	AlarmsCompactCard(
 		selectableModel = AlarmPreviewFakes.FAKE_SELECTABLE_ALARM_MODEL,
+		onClick = {},
+		onLongClick = {},
+	)
+}
+
+@PreviewLightDark
+@Composable
+private fun AlarmsCompactCardSelectedPreview() = ClockAppTheme {
+	AlarmsCompactCard(
+		selectableModel = AlarmPreviewFakes.FAKE_SELECTABLE_ALARM_MODEL,
+		isSelectableMode = true,
 		onClick = {},
 		onLongClick = {},
 	)

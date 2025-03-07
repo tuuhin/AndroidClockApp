@@ -22,15 +22,20 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
+import androidx.core.text.util.LocalePreferences
+import androidx.core.text.util.LocalePreferences.HourCycle
 import com.eva.clockapp.R
 import com.eva.clockapp.features.alarms.domain.models.AssociateAlarmFlags
 import com.eva.clockapp.features.alarms.domain.models.RingtoneMusicFile
@@ -39,10 +44,9 @@ import com.eva.clockapp.features.alarms.domain.models.SnoozeRepeatMode
 import com.eva.clockapp.features.alarms.domain.models.VibrationPattern
 import com.eva.clockapp.features.alarms.presentation.composables.ScrollableTimePicker
 import com.eva.clockapp.features.alarms.presentation.composables.WeekDayPicker
-import com.eva.clockapp.features.alarms.presentation.create_alarm.state.AlarmSoundOptions
+import com.eva.clockapp.features.alarms.presentation.create_alarm.state.AlarmFlagsChangeEvent
 import com.eva.clockapp.features.alarms.presentation.create_alarm.state.CreateAlarmEvents
 import com.eva.clockapp.features.alarms.presentation.create_alarm.state.CreateAlarmState
-import com.eva.clockapp.features.alarms.presentation.create_alarm.state.AlarmFlagsChangeEvent
 import com.eva.clockapp.features.alarms.presentation.util.toText
 import com.eva.clockapp.ui.theme.DownloadableFonts
 import kotlinx.collections.immutable.ImmutableSet
@@ -57,13 +61,14 @@ private fun CreateAlarmContent(
 	vibrationPattern: VibrationPattern,
 	snoozeInterval: SnoozeIntervalOption,
 	repeatMode: SnoozeRepeatMode,
+	timePickerTime: LocalTime,
+	onTimeChange: (LocalTime) -> Unit,
+	onWeekDaySelected: (DayOfWeek) -> Unit,
+	modifier: Modifier = Modifier,
 	labelState: String = "",
 	isVibrationEnabled: Boolean = true,
 	isSnoozeEnabled: Boolean = true,
 	isSoundEnabled: Boolean = true,
-	onTimeChange: (LocalTime) -> Unit,
-	onWeekDaySelected: (DayOfWeek) -> Unit,
-	modifier: Modifier = Modifier,
 	onSnoozeEnabledChange: (Boolean) -> Unit = {},
 	onVibrationEnabledChange: (Boolean) -> Unit = {},
 	onLabelStateChange: (String) -> Unit,
@@ -75,6 +80,9 @@ private fun CreateAlarmContent(
 	optionsColors: ListItemColors = ListItemDefaults.colors(containerColor = Color.Transparent),
 ) {
 
+	val focusRequester = remember { FocusRequester() }
+	val is24HourClock = remember { LocalePreferences.getHourCycle() == HourCycle.H23 }
+
 	LazyColumn(
 		modifier = modifier,
 		contentPadding = contentPadding,
@@ -83,6 +91,8 @@ private fun CreateAlarmContent(
 	) {
 		item {
 			ScrollableTimePicker(
+				startTime = timePickerTime,
+				is24HrFormat = is24HourClock,
 				onTimeSelected = onTimeChange,
 				numberFontFamily = DownloadableFonts.CHELSEA_MARKET,
 			)
@@ -100,7 +110,7 @@ private fun CreateAlarmContent(
 				onValueChange = onLabelStateChange,
 				placeholder = { Text(text = stringResource(R.string.create_alarm_label_placeholder)) },
 				singleLine = true,
-				keyboardActions = KeyboardActions(onDone = { onLabelStateChange(labelState) }),
+				keyboardActions = KeyboardActions(onDone = { focusRequester.freeFocus() }),
 				keyboardOptions = KeyboardOptions(
 					imeAction = ImeAction.Done,
 					keyboardType = KeyboardType.Text,
@@ -120,6 +130,7 @@ private fun CreateAlarmContent(
 				),
 				shape = MaterialTheme.shapes.small,
 				modifier = Modifier
+					.focusRequester(focusRequester)
 					.fillMaxWidth()
 					.imeNestedScroll(),
 			)
@@ -179,7 +190,6 @@ private fun CreateAlarmContent(
 fun CreateAlarmContent(
 	state: CreateAlarmState,
 	flags: AssociateAlarmFlags,
-	soundOptions: AlarmSoundOptions,
 	onEvent: (CreateAlarmEvents) -> Unit,
 	onFlagsEvent: (AlarmFlagsChangeEvent) -> Unit,
 	modifier: Modifier = Modifier,
@@ -189,15 +199,16 @@ fun CreateAlarmContent(
 	onNavigateSoundScreen: () -> Unit = {},
 ) {
 	CreateAlarmContent(
+		timePickerTime = state.selectedTime,
 		selectedDays = state.selectedDays,
 		labelState = state.labelState,
 		repeatMode = flags.snoozeRepeatMode,
+		selectedRingtone = state.ringtone,
 		vibrationPattern = flags.vibrationPattern,
 		isVibrationEnabled = flags.isVibrationEnabled,
 		isSoundEnabled = flags.isSoundEnabled,
 		isSnoozeEnabled = flags.isSnoozeEnabled,
 		snoozeInterval = flags.snoozeInterval,
-		selectedRingtone = soundOptions.selectedSound,
 		onWeekDaySelected = { onEvent(CreateAlarmEvents.OnAddOrRemoveWeekDay(it)) },
 		onTimeChange = { onEvent(CreateAlarmEvents.OnAlarmTimeSelected(it)) },
 		onLabelStateChange = { onEvent(CreateAlarmEvents.OnLabelValueChange(it)) },

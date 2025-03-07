@@ -22,10 +22,9 @@ import androidx.compose.ui.tooling.preview.PreviewLightDark
 import com.eva.clockapp.R
 import com.eva.clockapp.core.presentation.LocalSnackBarHostState
 import com.eva.clockapp.features.alarms.domain.models.AssociateAlarmFlags
-import com.eva.clockapp.features.alarms.presentation.create_alarm.state.AlarmSoundOptions
+import com.eva.clockapp.features.alarms.presentation.create_alarm.state.AlarmFlagsChangeEvent
 import com.eva.clockapp.features.alarms.presentation.create_alarm.state.CreateAlarmEvents
 import com.eva.clockapp.features.alarms.presentation.create_alarm.state.CreateAlarmState
-import com.eva.clockapp.features.alarms.presentation.create_alarm.state.AlarmFlagsChangeEvent
 import com.eva.clockapp.features.alarms.presentation.util.AlarmPreviewFakes
 import com.eva.clockapp.ui.theme.ClockAppTheme
 
@@ -34,7 +33,6 @@ import com.eva.clockapp.ui.theme.ClockAppTheme
 fun CreateAlarmScreen(
 	state: CreateAlarmState,
 	flags: AssociateAlarmFlags,
-	soundOptions: AlarmSoundOptions,
 	onEvent: (CreateAlarmEvents) -> Unit,
 	onFlagsEvent: (AlarmFlagsChangeEvent) -> Unit,
 	modifier: Modifier = Modifier,
@@ -49,11 +47,25 @@ fun CreateAlarmScreen(
 	Scaffold(
 		topBar = {
 			MediumTopAppBar(
-				title = { Text(text = stringResource(R.string.create_alarm_screen_title)) },
+				title = {
+					val text = if (state.isAlarmCreate)
+						stringResource(R.string.create_alarm_screen_title)
+					else stringResource(R.string.update_alarm_screen_title)
+					Text(text = text)
+				},
 				actions = {
-					TextButton(
-						onClick = { onEvent(CreateAlarmEvents.OnSaveAlarm) }) {
-						Text(text = stringResource(R.string.save_action))
+					if (state.isAlarmCreate) {
+						TextButton(
+							onClick = { onEvent(CreateAlarmEvents.OnSaveAlarm) },
+						) {
+							Text(text = stringResource(R.string.save_action))
+						}
+					} else {
+						TextButton(
+							onClick = { onEvent(CreateAlarmEvents.OnUpdateAlarm) },
+						) {
+							Text(text = stringResource(R.string.update_action))
+						}
 					}
 				},
 				navigationIcon = navigation,
@@ -66,7 +78,6 @@ fun CreateAlarmScreen(
 		CreateAlarmContent(
 			state = state,
 			flags = flags,
-			soundOptions = soundOptions,
 			onEvent = onEvent,
 			onFlagsEvent = onFlagsEvent,
 			onNavigateVibrationScreen = onNavigateVibrationScreen,
@@ -86,7 +97,6 @@ fun CreateAlarmScreen(
 private fun AlarmScreenPreview() = ClockAppTheme {
 	CreateAlarmScreen(
 		state = AlarmPreviewFakes.FAKE_CREATE_ALARM_STATE,
-		soundOptions = AlarmPreviewFakes.FAKE_ALARM_SOUND_STATE,
 		flags = AlarmPreviewFakes.FAKE_ASSOCIATE_FLAGS_STATE,
 		onEvent = {},
 		onFlagsEvent = {},

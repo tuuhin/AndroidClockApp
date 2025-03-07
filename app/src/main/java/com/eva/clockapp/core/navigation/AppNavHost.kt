@@ -12,26 +12,29 @@ import com.eva.clockapp.core.navigation.navgraphs.NavRoutes
 import com.eva.clockapp.core.navigation.routes.alarmsRoute
 import com.eva.clockapp.core.navigation.routes.creteAlarmsNavGraph
 import com.eva.clockapp.core.presentation.LocalSnackBarHostState
+import org.koin.compose.KoinContext
 
 @Composable
 fun AppNavHost(
-	controller: NavHostController = rememberNavController(),
 	modifier: Modifier = Modifier,
+	controller: NavHostController = rememberNavController(),
 ) {
 	val snackBarProvider = remember { SnackbarHostState() }
 
-	CompositionLocalProvider(
-		LocalSnackBarHostState provides snackBarProvider,
-	) {
-		NavHost(
-			navController = controller,
-			startDestination = NavRoutes.AlarmsRoute,
-			modifier = modifier,
+	KoinContext {
+		CompositionLocalProvider(
+			LocalSnackBarHostState provides snackBarProvider,
 		) {
-			// show alarms
-			alarmsRoute(controller = controller)
-			// create alarms nav graph
-			creteAlarmsNavGraph(controller = controller)
+			NavHost(
+				navController = controller,
+				startDestination = NavRoutes.AlarmsRoute,
+				modifier = modifier,
+			) {
+				// show alarms
+				alarmsRoute(controller = controller)
+				// create alarms nav graph
+				creteAlarmsNavGraph(controller = controller)
+			}
 		}
 	}
 }

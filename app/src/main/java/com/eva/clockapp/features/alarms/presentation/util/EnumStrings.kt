@@ -3,9 +3,10 @@ package com.eva.clockapp.features.alarms.presentation.util
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.res.stringResource
 import com.eva.clockapp.R
+import com.eva.clockapp.features.alarms.domain.models.RingtoneMusicFile
 import com.eva.clockapp.features.alarms.domain.models.SnoozeIntervalOption
-import com.eva.clockapp.features.alarms.domain.models.VibrationPattern
 import com.eva.clockapp.features.alarms.domain.models.SnoozeRepeatMode
+import com.eva.clockapp.features.alarms.domain.models.VibrationPattern
 
 val VibrationPattern.toText: String
 	@Composable
@@ -34,5 +35,12 @@ val SnoozeRepeatMode.toText: String
 val SnoozeIntervalOption.toText: String
 	@Composable
 	get() = "${this.duration.inWholeMinutes} minutes"
+
+val RingtoneMusicFile.RingtoneType.toText: String
+	@Composable
+	get() = when (this) {
+		RingtoneMusicFile.RingtoneType.APPLICATION_LOCAL -> stringResource(R.string.alarm_sound_defined_title)
+		RingtoneMusicFile.RingtoneType.DEVICE_LOCAL -> stringResource(R.string.alarm_sound_external_title)
+	}
 
 

@@ -1,7 +1,6 @@
 package com.eva.clockapp.features.alarms.presentation.composables
 
 import androidx.compose.animation.AnimatedContent
-import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.ContentTransform
 import androidx.compose.animation.core.FastOutSlowInEasing
 import androidx.compose.animation.core.tween
@@ -10,8 +9,12 @@ import androidx.compose.animation.shrinkOut
 import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutVertically
 import androidx.compose.animation.togetherWith
-import androidx.compose.material3.ButtonDefaults
+import androidx.compose.foundation.layout.Row
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.MediumTopAppBar
 import androidx.compose.material3.Text
@@ -37,10 +40,11 @@ fun AlarmsTopAppBar(
 	modifier: Modifier = Modifier,
 	navigation: @Composable () -> Unit = {},
 	onCreateNewAlarm: () -> Unit = {},
+	onSelectAll: () -> Unit = {},
 	scrollBehavior: TopAppBarScrollBehavior? = null,
-	colors: TopAppBarColors = TopAppBarDefaults.mediumTopAppBarColors(),
+	colors: TopAppBarColors = TopAppBarDefaults
+		.mediumTopAppBarColors(actionIconContentColor = MaterialTheme.colorScheme.primary),
 ) {
-
 	val isAnySelected by remember(selectableAlarms) {
 		derivedStateOf { selectableAlarms.any { it.isSelected } }
 	}
@@ -57,24 +61,29 @@ fun AlarmsTopAppBar(
 				label = "Selectable Top bar animation",
 				contentAlignment = Alignment.TopCenter,
 			) { isSelected ->
-				if (isSelected) Text(
-					text = stringResource(R.string.n_number_selected, selectedItemCount)
-				)
-				else Text(text = stringResource(R.string.alarms_screen_title))
+				if (isSelected) {
+					Text(text = stringResource(R.string.n_number_selected, selectedItemCount))
+				} else Text(text = stringResource(R.string.alarms_screen_title))
 			}
 		},
 		actions = {
-			AnimatedVisibility(
-				visible = !isAnySelected,
-				enter = slideInVertically(),
-				exit = slideOutVertically()
-			) {
-				TextButton(
-					onClick = onCreateNewAlarm,
-					colors = ButtonDefaults
-						.textButtonColors(contentColor = MaterialTheme.colorScheme.primary)
-				) {
-					Text(text = stringResource(R.string.create_action))
+			AnimatedContent(
+				targetState = isAnySelected,
+				transitionSpec = { animateTopBar() },
+				label = "Top bar actions animations",
+				contentAlignment = Alignment.TopCenter,
+			) { isSelected ->
+				if (isSelected) {
+					TextButton(onClick = onSelectAll) {
+						Text(text = stringResource(R.string.action_select_all))
+					}
+				} else Row {
+					TextButton(onClick = onCreateNewAlarm) {
+						Text(text = stringResource(R.string.create_action))
+					}
+					IconButton(onClick = {}) {
+						Icon(imageVector = Icons.Default.MoreVert, contentDescription = "")
+					}
 				}
 			}
 		},

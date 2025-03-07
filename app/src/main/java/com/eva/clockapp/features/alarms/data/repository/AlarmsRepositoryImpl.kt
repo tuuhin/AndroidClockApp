@@ -1,21 +1,32 @@
 package com.eva.clockapp.features.alarms.data.repository
 
+import android.content.Context
 import android.database.sqlite.SQLiteConstraintException
 import android.database.sqlite.SQLiteException
+import com.eva.clockapp.R
 import com.eva.clockapp.core.utils.Resource
 import com.eva.clockapp.features.alarms.data.database.AlarmsDao
-import com.eva.clockapp.features.alarms.data.util.toEntity
-import com.eva.clockapp.features.alarms.data.util.toModel
+import com.eva.clockapp.features.alarms.data.database.AlarmsEntity
+import com.eva.clockapp.features.alarms.data.database.toEntity
+import com.eva.clockapp.features.alarms.data.database.toModel
+import com.eva.clockapp.features.alarms.domain.controllers.AlarmsController
 import com.eva.clockapp.features.alarms.domain.exceptions.NoMatchingAlarmFoundException
 import com.eva.clockapp.features.alarms.domain.models.AlarmsModel
 import com.eva.clockapp.features.alarms.domain.models.CreateAlarmModel
 import com.eva.clockapp.features.alarms.domain.repository.AlarmsRepository
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.emitAll
 import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.withContext
 
-class AlarmsRepositoryImpl(private val alarmsDao: AlarmsDao) : AlarmsRepository {
+class AlarmsRepositoryImpl(
+	private val alarmsDao: AlarmsDao,
+	private val controller: AlarmsController,
+	private val context: Context,
+) : AlarmsRepository {
 
 	override val alarmsFlow: Flow<Resource<List<AlarmsModel>, Exception>>
 		get() = flow {
@@ -32,66 +43,91 @@ class AlarmsRepositoryImpl(private val alarmsDao: AlarmsDao) : AlarmsRepository 
 				emit(Resource.Error(e, "SQLITE exception"))
 			} catch (e: Exception) {
 				emit(Resource.Error(e, message = "SOME KIND OF EXCEPTION"))
-			} catch (e: Exception) {
-				emit(Resource.Error(e, message = "Some Exception"))
+			}
+		}.flowOn(Dispatchers.IO)
+
+	override suspend fun getAllAlarms(): Resource<List<AlarmsModel>, Exception> {
+		return withContext(Dispatchers.IO) {
+			checkAndReturnDbError {
+				alarmsDao.getAllAlarmsAsList().map(AlarmsEntity::toModel)
 			}
 		}
+	}
 
 	override suspend fun toggleIsAlarmEnabled(isEnabled: Boolean, model: AlarmsModel)
 			: Resource<AlarmsModel, Exception> {
-		return try {
-			alarmsDao.switchIsEnableAlarm(alarmId = model.id, isEnabled = isEnabled)
-			val alarm = alarmsDao.getAlarmFromId(model.id)
-				?: return Resource.Error(NoMatchingAlarmFoundException())
-			Resource.Success(alarm.toModel())
-		} catch (e: SQLiteConstraintException) {
-			Resource.Error(e, message = "Constraint Error")
-		} catch (e: SQLiteException) {
-			Resource.Error(e, "SQLITE exception")
-		} catch (e: Exception) {
-			Resource.Error(e, message = "SOME KIND OF EXCEPTION")
+		return withContext(Dispatchers.IO) {
+			checkAndReturnDbError {
+				alarmsDao.switchIsEnableAlarm(alarmId = model.id, isEnabled = isEnabled)
+				val entity = alarmsDao.getAlarmFromId(model.id)
+					?: return@withContext Resource.Error(NoMatchingAlarmFoundException())
+				val model = entity.toModel()
+				// turn on off alarm
+				if (model.isAlarmEnabled) controller.createAlarm(model)
+				else controller.cancelAlarm(model)
+				model
+			}
 		}
 	}
 
 	override suspend fun createAlarm(model: CreateAlarmModel): Resource<AlarmsModel, Exception> {
-		return try {
-			val id = alarmsDao.insertOrUpdateAlarm(model.toEntity())
-			val alarm = alarmsDao.getAlarmFromId(id.toInt())
-				?: return Resource.Error(NoMatchingAlarmFoundException())
-			Resource.Success(alarm.toModel())
-		} catch (e: SQLiteConstraintException) {
-			Resource.Error(e, message = "Constraint Error")
-		} catch (e: SQLiteException) {
-			Resource.Error(e, "SQLITE exception")
-		} catch (e: Exception) {
-			Resource.Error(e, message = "SOME KIND OF EXCEPTION")
+		return withContext(Dispatchers.IO) {
+			checkAndReturnDbError {
+				val id = alarmsDao.insertOrUpdateAlarm(model.toEntity())
+				val alarm = alarmsDao.getAlarmFromId(id.toInt())
+					?: return@withContext Resource.Error(NoMatchingAlarmFoundException())
+				alarm.toModel()
+			}
+		}
+	}
+
+	override suspend fun updateAlarm(model: AlarmsModel): Resource<AlarmsModel, Exception> {
+		return withContext(Dispatchers.IO) {
+			checkAndReturnDbError {
+				val id = alarmsDao.insertOrUpdateAlarm(model.toEntity())
+				val alarm = alarmsDao.getAlarmFromId(id.toInt())
+					?: return@withContext Resource.Error(NoMatchingAlarmFoundException())
+				alarm.toModel()
+			}
 		}
 	}
 
 	override suspend fun deleteAlarm(model: AlarmsModel): Resource<Unit, Exception> {
-		return try {
-			alarmsDao.deleteAlarm(model.toEntity())
-			Resource.Success(Unit)
-		} catch (e: SQLiteConstraintException) {
-			Resource.Error(e, message = "Constraint Error")
-		} catch (e: SQLiteException) {
-			Resource.Error(e, "SQLITE exception")
-		} catch (e: Exception) {
-			Resource.Error(e, message = "SOME KIND OF EXCEPTION")
+		return withContext(Dispatchers.IO) {
+			checkAndReturnDbError {
+				alarmsDao.deleteAlarm(model.toEntity())
+			}
+
 		}
 	}
 
 	override suspend fun deleteAlarms(models: List<AlarmsModel>): Resource<Unit, Exception> {
+		return withContext(Dispatchers.IO) {
+			checkAndReturnDbError {
+				val entities = models.map { it.toEntity() }
+				alarmsDao.deleteAlarmBulk(entities)
+			}
+		}
+	}
+
+	override suspend fun getAlarmFromId(id: Int): Resource<AlarmsModel, Exception> {
+		return withContext(Dispatchers.IO) {
+			checkAndReturnDbError {
+				alarmsDao.getAlarmFromId(id)?.toModel()
+					?: return@withContext Resource.Error(NoMatchingAlarmFoundException())
+			}
+		}
+	}
+
+	private suspend inline fun <T> checkAndReturnDbError(code: suspend () -> T): Resource<T, Exception> {
 		return try {
-			val entities = models.map { it.toEntity() }
-			alarmsDao.deleteAlarmBulk(entities)
-			Resource.Success(Unit)
+			Resource.Success(code())
 		} catch (e: SQLiteConstraintException) {
-			Resource.Error(e, message = "Constraint Error")
+			Resource.Error(e, message = context.getString(R.string.error_db_constraint))
 		} catch (e: SQLiteException) {
-			Resource.Error(e, "SQLITE exception")
+			Resource.Error(e, context.getString(R.string.error_db_exception))
 		} catch (e: Exception) {
-			Resource.Error(e, message = "SOME KIND OF EXCEPTION")
+			Resource.Error(e, message = context.getString(R.string.error_unknown))
 		}
 	}
 }

@@ -1,21 +1,31 @@
-package com.eva.clockapp.features.alarms.data.util
+package com.eva.clockapp.features.alarms.domain.utils
 
 import com.eva.clockapp.features.alarms.domain.models.AlarmsModel
 import kotlinx.datetime.Clock
 import kotlinx.datetime.DatePeriod
 import kotlinx.datetime.DayOfWeek
+import kotlinx.datetime.Instant
 import kotlinx.datetime.LocalDateTime
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.atTime
 import kotlinx.datetime.plus
 import kotlinx.datetime.toInstant
 import kotlinx.datetime.toLocalDateTime
+import kotlin.time.Duration
 
 object AlarmUtils {
 
+	private val currentInstant: Instant
+		get() = Clock.System.now()
+
+	private val timeZone: TimeZone
+		get() = TimeZone.Companion.currentSystemDefault()
+
+	private val current: LocalDateTime
+		get() = currentInstant.toLocalDateTime(timeZone)
+
 	fun calculateAlarmTriggerMillis(model: AlarmsModel): Long {
 
-		val current = Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault())
 		val condition = current.dayOfWeek !in model.weekDays || current.time > model.time
 
 		val dateToUse = if (condition) {
@@ -26,30 +36,21 @@ object AlarmUtils {
 		} else current.date
 
 		return dateToUse.atTime(model.time)
-			.toInstant(TimeZone.currentSystemDefault())
+			.toInstant(TimeZone.Companion.currentSystemDefault())
 			.toEpochMilliseconds()
 	}
 
-	fun createAlarmToastMessage(alarmTime: LocalDateTime): String {
-		val timeZone = TimeZone.currentSystemDefault()
-		val current = Clock.System.now().toLocalDateTime(timeZone)
-		val duration = alarmTime.toInstant(timeZone) - current.toInstant(timeZone)
+	fun calculateNextAlarmTimeInDuration(alarms: List<AlarmsModel>): Duration? {
+		var shortest: Duration? = null
 
-		val days = duration.inWholeDays
-		val hours = duration.inWholeHours % 24
-		val minutes = duration.inWholeMinutes % 60
+		for (alarm in alarms) {
+			val triggerTime = calculateAlarmTriggerMillis(alarm)
+			val duration = Instant.Companion.fromEpochMilliseconds(triggerTime) - currentInstant
 
-		val alamText = buildString {
-			when {
-				days > 0 -> append("$days days ")
-				hours > 0 -> append("$hours hours")
-				minutes > 0 -> append("$minutes minutes")
-				else -> append("Less than a minute left")
-			}
+			if (shortest == null || duration < shortest)
+				shortest = duration
 		}
-
-		return "Alam in $alamText"
-
+		return shortest
 	}
 
 	private fun findNextMatchingWeekday(current: DayOfWeek, alarmDays: Set<DayOfWeek>): DayOfWeek {

@@ -141,6 +141,7 @@ class ContentRingtoneProviderImpl(private val context: Context) : ContentRington
 				val ringtone = RingtoneMusicFile(
 					name = name,
 					uri = ContentUris.withAppendedId(volume, id).toString(),
+					type = RingtoneMusicFile.RingtoneType.DEVICE_LOCAL
 				)
 				add(ringtone)
 			}

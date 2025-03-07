@@ -44,8 +44,9 @@ import kotlinx.datetime.DayOfWeek
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.plus
 import kotlinx.datetime.toLocalDateTime
-import java.time.format.TextStyle as FormatStyles
 import java.util.Locale
+import kotlin.time.Duration.Companion.days
+import java.time.format.TextStyle as FormatStyles
 
 
 @OptIn(ExperimentalLayoutApi::class)
@@ -61,9 +62,22 @@ fun WeekDayPicker(
 	val context = LocalContext.current
 	val locale = remember { Locale.getDefault() }
 
+	val tomorrow = remember {
+		val timeZone = TimeZone.currentSystemDefault()
+		Clock.System.now().plus(1.days)
+			.toLocalDateTime(timeZone)
+	}
+
+
 	val selectedDayText = remember(selectedDays) {
+
+		val isOnlyTomorrowSelected =
+			selectedDays.size == 1 && selectedDays.first() == tomorrow.dayOfWeek
+
 		when {
-			selectedDays.isEmpty() -> buildString {
+			selectedDays.isEmpty() -> context.getString(R.string.select_alarm_days)
+
+			isOnlyTomorrowSelected -> buildString {
 				val today = Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault())
 				val tomorrow = today.date.plus(DatePeriod(days = 1))
 

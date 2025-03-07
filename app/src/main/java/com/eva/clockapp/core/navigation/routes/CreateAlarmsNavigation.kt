@@ -24,14 +24,13 @@ import com.eva.clockapp.features.alarms.presentation.create_alarm.screens.AlarmV
 import com.eva.clockapp.features.alarms.presentation.create_alarm.screens.CreateAlarmScreen
 
 fun NavGraphBuilder.creteAlarmsNavGraph(controller: NavController) =
-	navigation<NavRoutes.CreateAlarmRoute>(startDestination = CreateAlarmNavRoute.CreateRoute) {
+	navigation<NavRoutes.CreateOrUpdateAlarmRoute>(startDestination = CreateAlarmNavRoute.CreateRoute) {
 
 		animatedComposable<CreateAlarmNavRoute.CreateRoute> { backStack ->
 
 			val viewModel = backStack.sharedViewModel<CreateAlarmViewModel>(controller)
 
 			val state by viewModel.createAlarmState.collectAsStateWithLifecycle()
-			val soundOptions by viewModel.soundOptions.collectAsStateWithLifecycle()
 			val flagsState by viewModel.flagsState.collectAsStateWithLifecycle()
 
 			UIEventsSideEffect(
@@ -41,7 +40,6 @@ fun NavGraphBuilder.creteAlarmsNavGraph(controller: NavController) =
 
 			CreateAlarmScreen(
 				state = state,
-				soundOptions = soundOptions,
 				flags = flagsState,
 				onEvent = viewModel::onEvent,
 				onFlagsEvent = viewModel::onFlagsEvent,
@@ -112,14 +110,17 @@ fun NavGraphBuilder.creteAlarmsNavGraph(controller: NavController) =
 		animatedComposable<CreateAlarmNavRoute.SelectSoundOptionRoute> { backStack ->
 
 			val viewModel = backStack.sharedViewModel<CreateAlarmViewModel>(controller)
-			val soundsOption by viewModel.soundOptions.collectAsStateWithLifecycle()
 			val flags by viewModel.flagsState.collectAsStateWithLifecycle()
+			val ringtoneOptions by viewModel.soundOptions.collectAsStateWithLifecycle()
+			val alarmState by viewModel.createAlarmState.collectAsStateWithLifecycle()
 
 			UIEventsSideEffect(eventsFlow = viewModel.uiEvents)
 
+
 			AlarmSoundScreen(
+				state = alarmState,
 				flags = flags,
-				soundOptions = soundsOption,
+				ringtones = ringtoneOptions,
 				onFlagsEvent = viewModel::onFlagsEvent,
 				onEvent = viewModel::onEvent,
 				navigation = {

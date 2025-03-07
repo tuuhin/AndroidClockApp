@@ -8,5 +8,5 @@ interface NavRoutes {
 	data object AlarmsRoute : NavRoutes
 
 	@Serializable
-	data object CreateAlarmRoute : NavRoutes
+	data class CreateOrUpdateAlarmRoute(val alarmId: Int? = null) : NavRoutes
 }

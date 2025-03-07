@@ -43,8 +43,6 @@ import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.PreviewLightDark
-import androidx.compose.ui.tooling.preview.PreviewParameter
-import androidx.compose.ui.tooling.preview.datasource.CollectionPreviewParameterProvider
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.LifecycleStartEffect
 import com.eva.clockapp.R
@@ -55,12 +53,13 @@ import com.eva.clockapp.features.alarms.domain.models.RingtoneMusicFile
 import com.eva.clockapp.features.alarms.presentation.composables.CheckReadMusicPermission
 import com.eva.clockapp.features.alarms.presentation.composables.ConfigureAlarmSoundSheet
 import com.eva.clockapp.features.alarms.presentation.composables.RadioButtonWithTextItem
+import com.eva.clockapp.features.alarms.presentation.create_alarm.CategoricalRingtones
 import com.eva.clockapp.features.alarms.presentation.create_alarm.state.AlarmFlagsChangeEvent
-import com.eva.clockapp.features.alarms.presentation.create_alarm.state.AlarmSoundOptions
 import com.eva.clockapp.features.alarms.presentation.create_alarm.state.CreateAlarmEvents
+import com.eva.clockapp.features.alarms.presentation.create_alarm.state.CreateAlarmState
 import com.eva.clockapp.features.alarms.presentation.util.AlarmPreviewFakes
+import com.eva.clockapp.features.alarms.presentation.util.toText
 import com.eva.clockapp.ui.theme.ClockAppTheme
-import kotlinx.collections.immutable.ImmutableList
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
@@ -68,8 +67,7 @@ import kotlinx.coroutines.launch
 private fun AlarmSoundScreen(
 	flags: AssociateAlarmFlags,
 	selectedOption: RingtoneMusicFile,
-	localRingtones: ImmutableList<RingtoneMusicFile>,
-	deviceRingtone: ImmutableList<RingtoneMusicFile>,
+	ringtones: CategoricalRingtones,
 	onItemSelected: (RingtoneMusicFile) -> Unit,
 	onVolumeChange: (Float) -> Unit,
 	modifier: Modifier = Modifier,
@@ -147,27 +145,22 @@ private fun AlarmSoundScreen(
 				modifier = Modifier.weight(1f),
 				verticalArrangement = Arrangement.spacedBy(4.dp)
 			) {
-				stickyHeader {
-					ListItem(
-						headlineContent = { Text(text = stringResource(R.string.alarm_sound_defined_title)) },
-						colors = ListItemDefaults.colors(containerColor = Color.Transparent)
-					)
+				ringtones.forEach { (key, ringtones) ->
+					stickyHeader {
+						ListItem(
+							headlineContent = { Text(text = key.toText) },
+							colors = ListItemDefaults.colors(containerColor = Color.Transparent)
+						)
+					}
+					itemsIndexed(items = ringtones) { _, item ->
+						RadioButtonWithTextItem(
+							text = item.name,
+							isSelected = item == selectedOption,
+							onClick = { onItemSelected(item) },
+							modifier = Modifier.fillMaxWidth()
+						)
+					}
 				}
-				itemsIndexed(items = localRingtones) { _, item ->
-					RadioButtonWithTextItem(
-						text = item.name,
-						isSelected = item == selectedOption,
-						onClick = { onItemSelected(item) },
-						modifier = Modifier.fillMaxWidth()
-					)
-				}
-				stickyHeader {
-					ListItem(
-						headlineContent = { Text(text = stringResource(R.string.alarm_sound_external_title)) },
-						colors = ListItemDefaults.colors(containerColor = Color.Transparent),
-					)
-				}
-
 				when {
 					!hasExternalMusicRead -> item {
 						CheckReadMusicPermission(
@@ -176,17 +169,6 @@ private fun AlarmSoundScreen(
 								onLoadExternalRingtones()
 							},
 							modifier = Modifier.animateItem()
-						)
-					}
-
-					deviceRingtone.isNotEmpty() -> itemsIndexed(items = deviceRingtone) { _, item ->
-						RadioButtonWithTextItem(
-							text = item.name,
-							isSelected = item == selectedOption,
-							onClick = { onItemSelected(item) },
-							modifier = Modifier
-								.fillMaxWidth()
-								.animateItem()
 						)
 					}
 
@@ -220,8 +202,9 @@ private fun AlarmSoundScreen(
 
 @Composable
 fun AlarmSoundScreen(
+	state: CreateAlarmState,
 	flags: AssociateAlarmFlags,
-	soundOptions: AlarmSoundOptions,
+	ringtones: CategoricalRingtones,
 	onEvent: (CreateAlarmEvents) -> Unit,
 	onFlagsEvent: (AlarmFlagsChangeEvent) -> Unit,
 	modifier: Modifier = Modifier,
@@ -236,8 +219,8 @@ fun AlarmSoundScreen(
 
 	AlarmSoundScreen(
 		flags = flags,
-		deviceRingtone = soundOptions.external,
-		localRingtones = soundOptions.local,
+		selectedOption = state.ringtone,
+		ringtones = ringtones,
 		enabled = flags.isSoundEnabled,
 		onItemSelected = { onFlagsEvent(AlarmFlagsChangeEvent.OnSoundSelected(it)) },
 		onEnableChange = { onFlagsEvent(AlarmFlagsChangeEvent.OnSoundOptionEnabled(it)) },
@@ -245,27 +228,18 @@ fun AlarmSoundScreen(
 		onIncreaseVolumeByStep = { onFlagsEvent(AlarmFlagsChangeEvent.OnIncreaseVolumeByStep(it)) },
 		onVolumeChange = { onFlagsEvent(AlarmFlagsChangeEvent.OnSoundVolumeChange(it)) },
 		modifier = modifier,
-		selectedOption = soundOptions.selectedSound,
 		navigation = navigation,
 	)
 }
 
-private class SoundOptionsPreviewParams : CollectionPreviewParameterProvider<AlarmSoundOptions>(
-	listOf(
-		AlarmPreviewFakes.FAKE_ALARM_SOUND_STATE,
-		AlarmPreviewFakes.FAKE_ALARM_SOUND_STATE_NO_EXTERNAL
-	)
-)
 
 @PreviewLightDark
 @Composable
-private fun AlarmsSoundsScreenPreview(
-	@PreviewParameter(SoundOptionsPreviewParams::class)
-	soundOptions: AlarmSoundOptions,
-) = ClockAppTheme {
+private fun AlarmsSoundsScreenPreview() = ClockAppTheme {
 	AlarmSoundScreen(
 		flags = AlarmPreviewFakes.FAKE_ASSOCIATE_FLAGS_STATE,
-		soundOptions = soundOptions,
+		state = AlarmPreviewFakes.FAKE_CREATE_ALARM_STATE,
+		ringtones = AlarmPreviewFakes.FAKE_RINGTONES_OPTIONS,
 		onFlagsEvent = {},
 		onEvent = {},
 		navigation = {

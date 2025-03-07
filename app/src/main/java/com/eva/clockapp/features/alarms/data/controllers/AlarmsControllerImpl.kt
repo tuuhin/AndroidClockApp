@@ -9,15 +9,19 @@ import android.util.Log
 import android.widget.Toast
 import androidx.core.content.getSystemService
 import androidx.core.os.bundleOf
+import com.eva.clockapp.R
 import com.eva.clockapp.core.constants.ClockAppIntents
 import com.eva.clockapp.core.constants.IntentRequestCodes
 import com.eva.clockapp.features.alarms.data.services.AlarmsControllerService
-import com.eva.clockapp.features.alarms.data.util.AlarmUtils
 import com.eva.clockapp.features.alarms.domain.controllers.AlarmsController
 import com.eva.clockapp.features.alarms.domain.exceptions.ExactAlarmPermissionNotFound
 import com.eva.clockapp.features.alarms.domain.models.AlarmsModel
+import com.eva.clockapp.features.alarms.domain.utils.AlarmUtils
+import kotlinx.datetime.Clock
 import kotlinx.datetime.Instant
+import kotlinx.datetime.LocalDateTime
 import kotlinx.datetime.TimeZone
+import kotlinx.datetime.toInstant
 import kotlinx.datetime.toLocalDateTime
 
 private const val TAG = "ALARMS_CONTROLLER"
@@ -45,10 +49,11 @@ class AlarmsControllerImpl(private val context: Context) : AlarmsController {
 			PendingIntent.FLAG_MUTABLE or PendingIntent.FLAG_CANCEL_CURRENT
 		)
 
-		val canScheduleExact = Build.VERSION.SDK_INT >= Build.VERSION_CODES.S &&
-				alarmManager?.canScheduleExactAlarms() ?: false
+		val cannotScheduleAlarms = Build.VERSION.SDK_INT >= Build.VERSION_CODES.S &&
+				alarmManager?.canScheduleExactAlarms() == false
 
-		if (!canScheduleExact) return Result.failure(ExactAlarmPermissionNotFound())
+		if (cannotScheduleAlarms)
+			return Result.failure(ExactAlarmPermissionNotFound())
 
 		return try {
 			alarmManager?.setExactAndAllowWhileIdle(
@@ -62,7 +67,7 @@ class AlarmsControllerImpl(private val context: Context) : AlarmsController {
 
 			if (showToast) Toast.makeText(
 				context,
-				AlarmUtils.createAlarmToastMessage(schedule),
+				createAlarmToastMessage(schedule),
 				Toast.LENGTH_LONG
 			).show()
 
@@ -100,4 +105,22 @@ class AlarmsControllerImpl(private val context: Context) : AlarmsController {
 		}
 	}
 
+	fun createAlarmToastMessage(alarmTime: LocalDateTime): String {
+		val timeZone = TimeZone.currentSystemDefault()
+		val duration = alarmTime.toInstant(timeZone) - Clock.System.now()
+
+		val days = duration.inWholeDays
+		val hours = duration.inWholeHours % 24
+		val minutes = duration.inWholeMinutes % 60
+
+		val alarmText = buildString {
+			when {
+				days > 0 -> append("$days d")
+				hours > 0 -> append("$hours h")
+				minutes > 0 -> append("$minutes m")
+				else -> return context.getString(R.string.next_alarm_within_one_min)
+			}
+		}
+		return context.getString(R.string.next_alarms_at_time, alarmText)
+	}
 }

@@ -1,6 +1,5 @@
-package com.eva.clockapp.features.alarms.data.util
+package com.eva.clockapp.features.alarms.data.database
 
-import com.eva.clockapp.features.alarms.data.database.AlarmsEntity
 import com.eva.clockapp.features.alarms.domain.models.AlarmsModel
 import com.eva.clockapp.features.alarms.domain.models.AssociateAlarmFlags
 import com.eva.clockapp.features.alarms.domain.models.CreateAlarmModel

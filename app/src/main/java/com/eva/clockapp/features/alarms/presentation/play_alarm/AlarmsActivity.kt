@@ -1,4 +1,4 @@
-package com.eva.clockapp.features.alarms.presentation
+package com.eva.clockapp.features.alarms.presentation.play_alarm
 
 import android.app.KeyguardManager
 import android.content.BroadcastReceiver
@@ -21,6 +21,9 @@ import androidx.core.view.WindowInsetsControllerCompat
 import com.eva.clockapp.core.constants.ClockAppIntents
 import com.eva.clockapp.features.alarms.data.services.AlarmsControllerService
 import com.eva.clockapp.ui.theme.ClockAppTheme
+import kotlinx.datetime.Instant
+import kotlinx.datetime.TimeZone
+import kotlinx.datetime.toLocalDateTime
 
 class AlarmsActivity : ComponentActivity() {
 
@@ -40,30 +43,32 @@ class AlarmsActivity : ComponentActivity() {
 		hideSystemBars()
 		turnOffKeyguard()
 
-		// add receiver to finish this activity
+		// receiver to finish this activity
 		ContextCompat.registerReceiver(
-			this, finishActivityReceiver,
+			this,
+			finishActivityReceiver,
 			IntentFilter(ClockAppIntents.ACTION_FINISH_ALARMS_ACTIVITY),
 			ContextCompat.RECEIVER_NOT_EXPORTED
 		)
 
-
 		val alarmId = intent.getIntExtra(ClockAppIntents.EXTRA_ALARMS_ALARMS_ID, -1)
 		if (alarmId == -1) finishAndRemoveTask()
+
+		val timeInMillis = intent.getLongExtra(ClockAppIntents.EXTRAS_ALARMS_TIME_IN_MILLIS, 0)
+		val labelText = intent.getStringExtra(ClockAppIntents.EXTRAS_ALARMS_LABEL_TEXT)
+
+		val dateTime = Instant.Companion.fromEpochMilliseconds(timeInMillis)
+			.toLocalDateTime(TimeZone.Companion.currentSystemDefault())
 
 		setContent {
 			ClockAppTheme {
 				Surface(color = MaterialTheme.colorScheme.background) {
-//					Column(
-//						modifier = Modifier.fillMaxSize(),
-//						verticalArrangement = Arrangement.Center
-//					) {
-//						// TODO: Change to the original model when done
-//						PlayAlarmsScreen(
-//							alarmModel = AlarmPreviewFakes.FAKE_ALARMS_MODEL,
-//							onStopAlarm = { finish() }
-//						)
-//					}
+					PlayAlarmsScreen(
+						dateTime = dateTime,
+						labelText = labelText,
+						onStopAlarm = { stopAlarm(alarmId) },
+						onSnoozeAlarm = { snoozeAlarm(alarmId) }
+					)
 				}
 			}
 		}
@@ -79,6 +84,30 @@ class AlarmsActivity : ComponentActivity() {
 		// remove the receiver
 		unregisterReceiver(finishActivityReceiver)
 		super.onDestroy()
+	}
+
+	private fun stopAlarm(alarmId: Int) {
+		try {
+			val intent = Intent(this, AlarmsControllerService::class.java).apply {
+				action = ClockAppIntents.ACTION_CANCEL_ALARM
+				data = ClockAppIntents.alarmIntentData(alarmId)
+			}
+			ContextCompat.startForegroundService(applicationContext, intent)
+		} catch (e: Exception) {
+			e.printStackTrace()
+		}
+	}
+
+	private fun snoozeAlarm(alarmId: Int) {
+		try {
+			val intent = Intent(this, AlarmsControllerService::class.java).apply {
+				action = ClockAppIntents.ACTION_SNOOZE_ALARM
+				data = ClockAppIntents.alarmIntentData(alarmId)
+			}
+			ContextCompat.startForegroundService(applicationContext, intent)
+		} catch (e: Exception) {
+			e.printStackTrace()
+		}
 	}
 
 	private fun hideSystemBars() {

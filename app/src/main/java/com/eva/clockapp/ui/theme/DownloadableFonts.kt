@@ -16,4 +16,8 @@ object DownloadableFonts {
 	val CHELSEA_MARKET = FontFamily(
 		Font(googleFont = GoogleFont("Chelsea Market"), fontProvider = provider)
 	)
+
+	val BUNGEE = FontFamily(
+		Font(googleFont = GoogleFont("Bungee"), fontProvider = provider)
+	)
 }

@@ -10,6 +10,8 @@ sealed interface CreateAlarmEvents {
 	data class OnLabelValueChange(val newValue: String) : CreateAlarmEvents
 
 	data object LoadDeviceRingtoneFiles : CreateAlarmEvents
-	data object OnSaveAlarm : CreateAlarmEvents
 	data object OnExitAlarmSoundScreen : CreateAlarmEvents
+
+	data object OnSaveAlarm : CreateAlarmEvents
+	data object OnUpdateAlarm : CreateAlarmEvents
 }

@@ -38,6 +38,7 @@
       <intent-filter>
         <action android:name="android.intent.action.BOOT_COMPLETED" />
         <action android:name="android.intent.action.LOCKED_BOOT_COMPLETED" />
+        <action android:name="android.settings.REQUEST_SCHEDULE_EXACT_ALARM" />
       </intent-filter>
     </receiver>
 
@@ -48,7 +49,7 @@
       android:foregroundServiceType="mediaPlayback" />
 
     <activity
-      android:name=".features.alarms.presentation.AlarmsActivity"
+      android:name=".features.alarms.presentation.play_alarm.AlarmsActivity"
       android:showWhenLocked="true"
       android:theme="@style/Theme.ClockApp"
       android:turnScreenOn="true" />

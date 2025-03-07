@@ -1,43 +1,113 @@
 package com.eva.clockapp.features.alarms.presentation.composables
 
-import androidx.compose.animation.Crossfade
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.grid.GridCells
-import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
-import androidx.compose.foundation.lazy.grid.itemsIndexed
 import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.platform.LocalInspectionMode
 import androidx.compose.ui.res.dimensionResource
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.PreviewLightDark
 import androidx.compose.ui.unit.dp
+import androidx.core.text.util.LocalePreferences
+import androidx.core.text.util.LocalePreferences.FirstDayOfWeek
+import androidx.core.text.util.LocalePreferences.HourCycle
 import com.eva.clockapp.R
 import com.eva.clockapp.features.alarms.domain.models.AlarmsModel
 import com.eva.clockapp.features.alarms.presentation.alarms.state.SelectableAlarmModel
 import com.eva.clockapp.features.alarms.presentation.util.AlarmPreviewFakes
 import com.eva.clockapp.ui.theme.ClockAppTheme
 import kotlinx.collections.immutable.ImmutableList
+import kotlin.time.Duration
 
 @Composable
 fun AlarmsScreenContent(
+	alarms: ImmutableList<SelectableAlarmModel>,
+	onSelectAlarm: (AlarmsModel) -> Unit,
+	onAlarmSelect: (AlarmsModel) -> Unit,
+	onEnableAlarm: (isEnabled: Boolean, alarm: AlarmsModel) -> Unit,
+	modifier: Modifier = Modifier,
+	nextAlarmAfter: Duration? = null,
+	contentPadding: PaddingValues = PaddingValues(),
+) {
+	val isAlarmsEmpty by remember(alarms) {
+		derivedStateOf { alarms.isEmpty() }
+	}
+
+	if (isAlarmsEmpty) {
+		Column(
+			modifier = modifier,
+			horizontalAlignment = Alignment.CenterHorizontally,
+			verticalArrangement = Arrangement.Center,
+		) {
+			Image(
+				painter = painterResource(R.drawable.ic_alam_clock),
+				contentDescription = "Alarm Clock",
+				colorFilter = ColorFilter.tint(color = MaterialTheme.colorScheme.secondary),
+				modifier = Modifier.size(120.dp)
+			)
+			Spacer(modifier = Modifier.height(16.dp))
+			Text(
+				text = stringResource(R.string.no_alarm_title),
+				style = MaterialTheme.typography.headlineSmall,
+				color = MaterialTheme.colorScheme.onBackground
+			)
+			Text(
+				text = stringResource(R.string.no_alarm_desc),
+				style = MaterialTheme.typography.bodyMedium,
+				color = MaterialTheme.colorScheme.tertiary
+			)
+		}
+		return
+	}
+
+	AlarmsListContent(
+		alarms = alarms,
+		duration = nextAlarmAfter,
+		onAlarmClick = onSelectAlarm,
+		onAlarmSelect = onAlarmSelect,
+		onEnableAlarm = onEnableAlarm,
+		contentPadding = contentPadding,
+		modifier = modifier
+	)
+}
+
+@Composable
+private fun AlarmsListContent(
 	alarms: ImmutableList<SelectableAlarmModel>,
 	onAlarmClick: (AlarmsModel) -> Unit,
 	onAlarmSelect: (AlarmsModel) -> Unit,
 	onEnableAlarm: (isEnabled: Boolean, alarm: AlarmsModel) -> Unit,
 	modifier: Modifier = Modifier,
-	onCreateNew: () -> Unit = {},
+	duration: Duration? = null,
 	contentPadding: PaddingValues = PaddingValues(),
 ) {
-
 	val isInspectionMode = LocalInspectionMode.current
+
+	val isStartOfWeekSunday = remember {
+		LocalePreferences.getFirstDayOfWeek() == FirstDayOfWeek.SUNDAY
+	}
+
+	val is24HrsFormat = remember {
+		LocalePreferences.getHourCycle() == HourCycle.H23
+	}
 
 	val itemKeys: ((Int, SelectableAlarmModel) -> Any)? = remember {
 		if (isInspectionMode) return@remember null
@@ -49,69 +119,63 @@ fun AlarmsScreenContent(
 		{ _, _ -> AlarmsModel::class }
 	}
 
-	val isAlarmsEmpty by remember(alarms) {
-		derivedStateOf { alarms.isEmpty() }
-	}
-
 	val isAnySelected by remember(alarms) {
 		derivedStateOf { alarms.any { it.isSelected } }
 	}
 
-	Crossfade(
-		targetState = isAlarmsEmpty,
-		label = "Alarms list empty or filled",
-		modifier = modifier
-	) { isEmpty ->
-		if (isEmpty) {
-			NoAlarmsFoundPlaceHolder(
-				onCreateNew = onCreateNew,
-				modifier = Modifier.fillMaxSize()
-			)
-		} else {
-			LazyColumn(
-				contentPadding = contentPadding,
-				verticalArrangement = Arrangement.spacedBy(dimensionResource(R.dimen.alarm_grid_spacing)),
-			) {
-				itemsIndexed(
-					items = alarms,
-					key = itemKeys,
-					contentType = contentType
-				) { _, selectable ->
-
-					val alarmModel = selectable.model
-
-					AlarmsCompactCard(
-						selectableModel = selectable,
-						isOthersSelected = isAnySelected,
-						onClick = {
-							if (!isAnySelected) onAlarmClick(alarmModel)
-							else onAlarmSelect(alarmModel)
-						},
-						onLongClick = {
-							if (!isAnySelected) onAlarmSelect(alarmModel)
-						},
-						onEnabledChange = { isEnabled -> onEnableAlarm(isEnabled, alarmModel) },
-						modifier = Modifier
-							.animateItem()
-							.fillMaxWidth()
-					)
-				}
+	LazyColumn(
+		contentPadding = contentPadding,
+		verticalArrangement = Arrangement.spacedBy(dimensionResource(R.dimen.alarm_grid_spacing)),
+		modifier = modifier,
+	) {
+		if (!isAnySelected) {
+			item {
+				NextAlarmText(
+					duration = duration,
+					modifier = Modifier
+						.animateItem()
+						.fillMaxWidth()
+				)
 			}
+		}
+		itemsIndexed(
+			items = alarms,
+			key = itemKeys,
+			contentType = contentType
+		) { _, selectable ->
+
+			val alarm = selectable.model
+
+			AlarmsCompactCard(
+				selectableModel = selectable,
+				isSelectableMode = isAnySelected,
+				isStartOfWeekSunday = isStartOfWeekSunday,
+				is24HrsFormat = is24HrsFormat,
+				onClick = {
+					if (!isAnySelected) onAlarmClick(alarm)
+					else onAlarmSelect(alarm)
+				},
+				onLongClick = {
+					if (!isAnySelected) onAlarmSelect(alarm)
+				},
+				onEnabledChange = { isEnabled -> onEnableAlarm(isEnabled, alarm) },
+				modifier = Modifier
+					.animateItem()
+					.fillMaxWidth()
+			)
 		}
 	}
 }
-
 
 @PreviewLightDark
 @Composable
 private fun AlarmsScreenContentPreview() = ClockAppTheme {
 	AlarmsScreenContent(
 		alarms = AlarmPreviewFakes.FAKE_SELECTABLE_ALARM_MODEL_LIST,
-		onAlarmClick = {},
+		onSelectAlarm = {},
 		onAlarmSelect = {},
 		onEnableAlarm = { _, _ -> },
 		contentPadding = PaddingValues(20.dp),
 		modifier = Modifier.fillMaxSize()
 	)
-
 }
