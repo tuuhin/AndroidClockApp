@@ -46,9 +46,9 @@ fun CircularRangedNumberPicker(
 	startIndex: Int = range.first,
 	elementSize: DpSize = DpSize(64.dp, 64.dp),
 	modifier: Modifier = Modifier,
-	selectEffectEnabled: Boolean = true,
+	hapticEffectEnabled: Boolean = true,
 	scrollEnabled: Boolean = true,
-	endLess: Boolean = true,
+	isInfinite: Boolean = true,
 	containerColor: Color = MaterialTheme.colorScheme.surface,
 	scrollContentColor: Color = MaterialTheme.colorScheme.primary,
 	contentColor: Color = MaterialTheme.colorScheme.onBackground,
@@ -58,7 +58,8 @@ fun CircularRangedNumberPicker(
 	// selected number  should be in the given range
 	check(
 		value = startIndex in range,
-		lazyMessage = { "Selected index should be inside range INDEX:$startIndex RANGE : $range" })
+		lazyMessage = { "Selected index should be inside range index:$startIndex range : $range" },
+	)
 
 	val haptic = LocalHapticFeedback.current
 	val updatedOnFocusItem by rememberUpdatedState(onFocusItem)
@@ -72,15 +73,21 @@ fun CircularRangedNumberPicker(
 		derivedStateOf { lazyListState.isScrollInProgress }
 	}
 
-	LaunchedEffect(key1 = itemCount) {
+	LaunchedEffect(key1 = itemCount, key2 = startIndex) {
 		// if endless scroll to a certain section beforehand
-		if (endLess) lazyListState.scrollToItem(startIndex + 1_000 * itemCount - 1)
-		else lazyListState.scrollToItem(startIndex)
+		val scrollDestination = if (isInfinite) startIndex + (1_000 * itemCount) - 1 else startIndex
+		lazyListState.scrollToItem(scrollDestination)
+
+		// update the values on first configure
+		val index = calculateIndexToFocus(lazyListState, containerSize.height)
+		val indexToFocus = (index + 1) % itemCount
+		updatedOnFocusItem(indexToFocus)
 	}
 
-	LaunchedEffect(key1 = isScrollInProgress, key2 = containerSize) {
+	LaunchedEffect(key1 = isScrollInProgress) {
 		if (isScrollInProgress) return@LaunchedEffect
 
+		// update the values when the scroll is changes
 		val index = calculateIndexToFocus(lazyListState, containerSize.height)
 		val indexToFocus = (index + 1) % itemCount
 
@@ -90,13 +97,13 @@ fun CircularRangedNumberPicker(
 		updatedOnFocusItem(indexToFocus)
 	}
 
-	LaunchedEffect(key1 = lazyListState, key2 = selectEffectEnabled) {
+	LaunchedEffect(key1 = lazyListState, key2 = hapticEffectEnabled) {
+		if (!hapticEffectEnabled) return@LaunchedEffect
 		// collects if the first item of the lazy list is visible
 		snapshotFlow { lazyListState.firstVisibleItemIndex }
 			.collectLatest {
-				if (selectEffectEnabled)
 				// then perform long press
-					haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+				haptic.performHapticFeedback(HapticFeedbackType.LongPress)
 			}
 	}
 
@@ -122,13 +129,13 @@ fun CircularRangedNumberPicker(
 				modifier = Modifier.fillMaxSize()
 			) {
 				items(
-					count = if (endLess) Int.MAX_VALUE else itemCount + 2,
+					count = if (isInfinite) Int.MAX_VALUE else itemCount + 2,
 				) { idx ->
 					Box(
 						modifier = Modifier.size(elementSize),
 						contentAlignment = Alignment.Center,
 					) {
-						if (endLess) content(idx % itemCount)
+						if (isInfinite) content(idx % itemCount)
 						else if (idx >= 1 && idx < itemCount + 1)
 							content((idx - 1) % itemCount)
 					}
@@ -158,14 +165,14 @@ fun CircularRangedNumberPicker(
 
 private fun calculateIndexToFocus(state: LazyListState, height: Dp): Int {
 	// Get the current visible item
-	val currentItem = state.layoutInfo.visibleItemsInfo.firstOrNull()
+	val currentItem = state.layoutInfo.visibleItemsInfo.firstOrNull() ?: return 0
 	// visible item index
-	return currentItem?.let { item ->
-		// if the offset is crossed a certain amount then use the next index
-		if (item.offset != 0 && item.offset <= -height.value * .3f) return item.index + 1
-		// otherwise use the same index
-		return item.index
-	} ?: 0
+	val idx = currentItem.index
+	// if the offset is crossed a certain amount then use the next index
+	if (currentItem.offset != 0 && currentItem.offset <= -height.value * .3f) return idx + 1
+	// otherwise use the same index
+	return idx
+
 }
 
 

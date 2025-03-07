@@ -55,15 +55,11 @@ fun CreateAlarmScreen(
 				},
 				actions = {
 					if (state.isAlarmCreate) {
-						TextButton(
-							onClick = { onEvent(CreateAlarmEvents.OnSaveAlarm) },
-						) {
+						TextButton(onClick = { onEvent(CreateAlarmEvents.OnSaveAlarm) }) {
 							Text(text = stringResource(R.string.save_action))
 						}
 					} else {
-						TextButton(
-							onClick = { onEvent(CreateAlarmEvents.OnUpdateAlarm) },
-						) {
+						TextButton(onClick = { onEvent(CreateAlarmEvents.OnUpdateAlarm) }) {
 							Text(text = stringResource(R.string.update_action))
 						}
 					}

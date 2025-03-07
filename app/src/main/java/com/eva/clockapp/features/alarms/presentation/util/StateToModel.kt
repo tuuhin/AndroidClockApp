@@ -19,6 +19,6 @@ fun CreateAlarmState.toAlarmModel(alarmId: Int, flags: AssociateAlarmFlags) = Al
 	weekDays = selectedDays,
 	flags = flags,
 	isAlarmEnabled = true,
-	label =  if (labelState.isEmpty()) null else labelState,
+	label = if (labelState.isEmpty()) null else labelState,
 	soundUri = ringtone.uri
 )

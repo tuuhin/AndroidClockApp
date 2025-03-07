@@ -7,6 +7,7 @@ import kotlinx.datetime.DayOfWeek
 import kotlinx.datetime.LocalTime
 
 data class CreateAlarmState(
+	val startTime: LocalTime = LocalTime(0, 0),
 	val selectedTime: LocalTime = LocalTime(0, 0),
 	val selectedDays: ImmutableSet<DayOfWeek> = persistentSetOf(),
 	val labelState: String = "",

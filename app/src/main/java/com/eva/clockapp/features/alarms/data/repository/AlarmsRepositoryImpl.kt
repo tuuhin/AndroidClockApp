@@ -9,6 +9,7 @@ import com.eva.clockapp.features.alarms.data.database.AlarmsDao
 import com.eva.clockapp.features.alarms.data.database.AlarmsEntity
 import com.eva.clockapp.features.alarms.data.database.toEntity
 import com.eva.clockapp.features.alarms.data.database.toModel
+import com.eva.clockapp.features.alarms.data.utils.createAlarmToastMessage
 import com.eva.clockapp.features.alarms.domain.controllers.AlarmsController
 import com.eva.clockapp.features.alarms.domain.exceptions.NoMatchingAlarmFoundException
 import com.eva.clockapp.features.alarms.domain.models.AlarmsModel
@@ -49,7 +50,8 @@ class AlarmsRepositoryImpl(
 	override suspend fun getAllAlarms(): Resource<List<AlarmsModel>, Exception> {
 		return withContext(Dispatchers.IO) {
 			checkAndReturnDbError {
-				alarmsDao.getAllAlarmsAsList().map(AlarmsEntity::toModel)
+				val result = alarmsDao.getAllAlarmsAsList().map(AlarmsEntity::toModel)
+				Resource.Success(result)
 			}
 		}
 	}
@@ -63,9 +65,18 @@ class AlarmsRepositoryImpl(
 					?: return@withContext Resource.Error(NoMatchingAlarmFoundException())
 				val model = entity.toModel()
 				// turn on off alarm
-				if (model.isAlarmEnabled) controller.createAlarm(model)
-				else controller.cancelAlarm(model)
-				model
+				if (model.isAlarmEnabled) {
+					val result = controller.createAlarm(model)
+
+					val message = if (result.isSuccess) {
+						val alarmTime = result.getOrThrow()
+						context.createAlarmToastMessage(alarmTime)
+					} else null
+
+					return@withContext Resource.Success(model, message)
+				}
+				controller.cancelAlarm(model)
+				Resource.Success(model)
 			}
 		}
 	}
@@ -76,7 +87,7 @@ class AlarmsRepositoryImpl(
 				val id = alarmsDao.insertOrUpdateAlarm(model.toEntity())
 				val alarm = alarmsDao.getAlarmFromId(id.toInt())
 					?: return@withContext Resource.Error(NoMatchingAlarmFoundException())
-				alarm.toModel()
+				Resource.Success(alarm.toModel())
 			}
 		}
 	}
@@ -84,10 +95,23 @@ class AlarmsRepositoryImpl(
 	override suspend fun updateAlarm(model: AlarmsModel): Resource<AlarmsModel, Exception> {
 		return withContext(Dispatchers.IO) {
 			checkAndReturnDbError {
-				val id = alarmsDao.insertOrUpdateAlarm(model.toEntity())
-				val alarm = alarmsDao.getAlarmFromId(id.toInt())
+				alarmsDao.insertOrUpdateAlarm(model.toEntity())
+				val entity = alarmsDao.getAlarmFromId(model.id)
 					?: return@withContext Resource.Error(NoMatchingAlarmFoundException())
-				alarm.toModel()
+				val model = entity.toModel()
+				// update alarm
+				if (model.isAlarmEnabled) {
+					val result = controller.createAlarm(model)
+
+					val message = if (result.isSuccess) {
+						val alarmTime = result.getOrThrow()
+						context.createAlarmToastMessage(alarmTime)
+					} else null
+
+					return@withContext Resource.Success(model, message)
+				}
+				controller.cancelAlarm(model)
+				Resource.Success(model)
 			}
 		}
 	}
@@ -96,6 +120,7 @@ class AlarmsRepositoryImpl(
 		return withContext(Dispatchers.IO) {
 			checkAndReturnDbError {
 				alarmsDao.deleteAlarm(model.toEntity())
+				Resource.Success(Unit)
 			}
 
 		}
@@ -106,6 +131,7 @@ class AlarmsRepositoryImpl(
 			checkAndReturnDbError {
 				val entities = models.map { it.toEntity() }
 				alarmsDao.deleteAlarmBulk(entities)
+				Resource.Success(Unit)
 			}
 		}
 	}
@@ -113,15 +139,18 @@ class AlarmsRepositoryImpl(
 	override suspend fun getAlarmFromId(id: Int): Resource<AlarmsModel, Exception> {
 		return withContext(Dispatchers.IO) {
 			checkAndReturnDbError {
-				alarmsDao.getAlarmFromId(id)?.toModel()
+				val alarm = alarmsDao.getAlarmFromId(id)?.toModel()
 					?: return@withContext Resource.Error(NoMatchingAlarmFoundException())
+				Resource.Success(alarm)
 			}
 		}
 	}
 
-	private suspend inline fun <T> checkAndReturnDbError(code: suspend () -> T): Resource<T, Exception> {
+	private suspend inline fun <T> checkAndReturnDbError(
+		code: suspend () -> Resource.Success<T, Exception>,
+	): Resource<T, Exception> {
 		return try {
-			Resource.Success(code())
+			code()
 		} catch (e: SQLiteConstraintException) {
 			Resource.Error(e, message = context.getString(R.string.error_db_constraint))
 		} catch (e: SQLiteException) {
@@ -130,4 +159,5 @@ class AlarmsRepositoryImpl(
 			Resource.Error(e, message = context.getString(R.string.error_unknown))
 		}
 	}
+
 }

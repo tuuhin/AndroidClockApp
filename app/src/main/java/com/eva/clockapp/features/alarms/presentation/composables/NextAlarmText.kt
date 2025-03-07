@@ -41,7 +41,7 @@ fun NextAlarmText(
 	}
 
 	Box(
-		modifier = modifier.heightIn(min = 100.dp),
+		modifier = modifier.heightIn(min = 60.dp),
 		contentAlignment = Alignment.Center
 	) {
 		Text(

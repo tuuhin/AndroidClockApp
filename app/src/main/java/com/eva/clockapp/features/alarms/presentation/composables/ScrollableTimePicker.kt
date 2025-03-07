@@ -59,7 +59,7 @@ fun ScrollableTimePicker(
 	handsStyle: TextStyle = MaterialTheme.typography.displayMedium,
 	containerColor: Color = MaterialTheme.colorScheme.surfaceContainer,
 	contentColor: Color = MaterialTheme.colorScheme.onSurface,
-	numberFontFamily: FontFamily? = FontFamily.SansSerif,
+	fontFamily: FontFamily? = FontFamily.SansSerif,
 	shape: Shape = MaterialTheme.shapes.large,
 ) {
 	val clockMinuteRange = 0..<60
@@ -120,13 +120,13 @@ fun ScrollableTimePicker(
 					val hour = idx % 24
 					newTimeSelection = LocalTime(hour, newTimeSelection.minute)
 				},
-			) { idx ->
-				val hour = if (is24HrFormat) idx % 24 else if (idx % 12 == 0) 12 else idx % 12
+			) { hour24 ->
+				val hour = formatHour(hour24, is24HrFormat)
 				val hourText = if (numberFormatLocale) formatter.format(hour) else "$hour"
 				Text(
 					text = hourText.padStart(2, '0'),
 					textAlign = TextAlign.Center,
-					fontFamily = numberFontFamily,
+					fontFamily = fontFamily,
 					style = handsStyle,
 					modifier = Modifier.widthIn(min = 40.dp)
 				)
@@ -135,7 +135,7 @@ fun ScrollableTimePicker(
 			Text(
 				text = ":",
 				style = MaterialTheme.typography.displayMedium,
-				fontFamily = numberFontFamily,
+				fontFamily = fontFamily,
 				color = contentColor,
 				modifier = Modifier.align(Alignment.CenterVertically)
 			)
@@ -155,7 +155,7 @@ fun ScrollableTimePicker(
 				Text(
 					text = minuteText.padStart(2, '0'),
 					textAlign = TextAlign.Center,
-					fontFamily = numberFontFamily,
+					fontFamily = fontFamily,
 					style = handsStyle,
 					modifier = Modifier.widthIn(min = 40.dp)
 				)
@@ -171,7 +171,7 @@ fun ScrollableTimePicker(
 					startIndex = if (startTime.hour > 12) 1 else 0,
 					contentColor = contentColor,
 					containerColor = containerColor,
-					endLess = false,
+					isInfinite = false,
 					onFocusItem = { option -> isTimeInAm = option != 0 },
 					modifier = Modifier.padding(start = 16.dp)
 				) { option ->
@@ -183,7 +183,7 @@ fun ScrollableTimePicker(
 						text = text,
 						textAlign = TextAlign.Center,
 						style = MaterialTheme.typography.headlineLarge,
-						fontFamily = numberFontFamily,
+						fontFamily = fontFamily,
 						modifier = Modifier.widthIn(min = 40.dp)
 					)
 				}
@@ -192,8 +192,17 @@ fun ScrollableTimePicker(
 	}
 }
 
-private class Is24HrsPreviewParams :
-	CollectionPreviewParameterProvider<Boolean>(listOf(true, false))
+private fun formatHour(hour24: Int, is24HrFormat: Boolean): Int {
+	return when {
+		is24HrFormat -> hour24
+		hour24 == 0 -> 12
+		hour24 > 12 -> hour24 - 12
+		else -> hour24
+	}
+}
+
+private class Is24HrsPreviewParams
+	: CollectionPreviewParameterProvider<Boolean>(listOf(true, false))
 
 @Preview
 @Composable
@@ -204,6 +213,6 @@ private fun ScrollableTimePickerPreview(
 	ScrollableTimePicker(
 		is24HrFormat = is24HrFormat,
 		onTimeSelected = {},
-		startTime = LocalTime(14, 10)
+		startTime = LocalTime(0, 0)
 	)
 }

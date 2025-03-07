@@ -85,6 +85,11 @@ class AlarmsViewModel(
 					_uiEvents.emit(UiEvents.ShowSnackBar(message))
 				}
 
+				is Resource.Success -> {
+					val message = result.message ?: return@launch
+					_uiEvents.emit(UiEvents.ShowToast(message))
+				}
+
 				else -> {}
 			}
 		}

@@ -6,12 +6,14 @@ import kotlinx.datetime.DatePeriod
 import kotlinx.datetime.DayOfWeek
 import kotlinx.datetime.Instant
 import kotlinx.datetime.LocalDateTime
+import kotlinx.datetime.LocalTime
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.atTime
 import kotlinx.datetime.plus
 import kotlinx.datetime.toInstant
 import kotlinx.datetime.toLocalDateTime
 import kotlin.time.Duration
+import kotlin.time.Duration.Companion.days
 
 object AlarmUtils {
 
@@ -53,6 +55,23 @@ object AlarmUtils {
 		return shortest
 	}
 
+	fun calculateNextAlarmTime(): LocalTime {
+		val currentTime = current.time
+
+		val sixAm = LocalTime(6, 0)
+		val threePm = LocalTime(15, 0)
+		val sixPm = LocalTime(18, 0)
+		val ninePm = LocalTime(21, 0)
+
+		return when {
+			currentTime >= ninePm -> sixAm
+			currentTime >= sixPm -> ninePm
+			currentTime >= threePm -> sixPm
+			currentTime >= sixAm -> threePm
+			else -> sixAm
+		}
+	}
+
 	private fun findNextMatchingWeekday(current: DayOfWeek, alarmDays: Set<DayOfWeek>): DayOfWeek {
 		val sortedDays = alarmDays.sortedBy { it.ordinal }
 
@@ -60,7 +79,8 @@ object AlarmUtils {
 			// match the next first one
 			if (day.ordinal > current.ordinal) return day
 		}
-		// no matches thus use the same day
-		return sortedDays.first()
+		// if there is no match then alarm will be only set for next day
+		return sortedDays.firstOrNull() ?: this.currentInstant.plus(1.days)
+			.toLocalDateTime(timeZone).dayOfWeek
 	}
 }

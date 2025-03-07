@@ -61,10 +61,10 @@ private fun CreateAlarmContent(
 	vibrationPattern: VibrationPattern,
 	snoozeInterval: SnoozeIntervalOption,
 	repeatMode: SnoozeRepeatMode,
-	timePickerTime: LocalTime,
 	onTimeChange: (LocalTime) -> Unit,
 	onWeekDaySelected: (DayOfWeek) -> Unit,
 	modifier: Modifier = Modifier,
+	timePickerStartTime: LocalTime = LocalTime(0, 0),
 	labelState: String = "",
 	isVibrationEnabled: Boolean = true,
 	isSnoozeEnabled: Boolean = true,
@@ -91,10 +91,10 @@ private fun CreateAlarmContent(
 	) {
 		item {
 			ScrollableTimePicker(
-				startTime = timePickerTime,
+				startTime = timePickerStartTime,
 				is24HrFormat = is24HourClock,
 				onTimeSelected = onTimeChange,
-				numberFontFamily = DownloadableFonts.CHELSEA_MARKET,
+				fontFamily = DownloadableFonts.CHELSEA_MARKET,
 			)
 		}
 		item {
@@ -199,7 +199,7 @@ fun CreateAlarmContent(
 	onNavigateSoundScreen: () -> Unit = {},
 ) {
 	CreateAlarmContent(
-		timePickerTime = state.selectedTime,
+		timePickerStartTime = state.startTime,
 		selectedDays = state.selectedDays,
 		labelState = state.labelState,
 		repeatMode = flags.snoozeRepeatMode,
@@ -210,7 +210,7 @@ fun CreateAlarmContent(
 		isSnoozeEnabled = flags.isSnoozeEnabled,
 		snoozeInterval = flags.snoozeInterval,
 		onWeekDaySelected = { onEvent(CreateAlarmEvents.OnAddOrRemoveWeekDay(it)) },
-		onTimeChange = { onEvent(CreateAlarmEvents.OnAlarmTimeSelected(it)) },
+		onTimeChange = { onEvent(CreateAlarmEvents.OnAlarmTimeChange(it)) },
 		onLabelStateChange = { onEvent(CreateAlarmEvents.OnLabelValueChange(it)) },
 		onSnoozeEnabledChange = { onFlagsEvent(AlarmFlagsChangeEvent.OnSnoozeEnabled(it)) },
 		onVibrationEnabledChange = { onFlagsEvent(AlarmFlagsChangeEvent.OnVibrationEnabled(it)) },
