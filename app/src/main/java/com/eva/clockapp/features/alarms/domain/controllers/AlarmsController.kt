@@ -5,7 +5,7 @@ import kotlinx.datetime.LocalDateTime
 
 interface AlarmsController {
 
-	fun createAlarm(model: AlarmsModel): Result<LocalDateTime>
+	fun createAlarm(model: AlarmsModel, createUpcoming: Boolean = false): Result<LocalDateTime>
 
 	fun cancelAlarm(model: AlarmsModel): Result<Unit>
 }

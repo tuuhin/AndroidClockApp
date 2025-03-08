@@ -10,6 +10,7 @@ import androidx.core.content.getSystemService
 import androidx.core.os.bundleOf
 import com.eva.clockapp.core.constants.ClockAppIntents
 import com.eva.clockapp.core.constants.IntentRequestCodes
+import com.eva.clockapp.features.alarms.data.receivers.UpcomingAlarmReceiver
 import com.eva.clockapp.features.alarms.data.services.AlarmsControllerService
 import com.eva.clockapp.features.alarms.domain.controllers.AlarmsController
 import com.eva.clockapp.features.alarms.domain.exceptions.ExactAlarmPermissionNotFound
@@ -18,6 +19,7 @@ import com.eva.clockapp.features.alarms.domain.utils.AlarmUtils
 import kotlinx.datetime.Instant
 import kotlinx.datetime.LocalDateTime
 import kotlinx.datetime.TimeZone
+import kotlinx.datetime.toKotlinLocalTime
 import kotlinx.datetime.toLocalDateTime
 
 private const val TAG = "ALARMS_CONTROLLER"
@@ -26,17 +28,14 @@ class AlarmsControllerImpl(private val context: Context) : AlarmsController {
 
 	private val alarmManager by lazy { context.getSystemService<AlarmManager>() }
 
-	override fun createAlarm(model: AlarmsModel): Result<LocalDateTime> {
+	private val timeZone: TimeZone
+		get() = TimeZone.currentSystemDefault()
+
+	override fun createAlarm(model: AlarmsModel, createUpcoming: Boolean): Result<LocalDateTime> {
 
 		val triggerMillis = AlarmUtils.calculateAlarmTriggerMillis(model)
 
-		val intent = Intent(context, AlarmsControllerService::class.java).apply {
-			data = ClockAppIntents.alarmIntentData(model.id)
-			action = ClockAppIntents.ACTION_START_ALARM
-
-			val extras = bundleOf(ClockAppIntents.EXTRA_ALARMS_ALARMS_ID to model.id)
-			putExtras(extras)
-		}
+		val intent = createServiceIntentForAlarm(model)
 
 		val pendingIntent = PendingIntent.getForegroundService(
 			context,
@@ -60,11 +59,15 @@ class AlarmsControllerImpl(private val context: Context) : AlarmsController {
 				pendingIntent
 			)
 
-			val schedule = Instant.fromEpochMilliseconds(triggerMillis)
-				.toLocalDateTime(TimeZone.currentSystemDefault())
+			val schedule = Instant.fromEpochMilliseconds(triggerMillis).toLocalDateTime(timeZone)
 
-			val message = "ALARM-> DATE:${schedule.date} TIME:${schedule.time} MODEL_ID:${model.id}"
-			Log.d(TAG, message)
+			with(schedule) {
+				val message = "ACTUAL ALARM-> DATE:${date} TIME:${time} MODEL_ID:${model.id}"
+				Log.d(TAG, message)
+			}
+			// create the upcoming one
+			if (createUpcoming) createUpcomingAlarm(model)
+
 			Result.success(schedule)
 		} catch (e: Exception) {
 			Result.failure(e)
@@ -73,13 +76,7 @@ class AlarmsControllerImpl(private val context: Context) : AlarmsController {
 
 	override fun cancelAlarm(model: AlarmsModel): Result<Unit> {
 
-		val intent = Intent(context, AlarmsControllerService::class.java).apply {
-			data = ClockAppIntents.alarmIntentData(model.id)
-			action = ClockAppIntents.ACTION_CANCEL_ALARM
-
-			val extras = bundleOf(ClockAppIntents.EXTRA_ALARMS_ALARMS_ID to model.id)
-			putExtras(extras)
-		}
+		val intent = createServiceIntentForAlarm(model)
 
 		val pendingIntent = PendingIntent.getBroadcast(
 			context,
@@ -97,4 +94,79 @@ class AlarmsControllerImpl(private val context: Context) : AlarmsController {
 		}
 	}
 
+	private fun createServiceIntentForAlarm(model: AlarmsModel): Intent {
+		return Intent(context, AlarmsControllerService::class.java).apply {
+			data = ClockAppIntents.alarmIntentData(model.id)
+			action = ClockAppIntents.ACTION_CANCEL_ALARM
+
+			val extras = bundleOf(ClockAppIntents.EXTRA_ALARMS_ALARMS_ID to model.id)
+			putExtras(extras)
+		}
+	}
+
+	private fun createUpcomingAlarm(model: AlarmsModel): Result<LocalDateTime> {
+		val triggerMillis = AlarmUtils.calculateUpcomingAlarmTriggerMillis(model)
+
+		val intent = Intent(context, UpcomingAlarmReceiver::class.java).apply {
+			data = ClockAppIntents.alarmIntentData(model.id)
+			action = ClockAppIntents.ACTION_UPCOMING_ALARM
+
+			val extras = bundleOf(ClockAppIntents.EXTRA_ALARMS_ALARMS_ID to model.id)
+			putExtras(extras)
+		}
+
+		val pendingIntent = PendingIntent.getBroadcast(
+			context,
+			IntentRequestCodes.UPCOMING_ALARM.code,
+			intent,
+			PendingIntent.FLAG_MUTABLE or PendingIntent.FLAG_CANCEL_CURRENT
+		)
+
+		return try {
+			// Don't show if the device is in Doze Mode
+			alarmManager?.setExact(AlarmManager.RTC_WAKEUP, triggerMillis, pendingIntent)
+
+			val schedule = Instant.fromEpochMilliseconds(triggerMillis).toLocalDateTime(timeZone)
+
+			with(schedule) {
+				val message = "UPCOMING ALARM->DATE: $date TIME:$time"
+				Log.d(TAG, message)
+			}
+			Result.success(schedule)
+		} catch (e: Exception) {
+			Result.failure(e)
+		}
+	}
+
+	private fun cancelUpcomingAlarm(model: AlarmsModel) {
+
+		val time = java.time.LocalTime.now().toKotlinLocalTime()
+
+		val hasTimePassed = model.time < time
+		if (hasTimePassed) return
+
+		val intent = Intent(context, UpcomingAlarmReceiver::class.java).apply {
+			data = ClockAppIntents.alarmIntentData(model.id)
+			action = ClockAppIntents.ACTION_UPCOMING_ALARM
+
+			val extras = bundleOf(ClockAppIntents.EXTRA_ALARMS_ALARMS_ID to model.id)
+			putExtras(extras)
+		}
+
+		val pendingIntent = PendingIntent.getBroadcast(
+			context,
+			IntentRequestCodes.UPCOMING_ALARM.code,
+			intent,
+			PendingIntent.FLAG_MUTABLE or PendingIntent.FLAG_CANCEL_CURRENT
+		)
+
+		try {
+			// Don't show if the device is in Doze Mode
+			alarmManager?.cancel(pendingIntent)
+			val message = "UPCOMING ALARM CANCELLED ${model.id}"
+			Log.d(TAG, message)
+		} catch (err: Exception) {
+			err.printStackTrace()
+		}
+	}
 }

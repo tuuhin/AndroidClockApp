@@ -15,8 +15,8 @@ import com.eva.clockapp.R
 import com.eva.clockapp.core.navigation.animatedComposable
 import com.eva.clockapp.core.navigation.navgraphs.CreateAlarmNavRoute
 import com.eva.clockapp.core.navigation.navgraphs.NavRoutes
-import com.eva.clockapp.core.presentation.UIEventsSideEffect
-import com.eva.clockapp.core.presentation.sharedViewModel
+import com.eva.clockapp.core.presentation.composables.UIEventsSideEffect
+import com.eva.clockapp.core.presentation.composables.sharedViewModel
 import com.eva.clockapp.features.alarms.presentation.create_alarm.CreateAlarmViewModel
 import com.eva.clockapp.features.alarms.presentation.create_alarm.screens.AlarmSnoozeScreen
 import com.eva.clockapp.features.alarms.presentation.create_alarm.screens.AlarmSoundScreen

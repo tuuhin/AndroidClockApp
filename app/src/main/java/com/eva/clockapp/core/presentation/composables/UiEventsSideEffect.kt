@@ -1,4 +1,4 @@
-package com.eva.clockapp.core.presentation
+package com.eva.clockapp.core.presentation.composables
 
 import android.widget.Toast
 import androidx.compose.material3.SnackbarDuration
@@ -8,6 +8,8 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.repeatOnLifecycle
+import com.eva.clockapp.core.presentation.LocalSnackBarHostState
+import com.eva.clockapp.core.presentation.UiEvents
 import kotlinx.coroutines.flow.Flow
 
 @Composable

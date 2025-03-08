@@ -101,7 +101,7 @@ class AlarmsRepositoryImpl(
 				val model = entity.toModel()
 				// update alarm
 				if (model.isAlarmEnabled) {
-					val result = controller.createAlarm(model)
+					val result = controller.createAlarm(model,true)
 
 					val message = if (result.isSuccess) {
 						val alarmTime = result.getOrThrow()

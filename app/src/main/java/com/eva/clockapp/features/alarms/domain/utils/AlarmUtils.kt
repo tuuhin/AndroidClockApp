@@ -14,6 +14,8 @@ import kotlinx.datetime.toInstant
 import kotlinx.datetime.toLocalDateTime
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.days
+import kotlin.time.Duration.Companion.hours
+import kotlin.time.DurationUnit
 
 object AlarmUtils {
 
@@ -21,7 +23,7 @@ object AlarmUtils {
 		get() = Clock.System.now()
 
 	private val timeZone: TimeZone
-		get() = TimeZone.Companion.currentSystemDefault()
+		get() = TimeZone.currentSystemDefault()
 
 	private val current: LocalDateTime
 		get() = currentInstant.toLocalDateTime(timeZone)
@@ -40,6 +42,16 @@ object AlarmUtils {
 		return dateToUse.atTime(model.time)
 			.toInstant(TimeZone.Companion.currentSystemDefault())
 			.toEpochMilliseconds()
+	}
+
+	fun calculateUpcomingAlarmTriggerMillis(
+		model: AlarmsModel,
+		showBefore: Duration = 3.hours,
+	): Long {
+		return calculateAlarmTriggerMillis(model).let { millis ->
+			val showBeforeMillis = showBefore.toInt(DurationUnit.MILLISECONDS)
+			millis - showBeforeMillis
+		}
 	}
 
 	fun calculateNextAlarmTimeInDuration(alarms: List<AlarmsModel>): Duration? {

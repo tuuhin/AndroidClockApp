@@ -6,6 +6,7 @@ import com.eva.clockapp.features.alarms.data.controllers.AppRingtoneProviderImpl
 import com.eva.clockapp.features.alarms.data.controllers.ContentRingtoneProviderImpl
 import com.eva.clockapp.features.alarms.data.controllers.VibrationControllerImpl
 import com.eva.clockapp.features.alarms.data.repository.AlarmsRepositoryImpl
+import com.eva.clockapp.features.alarms.data.services.AlarmsNotificationProvider
 import com.eva.clockapp.features.alarms.domain.controllers.AlarmsController
 import com.eva.clockapp.features.alarms.domain.controllers.AlarmsSoundPlayer
 import com.eva.clockapp.features.alarms.domain.controllers.AppRingtoneProvider
@@ -29,6 +30,9 @@ val alarmsModule = module {
 	singleOf(::AppRingtoneProviderImpl).bind<AppRingtoneProvider>()
 	singleOf(::AlarmSoundPlayerImpl).bind<AlarmsSoundPlayer>()
 	singleOf(::AlarmsControllerImpl).bind<AlarmsController>()
+
+	// notification utils
+	singleOf(::AlarmsNotificationProvider)
 
 	//factory
 	factoryOf(::AlarmsRepositoryImpl).bind<AlarmsRepository>()

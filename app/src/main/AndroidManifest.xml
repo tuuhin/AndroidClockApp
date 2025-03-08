@@ -23,16 +23,17 @@
     android:name=".ClockApp"
     android:allowBackup="true"
     android:dataExtractionRules="@xml/data_extraction_rules"
+    android:enableOnBackInvokedCallback="true"
     android:fullBackupContent="@xml/backup_rules"
     android:icon="@mipmap/ic_launcher"
     android:label="@string/app_name"
     android:roundIcon="@mipmap/ic_launcher_round"
     android:supportsRtl="true"
     android:theme="@style/Theme.App.Starting"
-    tools:targetApi="31">
+    tools:targetApi="33">
 
     <receiver
-      android:name=".features.alarms.data.recievers.DeviceBootReceiver"
+      android:name=".features.alarms.data.receivers.DeviceBootReceiver"
       android:enabled="true"
       android:exported="true">
       <intent-filter>
@@ -41,6 +42,11 @@
         <action android:name="android.settings.REQUEST_SCHEDULE_EXACT_ALARM" />
       </intent-filter>
     </receiver>
+
+    <receiver
+      android:name=".features.alarms.data.receivers.UpcomingAlarmReceiver"
+      android:enabled="true"
+      android:exported="false" />
 
     <service
       android:name=".features.alarms.data.services.AlarmsControllerService"

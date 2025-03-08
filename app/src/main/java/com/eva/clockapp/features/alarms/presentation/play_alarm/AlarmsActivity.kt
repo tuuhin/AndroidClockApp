@@ -31,7 +31,7 @@ class AlarmsActivity : ComponentActivity() {
 
 	private val finishActivityReceiver = object : BroadcastReceiver() {
 		override fun onReceive(context: Context, intent: Intent) {
-			if (intent.action != ClockAppIntents.ACTION_FINISH_ALARMS_ACTIVITY) return
+			if (intent.action != ClockAppIntents.ACTION_FINISH_ALARM_ACTIVITY) return
 			finishAndRemoveTask()
 		}
 	}
@@ -47,7 +47,7 @@ class AlarmsActivity : ComponentActivity() {
 		ContextCompat.registerReceiver(
 			this,
 			finishActivityReceiver,
-			IntentFilter(ClockAppIntents.ACTION_FINISH_ALARMS_ACTIVITY),
+			IntentFilter(ClockAppIntents.ACTION_FINISH_ALARM_ACTIVITY),
 			ContextCompat.RECEIVER_NOT_EXPORTED
 		)
 

@@ -9,7 +9,7 @@ import androidx.navigation.NavController
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.compose.composable
 import com.eva.clockapp.core.navigation.navgraphs.NavRoutes
-import com.eva.clockapp.core.presentation.UIEventsSideEffect
+import com.eva.clockapp.core.presentation.composables.UIEventsSideEffect
 import com.eva.clockapp.features.alarms.presentation.alarms.AlarmScreen
 import com.eva.clockapp.features.alarms.presentation.alarms.AlarmsViewModel
 import org.koin.compose.viewmodel.koinViewModel

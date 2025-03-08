@@ -1,9 +1,10 @@
-package com.eva.clockapp.core.presentation
+package com.eva.clockapp.core.presentation.composables
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.navigation.NavBackStackEntry
 import androidx.navigation.NavController
+import com.eva.clockapp.core.presentation.AppViewModel
 import org.koin.compose.viewmodel.koinViewModel
 
 @Composable

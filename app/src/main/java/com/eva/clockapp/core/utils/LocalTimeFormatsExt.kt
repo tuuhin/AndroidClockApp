@@ -1,6 +1,7 @@
 package com.eva.clockapp.core.utils
 
 import kotlinx.datetime.LocalDate
+import kotlinx.datetime.LocalDateTime
 import kotlinx.datetime.LocalTime
 import kotlinx.datetime.format.DateTimeFormat
 import kotlinx.datetime.format.DayOfWeekNames
@@ -30,4 +31,15 @@ val LocalDate.Formats.WEEK_MONTH_DAY: DateTimeFormat<LocalDate>
 		monthName(names = MonthNames.ENGLISH_ABBREVIATED)
 		chars(" ")
 		dayOfMonth()
+	}
+
+val LocalDateTime.Formats.WEEK_DAY_AM_TIME: DateTimeFormat<LocalDateTime>
+	get() = LocalDateTime.Format {
+		dayOfWeek(names = DayOfWeekNames.ENGLISH_ABBREVIATED)
+		chars(", ")
+		amPmHour(padding = Padding.ZERO)
+		chars(":")
+		minute(padding = Padding.ZERO)
+		chars(" ")
+		amPmMarker(am = "am", pm = "pm")
 	}
