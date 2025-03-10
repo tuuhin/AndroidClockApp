@@ -9,4 +9,8 @@ data class AssociateAlarmFlags(
 	val isSoundEnabled: Boolean = true,
 	val isVolumeStepIncrease: Boolean = false,
 	val alarmVolume: Float = 100f,
-)
+) {
+	companion object {
+		const val MIN_ALARM_SOUND = 10f
+	}
+}

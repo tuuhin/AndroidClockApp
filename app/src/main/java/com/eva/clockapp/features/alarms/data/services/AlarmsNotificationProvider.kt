@@ -135,7 +135,7 @@ class AlarmsNotificationProvider(private val context: Context) {
 			context,
 			NotificationsConstants.CLOCK_EVENT_NOTIFICATION_CHANNEL_ID
 		)
-			.setSmallIcon(R.drawable.ic_alam_clock)
+			.setSmallIcon(R.drawable.ic_upcoming_alarm)
 			.setVisibility(Notification.VISIBILITY_PUBLIC)
 			.setCategory(Notification.CATEGORY_EVENT)
 			.setContentTitle(context.getString(R.string.alarms_rescheduled_notification_title))

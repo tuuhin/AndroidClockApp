@@ -97,7 +97,7 @@ class AlarmsControllerImpl(private val context: Context) : AlarmsController {
 	private fun createServiceIntentForAlarm(model: AlarmsModel): Intent {
 		return Intent(context, AlarmsControllerService::class.java).apply {
 			data = ClockAppIntents.alarmIntentData(model.id)
-			action = ClockAppIntents.ACTION_CANCEL_ALARM
+			action = ClockAppIntents.ACTION_PLAY_ALARM
 
 			val extras = bundleOf(ClockAppIntents.EXTRA_ALARMS_ALARMS_ID to model.id)
 			putExtras(extras)

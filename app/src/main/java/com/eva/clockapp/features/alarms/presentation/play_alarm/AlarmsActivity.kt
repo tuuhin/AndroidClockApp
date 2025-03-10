@@ -45,10 +45,10 @@ class AlarmsActivity : ComponentActivity() {
 
 		// receiver to finish this activity
 		ContextCompat.registerReceiver(
-			this,
+			applicationContext,
 			finishActivityReceiver,
 			IntentFilter(ClockAppIntents.ACTION_FINISH_ALARM_ACTIVITY),
-			ContextCompat.RECEIVER_NOT_EXPORTED
+			ContextCompat.RECEIVER_EXPORTED
 		)
 
 		val alarmId = intent.getIntExtra(ClockAppIntents.EXTRA_ALARMS_ALARMS_ID, -1)

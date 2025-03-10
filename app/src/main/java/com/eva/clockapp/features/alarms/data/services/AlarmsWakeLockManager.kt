@@ -11,16 +11,22 @@ import kotlin.time.DurationUnit
 
 private const val TAG = "ALARM_WAKE_LOCK"
 
-class AlarmsWakeLockManager(
-	private val context: Context,
-	private val duration: Duration = 5.minutes,
-) {
+class AlarmsWakeLockManager(private val context: Context) {
 
 	private val _powerManager by lazy { context.getSystemService<PowerManager>() }
 
 	private var _wakeLock: PowerManager.WakeLock? = null
 
-	fun acquireWakeLock() {
+	val isInteractive: Boolean
+		get() = _powerManager?.isInteractive == true
+
+	fun acquireLock(duration: Duration = 5.minutes) {
+
+		if (isInteractive) {
+			Log.d(TAG, "SCREEN MAYBE ON SO NO NEED TO ACQUIRE WAKE LOCK")
+			return
+		}
+
 		val isSupported = _powerManager
 			?.isWakeLockLevelSupported(PowerManager.PARTIAL_WAKE_LOCK)
 			?: return
@@ -40,10 +46,10 @@ class AlarmsWakeLockManager(
 		)
 
 		_wakeLock?.acquire(duration.toLong(DurationUnit.MILLISECONDS))
-		Log.d(TAG, "WAKE LOCK ACQUIRED FOR 10 MINUTES")
+		Log.d(TAG, "WAKE LOCK ACQUIRED FOR $duration")
 	}
 
-	fun releaseWakeLock() {
+	fun releaseLock() {
 		Log.d(TAG, "ALARM WAKE LOCK RELEASED")
 		_wakeLock?.release()
 		_wakeLock = null
