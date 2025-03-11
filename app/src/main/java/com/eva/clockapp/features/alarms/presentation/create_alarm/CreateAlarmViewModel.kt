@@ -17,6 +17,7 @@ import com.eva.clockapp.features.alarms.domain.models.WeekDays
 import com.eva.clockapp.features.alarms.domain.repository.AlarmsRepository
 import com.eva.clockapp.features.alarms.domain.use_case.RingtoneProviderUseCase
 import com.eva.clockapp.features.alarms.domain.use_case.Ringtones
+import com.eva.clockapp.features.alarms.domain.use_case.ValidateAlarmUseCase
 import com.eva.clockapp.features.alarms.domain.utils.AlarmUtils
 import com.eva.clockapp.features.alarms.presentation.create_alarm.state.AlarmFlagsChangeEvent
 import com.eva.clockapp.features.alarms.presentation.create_alarm.state.CreateAlarmEvents
@@ -51,6 +52,7 @@ class CreateAlarmViewModel(
 	private val ringtonesUseCase: RingtoneProviderUseCase,
 	private val soundPlayer: AlarmsSoundPlayer,
 	private val repository: AlarmsRepository,
+	private val validator: ValidateAlarmUseCase,
 	private val savedStateHandle: SavedStateHandle,
 ) : AppViewModel() {
 
@@ -176,8 +178,11 @@ class CreateAlarmViewModel(
 
 	private fun onSoundVolumeChange(volume: Float) {
 		val flags = _alarmFlags.updateAndGet { state -> state.copy(alarmVolume = volume) }
+		val alarmVolume = if (flags.alarmVolume <= AssociateAlarmFlags.MIN_ALARM_SOUND)
+			AssociateAlarmFlags.MIN_ALARM_SOUND
+		else flags.alarmVolume
 		// change the volume
-		soundPlayer.changeVolume(flags.alarmVolume)
+		soundPlayer.changeVolume(alarmVolume)
 	}
 
 	private fun onSoundEnabled(isEnabled: Boolean) {
@@ -199,13 +204,21 @@ class CreateAlarmViewModel(
 	}
 
 	private fun onCreateNewAlarm() {
-		val model = createAlarmState.value.toCreateModel(flags = flagsState.value)
-		// TODO: Add a validator
 		viewModelScope.launch {
+			val model = createAlarmState.value.toCreateModel(flags = flagsState.value)
+
+			val result = validator.validateCreateAlarm(model)
+			if (!result.isValid && result.message != null) {
+				_uiEvents.emit(UiEvents.ShowSnackBar(result.message))
+				return@launch
+			}
+
+			// TODO: Add a validator
 			when (val result = repository.createAlarm(model)) {
 				is Resource.Error -> (result.message ?: result.message)?.let { message ->
 					_uiEvents.emit(UiEvents.ShowSnackBar(message))
 				}
+
 				is Resource.Success -> _uiEvents.emit(UiEvents.NavigateBack)
 				else -> {}
 			}
@@ -214,11 +227,16 @@ class CreateAlarmViewModel(
 
 	private fun onUpdateAlarm() {
 		val alarmId = route.alarmId ?: return
-		val updateModel = createAlarmState.value
-			.toAlarmModel(alarmId = alarmId, flags = flagsState.value)
-
-		// TODO: Add a validator
 		viewModelScope.launch {
+			val updateModel = createAlarmState.value
+				.toAlarmModel(alarmId = alarmId, flags = flagsState.value)
+
+			val result = validator.validateUpdate(updateModel)
+			if (!result.isValid && result.message != null) {
+				_uiEvents.emit(UiEvents.ShowSnackBar(result.message))
+				return@launch
+			}
+
 			when (val result = repository.updateAlarm(updateModel)) {
 				is Resource.Error -> (result.message ?: result.message)?.let { message ->
 					_uiEvents.emit(UiEvents.ShowSnackBar(message))

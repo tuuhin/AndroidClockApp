@@ -7,6 +7,7 @@ import androidx.core.app.NotificationCompat
 import androidx.core.content.getSystemService
 import com.eva.clockapp.core.constants.NotificationsConstants
 import com.eva.clockapp.core.di.commonModule
+import com.eva.clockapp.features.alarms.data.worker.EnqueueDailyAlarmWorker
 import com.eva.clockapp.features.alarms.di.alarmsModule
 import org.koin.android.ext.koin.androidContext
 import org.koin.android.ext.koin.androidLogger
@@ -22,6 +23,8 @@ class ClockApp : Application() {
 		koinSetup()
 		// create notification channels
 		notificationChannelSetup()
+		// add workers
+		addWorkers()
 	}
 
 
@@ -56,5 +59,10 @@ class ClockApp : Application() {
 			androidContext(this@ClockApp)
 			modules(modules)
 		}
+	}
+
+	private fun addWorkers() {
+		// enqueue alarms at midnight
+		EnqueueDailyAlarmWorker.startWorker(applicationContext)
 	}
 }

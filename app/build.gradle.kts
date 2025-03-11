@@ -89,6 +89,11 @@ dependencies {
 	implementation(libs.androidx.room.ktx)
 	ksp(libs.androidx.room.compiler)
 
+	//datastore
+	implementation(libs.androidx.datastore.preferences)
+	//work manager
+	implementation(libs.androidx.work.runtime.ktx)
+
 	//koin
 	implementation(libs.koin.android)
 	implementation(libs.koin.compose.viewmodel)

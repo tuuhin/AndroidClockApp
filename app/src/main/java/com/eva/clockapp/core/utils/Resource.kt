@@ -15,7 +15,7 @@ sealed class Resource<out S, out E> {
 
 	data object Loading : Resource<Nothing, Nothing>()
 
-	fun fold(
+	inline fun fold(
 		onSuccess: (S) -> Unit = {},
 		onError: (E, String?) -> Unit = { _, _ -> },
 		onLoading: () -> Unit = {},

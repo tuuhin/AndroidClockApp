@@ -14,6 +14,7 @@ import com.eva.clockapp.features.alarms.domain.controllers.ContentRingtoneProvid
 import com.eva.clockapp.features.alarms.domain.controllers.VibrationController
 import com.eva.clockapp.features.alarms.domain.repository.AlarmsRepository
 import com.eva.clockapp.features.alarms.domain.use_case.RingtoneProviderUseCase
+import com.eva.clockapp.features.alarms.domain.use_case.ValidateAlarmUseCase
 import com.eva.clockapp.features.alarms.presentation.alarms.AlarmsViewModel
 import com.eva.clockapp.features.alarms.presentation.create_alarm.CreateAlarmViewModel
 import org.koin.core.module.dsl.factoryOf
@@ -37,6 +38,7 @@ val alarmsModule = module {
 	//factory
 	factoryOf(::AlarmsRepositoryImpl).bind<AlarmsRepository>()
 	factoryOf(::RingtoneProviderUseCase)
+	factoryOf(::ValidateAlarmUseCase)
 
 	// view models
 	viewModelOf(::CreateAlarmViewModel)
