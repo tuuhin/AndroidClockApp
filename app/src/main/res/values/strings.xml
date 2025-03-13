@@ -80,4 +80,9 @@
   <string name="notification_permission_not_found_dialog_title">Notificaion permissions</string>
   <string name="notification_permission_not_found_dialog_text">This app required notification permission to notify on the set alarm time</string>
   <string name="upcoming_notification_title">Upcoming Alarm</string>
+  <string name="select_alarms_background_title">Alarms Background</string>
+  <string name="action_search">Search</string>
+  <string name="select_image_from_device">Device</string>
+  <string name="select_image_generate">Generate</string>
+  <string name="background_images_provider">Images are provided from pexels.com</string>
 </resources>

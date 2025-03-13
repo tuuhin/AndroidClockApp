@@ -56,4 +56,6 @@ object AlarmPreviewFakes {
 		}.toImmutableList()
 
 	val FAKE_ALARMS_MODEL_LIST_EMPTY = persistentListOf<SelectableAlarmModel>()
+
+	val RANDOM_BACKGROUND_OPTIONS = List(10) { "$it" }.toImmutableList()
 }

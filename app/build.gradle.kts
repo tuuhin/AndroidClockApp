@@ -93,6 +93,14 @@ dependencies {
 	implementation(libs.androidx.datastore.preferences)
 	//work manager
 	implementation(libs.androidx.work.runtime.ktx)
+	//coil
+	implementation(libs.coil.compose)
+	implementation(libs.coil.network.okhttp)
+	//ktor-client
+	implementation(libs.ktor.client.core)
+	implementation(libs.ktor.client.cio)
+	//palette
+	implementation(libs.androidx.palette)
 
 	//koin
 	implementation(libs.koin.android)

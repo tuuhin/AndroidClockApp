@@ -7,6 +7,7 @@ import android.content.Intent
 import android.content.IntentFilter
 import android.os.Build
 import android.os.Bundle
+import android.view.KeyEvent
 import android.view.WindowManager
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -72,6 +73,23 @@ class AlarmsActivity : ComponentActivity() {
 				}
 			}
 		}
+	}
+
+	override fun onKeyDown(keyCode: Int, event: KeyEvent?): Boolean {
+		val alarmId = intent.getIntExtra(ClockAppIntents.EXTRA_ALARMS_ALARMS_ID, -1)
+		if (alarmId == -1) finishAndRemoveTask()
+
+		val isVolumeUpOrDown = arrayOf(
+			KeyEvent.KEYCODE_VOLUME_DOWN,
+			KeyEvent.KEYCODE_VOLUME_UP,
+		)
+
+		if (keyCode in isVolumeUpOrDown) {
+			snoozeAlarm(alarmId)
+			return false
+		}
+
+		return super.onKeyDown(keyCode, event)
 	}
 
 	override fun onDestroy() {
