@@ -11,4 +11,5 @@ data class CreateAlarmModel(
 	val flags: AssociateAlarmFlags,
 	val label: String? = null,
 	val ringtone: RingtoneMusicFile? = null,
+	val background: String? = null,
 )

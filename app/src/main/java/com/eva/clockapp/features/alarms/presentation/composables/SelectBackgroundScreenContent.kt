@@ -17,6 +17,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.unit.dp
+import com.eva.clockapp.features.alarms.domain.models.WallpaperPhoto
 import com.eva.clockapp.features.alarms.presentation.play_alarm.PlayAlarmsScreen
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.datetime.LocalTime
@@ -28,16 +29,16 @@ import java.time.LocalDateTime
 fun SelectBackgroundScreenContent(
 	isLoaded: Boolean,
 	selectedUri: String?,
-	backgroundOptions: ImmutableList<String>,
+	options: ImmutableList<WallpaperPhoto>,
 	onSelectUri: (String?) -> Unit,
 	modifier: Modifier = Modifier,
+	alarmTime: LocalTime = LocalTime(0, 0),
 ) {
 	val config = LocalConfiguration.current
 
 	val dateTime = remember {
-		val midNight = LocalTime(0, 0)
 		LocalDateTime.now().toKotlinLocalDateTime().date
-			.atTime(midNight)
+			.atTime(alarmTime)
 	}
 
 	val aspectRatio = remember(config) {
@@ -55,7 +56,7 @@ fun SelectBackgroundScreenContent(
 			onStopAlarm = {},
 			isActionEnabled = false,
 			backgroundImage = selectedUri,
-			shape = MaterialTheme.shapes.large,
+			shape = MaterialTheme.shapes.extraLarge,
 			borderStroke = BorderStroke(1.dp, color = MaterialTheme.colorScheme.primary),
 			modifier = Modifier
 				.fillMaxSize()
@@ -65,11 +66,11 @@ fun SelectBackgroundScreenContent(
 		)
 		AnimatedVisibility(
 			visible = isLoaded,
-			enter = slideInVertically(),
-			exit = slideOutVertically()
+			enter = slideInVertically { height -> height / 2 },
+			exit = slideOutVertically { height -> height / 2 }
 		) {
 			BackgroundImageSelector(
-				items = backgroundOptions,
+				imageOptions = options,
 				onSelectImage = onSelectUri,
 				modifier = Modifier.fillMaxWidth()
 			)

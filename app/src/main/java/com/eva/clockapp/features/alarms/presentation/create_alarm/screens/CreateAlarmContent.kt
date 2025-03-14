@@ -76,6 +76,7 @@ private fun CreateAlarmContent(
 	onSelectSnoozeOption: () -> Unit = {},
 	onSelectVibrationOption: () -> Unit = {},
 	onSelectAlarmSound: () -> Unit = {},
+	onSelectAlarmBackground: () -> Unit = {},
 	contentPadding: PaddingValues = PaddingValues(),
 	optionsColors: ListItemColors = ListItemDefaults.colors(containerColor = Color.Transparent),
 ) {
@@ -181,6 +182,14 @@ private fun CreateAlarmContent(
 						.clip(MaterialTheme.shapes.medium)
 						.clickable(role = Role.Button, onClick = onSelectVibrationOption)
 				)
+				ListItem(
+					headlineContent = { Text(text = stringResource(R.string.select_alarms_background_title)) },
+					supportingContent = {Text(text = stringResource(R.string.select_alarms_background_desc))},
+					colors = optionsColors,
+					modifier = Modifier
+						.clip(MaterialTheme.shapes.medium)
+						.clickable(role = Role.Button, onClick = onSelectAlarmBackground)
+				)
 			}
 		}
 	}
@@ -197,6 +206,7 @@ fun CreateAlarmContent(
 	onNavigateVibrationScreen: () -> Unit = {},
 	onNavigateSnoozeScreen: () -> Unit = {},
 	onNavigateSoundScreen: () -> Unit = {},
+	onNavigateBackgroundScreen: () -> Unit = {},
 ) {
 	CreateAlarmContent(
 		timePickerStartTime = state.startTime,
@@ -218,6 +228,7 @@ fun CreateAlarmContent(
 		onSelectVibrationOption = onNavigateVibrationScreen,
 		onSelectSnoozeOption = onNavigateSnoozeScreen,
 		onSelectAlarmSound = onNavigateSoundScreen,
+		onSelectAlarmBackground = onNavigateBackgroundScreen,
 		contentPadding = contentPadding,
 		modifier = modifier,
 	)

@@ -1,5 +1,6 @@
 package com.eva.clockapp.features.alarms.presentation.create_alarm
 
+import android.util.Log
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.viewModelScope
 import androidx.navigation.toRoute
@@ -22,6 +23,7 @@ import com.eva.clockapp.features.alarms.domain.utils.AlarmUtils
 import com.eva.clockapp.features.alarms.presentation.create_alarm.state.AlarmFlagsChangeEvent
 import com.eva.clockapp.features.alarms.presentation.create_alarm.state.CreateAlarmEvents
 import com.eva.clockapp.features.alarms.presentation.create_alarm.state.CreateAlarmState
+import com.eva.clockapp.features.alarms.presentation.create_alarm.state.DateTimePickerState
 import com.eva.clockapp.features.alarms.presentation.util.toAlarmModel
 import com.eva.clockapp.features.alarms.presentation.util.toCreateModel
 import kotlinx.collections.immutable.ImmutableMap
@@ -56,14 +58,18 @@ class CreateAlarmViewModel(
 	private val savedStateHandle: SavedStateHandle,
 ) : AppViewModel() {
 
+	// core alarm state
 	private val _selectedDays = MutableStateFlow<WeekDays>(setOf())
 	private val _alarmTime = MutableStateFlow(LocalTime(0, 0))
 	private val _startTime = MutableStateFlow(LocalTime(0, 0))
-	private val _alarmLabel = MutableStateFlow("")
 
+	// additional states
+	private val _alarmLabel = MutableStateFlow("")
 	private val _selectedSound = MutableStateFlow(ringtonesUseCase.default)
 	private val _soundOptions = MutableStateFlow<Ringtones>(emptySet())
+	private val _background = MutableStateFlow<String?>(null)
 
+	// alarms flags
 	private val _alarmFlags = MutableStateFlow(AssociateAlarmFlags())
 	val flagsState = _alarmFlags.asStateFlow()
 
@@ -74,15 +80,29 @@ class CreateAlarmViewModel(
 	private val route: NavRoutes.CreateOrUpdateAlarmRoute
 		get() = savedStateHandle.toRoute<NavRoutes.CreateOrUpdateAlarmRoute>()
 
+	private val _pickerState =
+		combine(_selectedDays, _startTime, _alarmTime) { weekDays, startTime, selectedTime ->
+			DateTimePickerState(
+				weekDays = weekDays,
+				startTime = startTime,
+				selectedTime = selectedTime
+			)
+		}.stateIn(
+			scope = viewModelScope,
+			started = SharingStarted.Eagerly,
+			initialValue = DateTimePickerState()
+		)
+
 	val createAlarmState: StateFlow<CreateAlarmState> = combine(
-		_selectedDays, _startTime, _alarmTime, _alarmLabel, _selectedSound,
-	) { weekDays, startTime, selectedTime, label, sound ->
+		_pickerState, _alarmLabel, _selectedSound, _background
+	) { pickerState, label, sound, background ->
 		CreateAlarmState(
-			selectedDays = weekDays.toImmutableSet(),
-			startTime = startTime,
-			selectedTime = selectedTime,
+			selectedDays = pickerState.weekDays.toImmutableSet(),
+			startTime = pickerState.startTime,
+			selectedTime = pickerState.selectedTime,
 			labelState = label,
 			ringtone = sound,
+			backgroundImageUri = background,
 			isAlarmCreate = route.alarmId == null,
 		)
 	}.onStart { updateParametersForAlarm() }
@@ -107,9 +127,13 @@ class CreateAlarmViewModel(
 
 	fun onEvent(event: CreateAlarmEvents) {
 		when (event) {
-			is CreateAlarmEvents.OnAlarmTimeChange -> _alarmTime.update { event.time }
-			is CreateAlarmEvents.OnLabelValueChange -> _alarmLabel.update { event.newValue }
+			is CreateAlarmEvents.OnAlarmTimeChange -> {
+				Log.d("ALARMS", "${event.time}")
+				_alarmTime.update { event.time }
+			}
 
+			is CreateAlarmEvents.OnLabelValueChange -> _alarmLabel.update { event.newValue }
+			is CreateAlarmEvents.OnSelectUriForBackground -> _background.update { event.background }
 			is CreateAlarmEvents.OnAddOrRemoveWeekDay -> _selectedDays.update { days ->
 				if (event.dayOfWeek in days)
 					days.filterNot { it == event.dayOfWeek }.toSet()
@@ -205,7 +229,9 @@ class CreateAlarmViewModel(
 
 	private fun onCreateNewAlarm() {
 		viewModelScope.launch {
-			val model = createAlarmState.value.toCreateModel(flags = flagsState.value)
+			val model = createAlarmState.value.toCreateModel(
+				flags = flagsState.value,
+			)
 
 			val result = validator.validateCreateAlarm(model)
 			if (!result.isValid && result.message != null) {
@@ -228,8 +254,10 @@ class CreateAlarmViewModel(
 	private fun onUpdateAlarm() {
 		val alarmId = route.alarmId ?: return
 		viewModelScope.launch {
-			val updateModel = createAlarmState.value
-				.toAlarmModel(alarmId = alarmId, flags = flagsState.value)
+			val updateModel = createAlarmState.value.toAlarmModel(
+				alarmId = alarmId,
+				flags = flagsState.value,
+			)
 
 			val result = validator.validateUpdate(updateModel)
 			if (!result.isValid && result.message != null) {
@@ -261,31 +289,28 @@ class CreateAlarmViewModel(
 			return@launch
 		}
 
-		// Update the alarm parameters
 		val resource = repository.getAlarmFromId(alarmId)
-		when (resource) {
-			is Resource.Success -> {
-				val alarm = resource.data
-
+		resource.fold(
+			onSuccess = { alarm ->
 				updateTimeOnStart(alarm.time)
+				// Update the alarm parameters
 
 				_selectedDays.update { alarm.weekDays }
 				_alarmFlags.update { alarm.flags }
 				_alarmLabel.update { alarm.label ?: "" }
+				_background.update { alarm.background }
 
 				val sound = _soundOptions.value.find { it.uri == alarm.soundUri }
 					?: ringtonesUseCase.default
 				_selectedSound.update { sound }
-
-			}
-
-			is Resource.Error -> (resource.message ?: resource.error.message)?.let { message ->
-				_uiEvents.emit(UiEvents.ShowSnackBar(message))
-				_uiEvents.emit(UiEvents.NavigateBack)
-			}
-
-			else -> {}
-		}
+			},
+			onError = { err, message ->
+				(message ?: err.message)?.let { message ->
+					_uiEvents.emit(UiEvents.ShowSnackBar(message))
+					_uiEvents.emit(UiEvents.NavigateBack)
+				}
+			},
+		)
 	}
 
 	private fun updateTimeOnStart(time: LocalTime) {

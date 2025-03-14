@@ -54,4 +54,7 @@ data class AlarmsEntity(
 
 	@ColumnInfo(name = "ALARM_SOUND_FILE")
 	val alarmSoundUri: String? = null,
+
+	@ColumnInfo(name = "BACKGROUND_URI")
+	val background: String? = null,
 )

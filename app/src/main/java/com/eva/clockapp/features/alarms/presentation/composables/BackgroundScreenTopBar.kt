@@ -11,6 +11,7 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.MediumTopAppBar
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBarScrollBehavior
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -27,6 +28,7 @@ fun BackgroundScreenTopBar(
 	onSelectFromDevice: () -> Unit,
 	modifier: Modifier = Modifier,
 	navigation: @Composable () -> Unit,
+	onDone: () -> Unit = {},
 	scrollBehavior: TopAppBarScrollBehavior? = null,
 ) {
 
@@ -36,6 +38,9 @@ fun BackgroundScreenTopBar(
 		title = { Text(text = stringResource(R.string.select_alarms_background_title)) },
 		navigationIcon = navigation,
 		actions = {
+			TextButton(onClick = onDone) {
+				Text(text = stringResource(R.string.action_done))
+			}
 			Box {
 				IconButton(onClick = { showDropDown = true }) {
 					Icon(Icons.Default.MoreVert, contentDescription = null)

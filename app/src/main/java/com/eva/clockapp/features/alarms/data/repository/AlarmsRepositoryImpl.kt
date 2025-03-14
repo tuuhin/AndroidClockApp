@@ -9,7 +9,6 @@ import com.eva.clockapp.features.alarms.data.database.AlarmsDao
 import com.eva.clockapp.features.alarms.data.database.AlarmsEntity
 import com.eva.clockapp.features.alarms.data.database.toEntity
 import com.eva.clockapp.features.alarms.data.database.toModel
-import com.eva.clockapp.features.alarms.data.utils.createAlarmToastMessage
 import com.eva.clockapp.features.alarms.domain.controllers.AlarmsController
 import com.eva.clockapp.features.alarms.domain.exceptions.NoMatchingAlarmFoundException
 import com.eva.clockapp.features.alarms.domain.models.AlarmsModel
@@ -22,6 +21,10 @@ import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.withContext
+import kotlinx.datetime.Clock
+import kotlinx.datetime.LocalDateTime
+import kotlinx.datetime.TimeZone
+import kotlinx.datetime.toInstant
 
 class AlarmsRepositoryImpl(
 	private val alarmsDao: AlarmsDao,
@@ -43,6 +46,7 @@ class AlarmsRepositoryImpl(
 			} catch (e: SQLiteException) {
 				emit(Resource.Error(e, "SQLITE exception"))
 			} catch (e: Exception) {
+				e.printStackTrace()
 				emit(Resource.Error(e, message = "SOME KIND OF EXCEPTION"))
 			}
 		}.flowOn(Dispatchers.IO)
@@ -101,7 +105,7 @@ class AlarmsRepositoryImpl(
 				val model = entity.toModel()
 				// update alarm
 				if (model.isAlarmEnabled) {
-					val result = controller.createAlarm(model,true)
+					val result = controller.createAlarm(model, true)
 
 					val message = if (result.isSuccess) {
 						val alarmTime = result.getOrThrow()
@@ -158,6 +162,25 @@ class AlarmsRepositoryImpl(
 		} catch (e: Exception) {
 			Resource.Error(e, message = context.getString(R.string.error_unknown))
 		}
+	}
+
+	private fun Context.createAlarmToastMessage(alarmTime: LocalDateTime): String {
+		val timeZone = TimeZone.currentSystemDefault()
+		val duration = alarmTime.toInstant(timeZone) - Clock.System.now()
+
+		val days = duration.inWholeDays
+		val hours = duration.inWholeHours % 24
+		val minutes = duration.inWholeMinutes % 60
+
+		val alarmText = buildString {
+			when {
+				days > 0 -> append("$days d")
+				hours > 0 -> append("$hours h")
+				minutes > 0 -> append("$minutes m")
+				else -> return getString(R.string.next_alarm_within_one_min)
+			}
+		}
+		return getString(R.string.alarm_set_after_time, alarmText)
 	}
 
 }

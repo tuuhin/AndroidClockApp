@@ -1,9 +1,39 @@
 {
-  "wallpapers": [
-    "https://images.pexels.com/photos/2088205/pexels-photo-2088205.jpeg",
-    "https://images.pexels.com/photos/1939485/pexels-photo-1939485.jpeg",
-    "https://images.pexels.com/photos/1670187/pexels-photo-1670187.jpeg",
-    "https://images.pexels.com/photos/2088203/pexels-photo-2088203.jpeg",
-    "https://images.pexels.com/photos/2310641/pexels-photo-2310641.jpeg"
+  "photos": [
+    {
+      "id": 2088205,
+      "avg_color": "#E0CECE",
+      "src": "https://images.pexels.com/photos/2088205/pexels-photo-2088205.jpeg"
+    },
+    {
+      "id": 1939485,
+      "avg_color": "#E0E0E0",
+      "src": "https://images.pexels.com/photos/1939485/pexels-photo-1939485.jpeg"
+    },
+    {
+      "id": 1684151,
+      "avg_color": "#B1AEAB",
+      "src": "https://images.pexels.com/photos/1684151/pexels-photo-1684151.jpeg"
+    },
+    {
+      "id": 1486974,
+      "avg_color": "#876C76",
+      "src": "https://images.pexels.com/photos/1486974/pexels-photo-1486974.jpeg"
+    },
+    {
+      "id": 2171643,
+      "avg_color": "#765649",
+      "src": "https://images.pexels.com/photos/2171643/pexels-photo-2171643.jpeg"
+    },
+    {
+      "id": 2110951,
+      "avg_color": "#2F97CB",
+      "src": "https://images.pexels.com/photos/2110951/pexels-photo-2110951.jpeg"
+    },
+    {
+      "id": 1572386,
+      "avg_color": "#817A81",
+      "src": "https://images.pexels.com/photos/1572386/pexels-photo-1572386.jpeg"
+    }
   ]
 }

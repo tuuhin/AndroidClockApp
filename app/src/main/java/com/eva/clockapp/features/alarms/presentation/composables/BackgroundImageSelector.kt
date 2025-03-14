@@ -17,13 +17,12 @@ import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.NotInterested
-import androidx.compose.material3.Card
 import androidx.compose.material3.CardColors
 import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
@@ -34,6 +33,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.geometry.Size
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.FilterQuality
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.graphics.toArgb
@@ -46,6 +46,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.tooling.preview.PreviewLightDark
 import androidx.compose.ui.unit.dp
+import androidx.core.graphics.drawable.toDrawable
 import coil3.ColorImage
 import coil3.annotation.ExperimentalCoilApi
 import coil3.compose.AsyncImagePainter
@@ -54,15 +55,17 @@ import coil3.compose.LocalAsyncImagePreviewHandler
 import coil3.compose.SubcomposeAsyncImage
 import coil3.compose.SubcomposeAsyncImageContent
 import coil3.request.ImageRequest
+import coil3.request.placeholder
 import com.eva.clockapp.R
+import com.eva.clockapp.features.alarms.domain.models.WallpaperPhoto
+import com.eva.clockapp.features.alarms.presentation.util.AlarmPreviewFakes
 import com.eva.clockapp.ui.theme.ClockAppTheme
 import kotlinx.collections.immutable.ImmutableList
-import kotlinx.collections.immutable.toPersistentList
 
 @OptIn(ExperimentalCoilApi::class, ExperimentalMaterial3Api::class)
 @Composable
 fun BackgroundImageSelector(
-	items: ImmutableList<String>,
+	imageOptions: ImmutableList<WallpaperPhoto>,
 	onSelectImage: (String?) -> Unit,
 	size: Size = Size(160f, 280f),
 	modifier: Modifier = Modifier,
@@ -71,15 +74,15 @@ fun BackgroundImageSelector(
 ) {
 	val isInspectionMode = LocalInspectionMode.current
 
-	val lazyColumKey: ((Int, String) -> Any)? = remember {
+	val lazyColumKey: ((Int, WallpaperPhoto) -> Any)? = remember {
 		if (isInspectionMode) return@remember null
-		{ _, item -> item }
+		{ _, item -> item.id }
 	}
 
-	Card(
+	Surface(
 		modifier = modifier,
 		shape = shape,
-		colors = colors,
+		color = colors.containerColor,
 	) {
 		Column(
 			modifier = Modifier.padding(all = dimensionResource(R.dimen.card_internal_padding_large)),
@@ -100,9 +103,9 @@ fun BackgroundImageSelector(
 						size = size,
 						onClick = { onSelectImage(null) },
 					)
-					itemsIndexed(items = items, key = lazyColumKey) { _, itemUri ->
+					itemsIndexed(items = imageOptions, key = lazyColumKey) { _, itemUri ->
 						BackgroundImageOption(
-							uri = itemUri,
+							photo = itemUri,
 							size = size,
 							onSelectImage = onSelectImage
 						)
@@ -121,7 +124,7 @@ fun BackgroundImageSelector(
 
 @Composable
 private fun BackgroundImageOption(
-	uri: String,
+	photo: WallpaperPhoto,
 	onSelectImage: (String) -> Unit,
 	size: Size = Size(160f, 280f),
 	modifier: Modifier = Modifier,
@@ -131,10 +134,11 @@ private fun BackgroundImageOption(
 
 	SubcomposeAsyncImage(
 		model = ImageRequest.Builder(context)
-			.data(uri)
+			.data(photo.uri)
+			.placeholder(drawable = photo.placeholderColor.toDrawable())
 			.size(size.width.toInt(), size.height.toInt())
 			.build(),
-		contentDescription = "Image for :$uri",
+		contentDescription = "Image for :$photo",
 		contentScale = ContentScale.Crop,
 		filterQuality = FilterQuality.Low,
 		modifier = modifier
@@ -148,21 +152,21 @@ private fun BackgroundImageOption(
 				width = with(density) { size.width.toDp() }
 			)
 			.clip(MaterialTheme.shapes.large)
-			.clickable(onClick = { onSelectImage(uri) }, role = Role.Image)
+			.clickable(onClick = { onSelectImage(photo.uri) }, role = Role.Image)
 	) {
 		val state by painter.state.collectAsState()
 		when (state) {
-			is AsyncImagePainter.State.Loading, AsyncImagePainter.State.Empty -> Box(
+			AsyncImagePainter.State.Empty -> Box(
 				modifier = Modifier
 					.background(color = MaterialTheme.colorScheme.surfaceContainerHigh)
 					.clip(MaterialTheme.shapes.medium),
-				contentAlignment = Alignment.Center
-			) {
-				val isLoading = state is AsyncImagePainter.State.Loading
-				if (isLoading) {
-					CircularProgressIndicator()
-				}
-			}
+			)
+
+			is AsyncImagePainter.State.Loading -> Box(
+				modifier = Modifier
+					.background(color = Color(photo.placeholderColor))
+					.clip(MaterialTheme.shapes.medium),
+			)
 
 			is AsyncImagePainter.State.Success -> SubcomposeAsyncImageContent()
 
@@ -205,5 +209,7 @@ private fun LazyListScope.blankItem(size: Size = Size(160f, 280f), onClick: () -
 @PreviewLightDark
 @Composable
 private fun BackgroundImageSelectorPreview() = ClockAppTheme {
-	BackgroundImageSelector(items = List(10) { ":$it" }.toPersistentList(), onSelectImage = {})
+	BackgroundImageSelector(
+		imageOptions = AlarmPreviewFakes.RANDOM_BACKGROUND_OPTIONS,
+		onSelectImage = {})
 }

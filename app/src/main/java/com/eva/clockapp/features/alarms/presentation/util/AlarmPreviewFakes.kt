@@ -4,6 +4,7 @@ import com.eva.clockapp.features.alarms.domain.models.AlarmsModel
 import com.eva.clockapp.features.alarms.domain.models.AssociateAlarmFlags
 import com.eva.clockapp.features.alarms.domain.models.RingtoneMusicFile
 import com.eva.clockapp.features.alarms.domain.models.VibrationPattern
+import com.eva.clockapp.features.alarms.domain.models.WallpaperPhoto
 import com.eva.clockapp.features.alarms.presentation.alarms.state.SelectableAlarmModel
 import com.eva.clockapp.features.alarms.presentation.create_alarm.state.CreateAlarmState
 import kotlinx.collections.immutable.persistentListOf
@@ -57,5 +58,6 @@ object AlarmPreviewFakes {
 
 	val FAKE_ALARMS_MODEL_LIST_EMPTY = persistentListOf<SelectableAlarmModel>()
 
-	val RANDOM_BACKGROUND_OPTIONS = List(10) { "$it" }.toImmutableList()
+	val RANDOM_BACKGROUND_OPTIONS =
+		List(10) { WallpaperPhoto(id = it.toLong(), placeholderColor = 0, uri = "") }.toImmutableList()
 }

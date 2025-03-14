@@ -20,22 +20,28 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.PreviewLightDark
 import com.eva.clockapp.R
 import com.eva.clockapp.core.presentation.LocalSnackBarHostState
+import com.eva.clockapp.features.alarms.domain.models.WallpaperPhoto
 import com.eva.clockapp.features.alarms.presentation.composables.BackgroundScreenTopBar
 import com.eva.clockapp.features.alarms.presentation.composables.SelectBackgroundScreenContent
+import com.eva.clockapp.features.alarms.presentation.create_alarm.state.AlarmsBackgroundState
 import com.eva.clockapp.features.alarms.presentation.create_alarm.state.CreateAlarmEvents
+import com.eva.clockapp.features.alarms.presentation.create_alarm.state.CreateAlarmState
 import com.eva.clockapp.features.alarms.presentation.util.AlarmPreviewFakes
 import com.eva.clockapp.ui.theme.ClockAppTheme
 import kotlinx.collections.immutable.ImmutableList
+import kotlinx.datetime.LocalTime
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun AlarmsBackgroundScreen(
+private fun AlarmsBackgroundScreen(
 	isItemsLoaded: Boolean,
-	wallpaperOptions: ImmutableList<String>,
-	onEvent: (CreateAlarmEvents) -> Unit,
+	wallpaperOptions: ImmutableList<WallpaperPhoto>,
+	onSelectUri: (String?) -> Unit,
 	modifier: Modifier = Modifier,
 	selectedBackground: String? = null,
+	alarmTime: LocalTime = LocalTime(0, 0),
 	navigation: @Composable () -> Unit = {},
+	onSelectionDone: () -> Unit = {},
 ) {
 
 	val snackBarHostState = LocalSnackBarHostState.current
@@ -45,7 +51,7 @@ fun AlarmsBackgroundScreen(
 		contract = ActivityResultContracts.PickVisualMedia(),
 		onResult = { selectedUri ->
 			if (selectedUri != null) {
-				onEvent(CreateAlarmEvents.OnSelectAlarmBackground(selectedUri.toString()))
+				onSelectUri(selectedUri.toString())
 			}
 		}
 	)
@@ -62,6 +68,7 @@ fun AlarmsBackgroundScreen(
 					launcher.launch(requestBuilder)
 				},
 				navigation = navigation,
+				onDone = onSelectionDone,
 				scrollBehavior = scrollBehavior
 			)
 		},
@@ -71,8 +78,9 @@ fun AlarmsBackgroundScreen(
 		SelectBackgroundScreenContent(
 			isLoaded = isItemsLoaded,
 			selectedUri = selectedBackground,
-			backgroundOptions = wallpaperOptions,
-			onSelectUri = { onEvent(CreateAlarmEvents.OnSelectAlarmBackground(it)) },
+			options = wallpaperOptions,
+			alarmTime = alarmTime,
+			onSelectUri = onSelectUri,
 			modifier = Modifier
 				.padding(scPadding)
 				.padding(dimensionResource(R.dimen.sc_padding))
@@ -81,13 +89,33 @@ fun AlarmsBackgroundScreen(
 	}
 }
 
+@Composable
+fun AlarmsBackgroundScreen(
+	state: CreateAlarmState,
+	wallpapersState: AlarmsBackgroundState,
+	onEvent: (CreateAlarmEvents) -> Unit,
+	modifier: Modifier = Modifier,
+	navigation: @Composable () -> Unit = {},
+	onSelectionDone: () -> Unit = {},
+) = AlarmsBackgroundScreen(
+	isItemsLoaded = wallpapersState.isLoaded,
+	wallpaperOptions = wallpapersState.options,
+	selectedBackground = state.backgroundImageUri,
+	alarmTime = state.selectedTime,
+	onSelectUri = { onEvent(CreateAlarmEvents.OnSelectUriForBackground(it)) },
+	modifier = modifier,
+	navigation = navigation,
+	onSelectionDone = onSelectionDone,
+)
+
+
 @PreviewLightDark
 @Composable
 private fun AlarmsBackgroundScreenPreview() = ClockAppTheme {
 	AlarmsBackgroundScreen(
 		isItemsLoaded = true,
 		wallpaperOptions = AlarmPreviewFakes.RANDOM_BACKGROUND_OPTIONS,
-		onEvent = {},
+		onSelectUri = {},
 		navigation = {
 			Icon(
 				imageVector = Icons.AutoMirrored.Default.ArrowBack,

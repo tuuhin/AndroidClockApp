@@ -40,6 +40,7 @@ fun CreateAlarmScreen(
 	onNavigateVibrationScreen: () -> Unit = {},
 	onNavigateSnoozeScreen: () -> Unit = {},
 	onNavigateSoundScreen: () -> Unit = {},
+	onNavigateBackgroundScreen: () -> Unit = {},
 ) {
 	val snackBarHostState = LocalSnackBarHostState.current
 	val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior()
@@ -48,10 +49,10 @@ fun CreateAlarmScreen(
 		topBar = {
 			MediumTopAppBar(
 				title = {
-					val text = if (state.isAlarmCreate)
-						stringResource(R.string.create_alarm_screen_title)
-					else stringResource(R.string.update_alarm_screen_title)
-					Text(text = text)
+					Text(
+						text = if (state.isAlarmCreate) stringResource(R.string.create_alarm_screen_title)
+						else stringResource(R.string.update_alarm_screen_title)
+					)
 				},
 				actions = {
 					if (state.isAlarmCreate) {
@@ -79,6 +80,7 @@ fun CreateAlarmScreen(
 			onNavigateVibrationScreen = onNavigateVibrationScreen,
 			onNavigateSnoozeScreen = onNavigateSnoozeScreen,
 			onNavigateSoundScreen = onNavigateSoundScreen,
+			onNavigateBackgroundScreen = onNavigateBackgroundScreen,
 			contentPadding = PaddingValues(all = dimensionResource(R.dimen.sc_padding)),
 			modifier = Modifier
 				.fillMaxSize()

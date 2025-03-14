@@ -12,8 +12,8 @@ import android.view.WindowManager
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Surface
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.ui.Modifier
 import androidx.core.content.ContextCompat
 import androidx.core.content.getSystemService
 import androidx.core.view.WindowCompat
@@ -57,20 +57,21 @@ class AlarmsActivity : ComponentActivity() {
 
 		val timeInMillis = intent.getLongExtra(ClockAppIntents.EXTRAS_ALARMS_TIME_IN_MILLIS, 0)
 		val labelText = intent.getStringExtra(ClockAppIntents.EXTRAS_ALARMS_LABEL_TEXT)
+		val imageUri = intent.getStringExtra(ClockAppIntents.EXTRAS_ALARM_BACKGROUND_IMAGE_URI)
 
 		val dateTime = Instant.Companion.fromEpochMilliseconds(timeInMillis)
 			.toLocalDateTime(TimeZone.Companion.currentSystemDefault())
 
 		setContent {
 			ClockAppTheme {
-				Surface(color = MaterialTheme.colorScheme.background) {
-					PlayAlarmsScreen(
-						dateTime = dateTime,
-						labelText = labelText,
-						onStopAlarm = { stopAlarm(alarmId) },
-						onSnoozeAlarm = { snoozeAlarm(alarmId) }
-					)
-				}
+				PlayAlarmsScreen(
+					dateTime = dateTime,
+					labelText = labelText,
+					backgroundImage = imageUri,
+					onStopAlarm = { stopAlarm(alarmId) },
+					onSnoozeAlarm = { snoozeAlarm(alarmId) },
+					modifier = Modifier.fillMaxSize()
+				)
 			}
 		}
 	}

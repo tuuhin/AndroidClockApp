@@ -1,0 +1,118 @@
+{
+  "formatVersion": 1,
+  "database": {
+    "version": 2,
+    "identityHash": "a2a65e90ad544c23b1e1fd9b42c6ef0b",
+    "entities": [
+      {
+        "tableName": "ALARMS_TABLE",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`_ID` INTEGER PRIMARY KEY AUTOINCREMENT, `ALARM_TIME` TEXT NOT NULL, `WEEK_DAYS` TEXT NOT NULL, `IS_ALARM_ENABLED` INTEGER NOT NULL, `VIBRATION_PATTERN` TEXT NOT NULL, `SNOOZE_INTERVAL` INTEGER NOT NULL, `SNOOZE_REPEAT_MODE` TEXT NOT NULL, `IS_SNOOZE_ENABLED` INTEGER NOT NULL, `IS_VIBRATION_ENABLED` INTEGER NOT NULL, `IS_SOUND_ENABLED` INTEGER NOT NULL, `IS_INCREMENTAL_VOLUME_INCREASE` INTEGER NOT NULL, `ALARM_VOLUME` REAL NOT NULL, `ASSOCIATE_LABEL` TEXT, `ALARM_SOUND_FILE` TEXT, `BACKGROUND_URI` TEXT)",
+        "fields": [
+          {
+            "fieldPath": "id",
+            "columnName": "_ID",
+            "affinity": "INTEGER",
+            "notNull": false
+          },
+          {
+            "fieldPath": "time",
+            "columnName": "ALARM_TIME",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "weekDays",
+            "columnName": "WEEK_DAYS",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "isAlarmEnabled",
+            "columnName": "IS_ALARM_ENABLED",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "vibrationPattern",
+            "columnName": "VIBRATION_PATTERN",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "snoozeInterval",
+            "columnName": "SNOOZE_INTERVAL",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "snoozeRepeatMode",
+            "columnName": "SNOOZE_REPEAT_MODE",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "isSnoozeEnabled",
+            "columnName": "IS_SNOOZE_ENABLED",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "isVibrationEnabled",
+            "columnName": "IS_VIBRATION_ENABLED",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "isSoundEnabled",
+            "columnName": "IS_SOUND_ENABLED",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "isVolumeStepIncrease",
+            "columnName": "IS_INCREMENTAL_VOLUME_INCREASE",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "alarmVolume",
+            "columnName": "ALARM_VOLUME",
+            "affinity": "REAL",
+            "notNull": true
+          },
+          {
+            "fieldPath": "label",
+            "columnName": "ASSOCIATE_LABEL",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "alarmSoundUri",
+            "columnName": "ALARM_SOUND_FILE",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "background",
+            "columnName": "BACKGROUND_URI",
+            "affinity": "TEXT",
+            "notNull": false
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": true,
+          "columnNames": [
+            "_ID"
+          ]
+        },
+        "indices": [],
+        "foreignKeys": []
+      }
+    ],
+    "views": [],
+    "setupQueries": [
+      "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, 'a2a65e90ad544c23b1e1fd9b42c6ef0b')"
+    ]
+  }
+}

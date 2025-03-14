@@ -49,8 +49,8 @@ class AlarmsNotificationProvider(private val context: Context) {
 			val bundle = bundleOf(
 				ClockAppIntents.EXTRA_ALARMS_ALARMS_ID to alarm.id,
 				ClockAppIntents.EXTRAS_ALARMS_LABEL_TEXT to alarm.label,
-				ClockAppIntents.EXTRAS_ALARMS_TIME_IN_MILLIS to alarmDateTime
-
+				ClockAppIntents.EXTRAS_ALARMS_TIME_IN_MILLIS to alarmDateTime,
+				ClockAppIntents.EXTRAS_ALARM_BACKGROUND_IMAGE_URI to alarm.background
 			)
 			putExtras(bundle)
 		}

@@ -25,6 +25,7 @@ object ClockAppIntents {
 	const val EXTRA_ALARMS_ALARMS_ID = "EXTRAS_ALARMS_ID"
 	const val EXTRAS_ALARMS_TIME_IN_MILLIS = "EXTRAS_ALARMS_TIME"
 	const val EXTRAS_ALARMS_LABEL_TEXT = "EXTRAS_LABEL_TEXT"
+	const val EXTRAS_ALARM_BACKGROUND_IMAGE_URI = "EXTRAS_BACKGROUND_IMAGE"
 
 	fun alarmIntentData(alarmId: Int) = "app://$PACKAGE_NAME/alarms/$alarmId".toUri()
 }

@@ -6,6 +6,7 @@ import kotlinx.datetime.LocalTime
 sealed interface CreateAlarmEvents {
 	data class OnAlarmTimeChange(val time: LocalTime) : CreateAlarmEvents
 	data class OnAddOrRemoveWeekDay(val dayOfWeek: DayOfWeek) : CreateAlarmEvents
+	data class OnSelectUriForBackground(val background: String?) : CreateAlarmEvents
 
 	data class OnLabelValueChange(val newValue: String) : CreateAlarmEvents
 

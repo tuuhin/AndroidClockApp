@@ -1,26 +1,30 @@
 package com.eva.clockapp.core.database
 
 import android.content.Context
+import androidx.room.AutoMigration
 import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
 import androidx.room.TypeConverters
 import com.eva.clockapp.core.database.convertors.LocalTimeConvertor
-import com.eva.clockapp.features.alarms.data.database.convertors.SnoozeIntervalConvertor
-import com.eva.clockapp.features.alarms.data.database.convertors.SnoozeRepeatConvertor
-import com.eva.clockapp.features.alarms.data.database.convertors.VibrationPatternConvertor
 import com.eva.clockapp.core.database.convertors.WeekdaysConvertor
 import com.eva.clockapp.features.alarms.data.database.AlarmsDao
 import com.eva.clockapp.features.alarms.data.database.AlarmsEntity
+import com.eva.clockapp.features.alarms.data.database.convertors.SnoozeIntervalConvertor
+import com.eva.clockapp.features.alarms.data.database.convertors.SnoozeRepeatConvertor
+import com.eva.clockapp.features.alarms.data.database.convertors.VibrationPatternConvertor
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.asExecutor
 
 @Database(
-	version = 1,
+	version = 2,
 	exportSchema = true,
 	entities = [
 		AlarmsEntity::class
 	],
+	autoMigrations = [
+		AutoMigration(from = 1, to = 2)
+	]
 )
 @TypeConverters(
 	value = [

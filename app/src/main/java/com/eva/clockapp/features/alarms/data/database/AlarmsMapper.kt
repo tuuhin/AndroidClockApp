@@ -20,7 +20,8 @@ fun AlarmsEntity.toModel(): AlarmsModel = AlarmsModel(
 	),
 	isAlarmEnabled = isAlarmEnabled,
 	label = label,
-	soundUri = alarmSoundUri
+	soundUri = alarmSoundUri,
+	background = background,
 )
 
 fun CreateAlarmModel.toEntity(): AlarmsEntity = AlarmsEntity(
@@ -37,7 +38,8 @@ fun CreateAlarmModel.toEntity(): AlarmsEntity = AlarmsEntity(
 	snoozeRepeatMode = flags.snoozeRepeatMode,
 	vibrationPattern = flags.vibrationPattern,
 	alarmVolume = flags.alarmVolume,
-	alarmSoundUri = ringtone?.uri.toString()
+	alarmSoundUri = ringtone?.uri.toString(),
+	background = background,
 )
 
 fun AlarmsModel.toEntity(): AlarmsEntity = AlarmsEntity(
@@ -54,5 +56,6 @@ fun AlarmsModel.toEntity(): AlarmsEntity = AlarmsEntity(
 	snoozeRepeatMode = flags.snoozeRepeatMode,
 	vibrationPattern = flags.vibrationPattern,
 	alarmVolume = flags.alarmVolume,
-	alarmSoundUri = soundUri
+	alarmSoundUri = soundUri,
+	background = background,
 )
