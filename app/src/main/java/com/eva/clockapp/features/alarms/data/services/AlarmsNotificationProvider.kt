@@ -9,6 +9,7 @@ import com.eva.clockapp.R
 import com.eva.clockapp.core.constants.ClockAppIntents
 import com.eva.clockapp.core.constants.IntentRequestCodes
 import com.eva.clockapp.core.constants.NotificationsConstants
+import com.eva.clockapp.core.utils.HH_MM
 import com.eva.clockapp.core.utils.HH_MM_A
 import com.eva.clockapp.core.utils.WEEK_DAY_AM_TIME
 import com.eva.clockapp.core.utils.buildNotificationAction
@@ -16,7 +17,7 @@ import com.eva.clockapp.core.utils.buildPendingIntentForegroundService
 import com.eva.clockapp.core.utils.buildPendingIntentReceiver
 import com.eva.clockapp.features.alarms.data.receivers.UpcomingAlarmReceiver
 import com.eva.clockapp.features.alarms.domain.models.AlarmsModel
-import com.eva.clockapp.features.alarms.presentation.play_alarm.AlarmsActivity
+import com.eva.clockapp.features.alarms.presentation.activity.AlarmsActivity
 import kotlinx.datetime.LocalDateTime
 import kotlinx.datetime.LocalTime
 import kotlinx.datetime.TimeZone
@@ -141,6 +142,26 @@ class AlarmsNotificationProvider(private val context: Context) {
 			.setContentTitle(context.getString(R.string.alarms_rescheduled_notification_title))
 			.setContentText(context.getString(R.string.alarms_rescheduled_notification_text))
 			.setOnlyAlertOnce(true)
+			.build()
+	}
+
+	fun createMissedAlarmNotification(alarm: AlarmsModel): Notification {
+
+		val title = context.getString(R.string.missed_alarm_notification_title)
+		val dateTimeString = alarm.time.format(LocalTime.Formats.HH_MM)
+		val text = context.getString(R.string.missed_alarm_notification_text, dateTimeString)
+
+		return Notification.Builder(
+			context,
+			NotificationsConstants.CLOCK_EVENT_NOTIFICATION_CHANNEL_ID
+		)
+			.setSmallIcon(R.drawable.ic_upcoming_alarm)
+			.setVisibility(Notification.VISIBILITY_PUBLIC)
+			.setCategory(Notification.CATEGORY_EVENT)
+			.setContentTitle(title)
+			.setContentText(text)
+			.setShowWhen(false)
+			.setAutoCancel(true)
 			.build()
 	}
 

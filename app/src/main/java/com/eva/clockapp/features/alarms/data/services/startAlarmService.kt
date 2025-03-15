@@ -18,7 +18,7 @@ fun Service.startAlarmsForegroundService(id: Int, notification: Notification) {
 			Log.e(LOGGER_TAG, "UNABLE TO LAUNCH FOREGROUND SERVICE", e)
 		}
 	} else {
-		val serviceType = ServiceInfo.FOREGROUND_SERVICE_TYPE_MEDIA_PLAYBACK
+		val serviceType = ServiceInfo.FOREGROUND_SERVICE_TYPE_MANIFEST
 		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
 			try {
 				startForeground(id, notification, serviceType)

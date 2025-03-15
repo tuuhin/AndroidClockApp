@@ -7,6 +7,7 @@ import android.content.Intent
 import android.util.Log
 import androidx.core.content.getSystemService
 import com.eva.clockapp.core.constants.ClockAppIntents
+import com.eva.clockapp.core.constants.NotificationsConstants
 import com.eva.clockapp.features.alarms.data.services.AlarmsNotificationProvider
 import com.eva.clockapp.features.alarms.domain.controllers.AlarmsController
 import com.eva.clockapp.features.alarms.domain.repository.AlarmsRepository
@@ -46,7 +47,9 @@ class UpcomingAlarmReceiver : BroadcastReceiver(), KoinComponent {
 			query.fold(
 				onSuccess = { alarm ->
 					val notification = notificationUtils.createUpcomingNotification(alarm)
-					notificationManager?.notify(alarmId, notification)
+					val notificationId = NotificationsConstants.notificationIdFromModel(alarm)
+					// show notification
+					notificationManager?.notify(notificationId, notification)
 					Log.d(TAG, "UPCOMING ALARM NOTIFICATION SHOWN")
 				},
 				onError = { err, _ -> err.printStackTrace() }
@@ -65,7 +68,8 @@ class UpcomingAlarmReceiver : BroadcastReceiver(), KoinComponent {
 					Log.d(TAG, "ALARM CANCEL ACTION ")
 					controller.cancelAlarm(alarm)
 					// then cancel the notification
-					notificationManager?.cancel(alarmId)
+					val notificationId = NotificationsConstants.notificationIdFromModel(alarm)
+					notificationManager?.cancel(notificationId)
 				},
 				onError = { err, _ -> err.printStackTrace() }
 			)

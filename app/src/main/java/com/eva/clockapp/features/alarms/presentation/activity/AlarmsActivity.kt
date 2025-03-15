@@ -1,4 +1,4 @@
-package com.eva.clockapp.features.alarms.presentation.play_alarm
+package com.eva.clockapp.features.alarms.presentation.activity
 
 import android.app.KeyguardManager
 import android.content.BroadcastReceiver
@@ -21,6 +21,7 @@ import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.WindowInsetsControllerCompat
 import com.eva.clockapp.core.constants.ClockAppIntents
 import com.eva.clockapp.features.alarms.data.services.AlarmsControllerService
+import com.eva.clockapp.features.alarms.presentation.alarms.PlayAlarmsScreen
 import com.eva.clockapp.ui.theme.ClockAppTheme
 import kotlinx.datetime.Instant
 import kotlinx.datetime.TimeZone
@@ -40,17 +41,16 @@ class AlarmsActivity : ComponentActivity() {
 	override fun onCreate(savedInstanceState: Bundle?) {
 		super.onCreate(savedInstanceState)
 
-		enableEdgeToEdge()
-		hideSystemBars()
-		turnOffKeyguard()
-
-		// receiver to finish this activity
 		ContextCompat.registerReceiver(
-			applicationContext,
+			this@AlarmsActivity,
 			finishActivityReceiver,
 			IntentFilter(ClockAppIntents.ACTION_FINISH_ALARM_ACTIVITY),
 			ContextCompat.RECEIVER_EXPORTED
 		)
+
+		enableEdgeToEdge()
+		hideSystemBars()
+		turnOffKeyguard()
 
 		val alarmId = intent.getIntExtra(ClockAppIntents.EXTRA_ALARMS_ALARMS_ID, -1)
 		if (alarmId == -1) finishAndRemoveTask()
@@ -94,13 +94,6 @@ class AlarmsActivity : ComponentActivity() {
 	}
 
 	override fun onDestroy() {
-		try {
-			val intent = Intent(applicationContext, AlarmsControllerService::class.java)
-			applicationContext.stopService(intent)
-		} catch (e: Exception) {
-			e.printStackTrace()
-		}
-		// remove the receiver
 		unregisterReceiver(finishActivityReceiver)
 		super.onDestroy()
 	}
@@ -111,7 +104,7 @@ class AlarmsActivity : ComponentActivity() {
 				action = ClockAppIntents.ACTION_CANCEL_ALARM
 				data = ClockAppIntents.alarmIntentData(alarmId)
 			}
-			ContextCompat.startForegroundService(applicationContext, intent)
+			applicationContext.startService(intent)
 		} catch (e: Exception) {
 			e.printStackTrace()
 		}
@@ -123,7 +116,7 @@ class AlarmsActivity : ComponentActivity() {
 				action = ClockAppIntents.ACTION_SNOOZE_ALARM
 				data = ClockAppIntents.alarmIntentData(alarmId)
 			}
-			ContextCompat.startForegroundService(applicationContext, intent)
+			applicationContext.startService(intent)
 		} catch (e: Exception) {
 			e.printStackTrace()
 		}

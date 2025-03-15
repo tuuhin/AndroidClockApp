@@ -1,7 +1,9 @@
 package com.eva.clockapp.features.alarms.data.services
 
+import android.app.NotificationManager
 import android.content.Intent
 import android.util.Log
+import androidx.core.content.getSystemService
 import androidx.lifecycle.LifecycleService
 import androidx.lifecycle.lifecycleScope
 import com.eva.clockapp.core.constants.ClockAppIntents
@@ -37,6 +39,7 @@ class AlarmsControllerService : LifecycleService(), KoinComponent {
 	private val notifications by inject<AlarmsNotificationProvider>()
 
 	private val _wakeLock by lazy { AlarmsWakeLockManager(applicationContext) }
+	private val _notificationManager by lazy { getSystemService<NotificationManager>() }
 
 	private val basicTimerWatch = BasicTimerWatch()
 	private var _snoozeCount: Int = 0
@@ -104,53 +107,44 @@ class AlarmsControllerService : LifecycleService(), KoinComponent {
 			notifications.createNotification(applicationContext, alarm)
 		)
 		// start the alarms
-		with(alarm) {
-			if (flags.isVibrationEnabled) {
-				// plain vibration
-				vibrator.startVibration(flags.vibrationPattern, true)
-			}
-			if (flags.isSoundEnabled && soundUri != null) {
-
-				val playVolume = if (flags.isVolumeStepIncrease)
-					AssociateAlarmFlags.MIN_ALARM_SOUND
-				else flags.alarmVolume
-				// start playing the sound
-				player.playSound(soundUri, playVolume, true)
-				// if incremental increase
-				if (flags.isVolumeStepIncrease) {
-					val flow = incrementalFloatSequence(flags.alarmVolume)
-					// step-by-step increase the volume
-					flow.onEach { volume -> player.changeVolume(volume) }
-						.launchIn(lifecycleScope)
-				}
-			}
-		}
+		alarm.playSoundAndVibration()
 	}
 
-	private fun onSnoozeAlarm() {
+	private fun onSnoozeAlarm() = _currentAlarm?.let { alarm ->
 
-		val isSnoozeEnabled = _currentAlarm?.flags?.isSnoozeEnabled == true
-		val snoozeDuration = _currentAlarm?.flags?.snoozeInterval?.duration ?: Duration.ZERO
-		val snoozeRepeat = _currentAlarm?.flags?.snoozeRepeatMode?.times ?: 0
+		val isSnoozeEnabled = alarm.flags.isSnoozeEnabled
+		val snoozeDuration = alarm.flags.snoozeInterval.duration
+		val snoozeRepeat = alarm.flags.snoozeRepeatMode.times
 
-		if (!isSnoozeEnabled || snoozeDuration == Duration.ZERO || snoozeRepeat == 0) {
-			Log.d(TAG, "SNOOZE WAS NOT ENABLED")
+		if (!isSnoozeEnabled || snoozeDuration == Duration.ZERO) {
+			Log.d(TAG, "SNOOZE WAS NOT ENABLED OR SNOOZE DURATION IS ZERO")
 			stopForeground(STOP_FOREGROUND_REMOVE)
 			stopSelf()
-			return
+			return@let
 		}
 		if (_snoozeCount == snoozeRepeat) {
-			// alarms missed notification
+			// Missed alarm notification
+			val notificationId = NotificationsConstants.notificationIdFromModel(alarm)
+			val missedNotification = notifications.createMissedAlarmNotification(alarm)
+			_notificationManager?.notify(notificationId, missedNotification)
+
 			Log.d(TAG, "CANNOT SNOOZE ALARM ANY MORE STOPPING SERVICE")
 			stopSelf()
-			return
+			return@let
 		}
 		// now we need to snooze the alarm
 		basicTimerWatch.start(snoozeDuration)
-		stopForeground(STOP_FOREGROUND_DETACH)
+
+		// remove the service
+		stopForeground(STOP_FOREGROUND_REMOVE)
+		// stop the running tasks
 		stopRunningTasks()
 		Log.d(TAG, "SERVICE IS RUNNING ALARM IS SNOOZED")
+	} ?: run {
+		Log.d(TAG, "ALARM WASN'T SET CANNOT DO ANYTHING")
+		stopSelf()
 	}
+
 
 	private fun onStopAlarm() {
 		Log.d(TAG, "CANCEL ALARM")
@@ -177,6 +171,27 @@ class AlarmsControllerService : LifecycleService(), KoinComponent {
 		player.stopSound()
 		// the broadcast receiver at the alarm activity to finish the alarm
 		sendBroadcast(Intent(ClockAppIntents.ACTION_FINISH_ALARM_ACTIVITY))
+	}
+
+	private fun AlarmsModel.playSoundAndVibration() {
+		if (flags.isVibrationEnabled) {
+			// plain vibration
+			vibrator.startVibration(flags.vibrationPattern, true)
+		}
+		if (flags.isSoundEnabled && soundUri != null) {
+
+			val playVolume = if (flags.isVolumeStepIncrease) AssociateAlarmFlags.MIN_ALARM_SOUND
+			else flags.alarmVolume
+			// start playing the sound
+			player.playSound(soundUri, playVolume, true)
+			// if incremental increase
+			if (flags.isVolumeStepIncrease) {
+				val flow = incrementalFloatSequence(flags.alarmVolume)
+				// step-by-step increase the volume
+				flow.onEach { volume -> player.changeVolume(volume) }
+					.launchIn(lifecycleScope)
+			}
+		}
 	}
 
 	override fun onDestroy() {

@@ -3,6 +3,11 @@
   xmlns:tools="http://schemas.android.com/tools">
 
   <uses-permission android:name="android.permission.INTERNET" />
+  <uses-permission android:name="android.permission.READ_MEDIA_IMAGES" />
+  <uses-permission android:name="android.permission.READ_MEDIA_VISUAL_USER_SELECTED" />
+  <uses-permission
+    android:name="android.permission.READ_EXTERNAL_STORAGE"
+    android:maxSdkVersion="32" />
 
   <uses-permission android:name="android.permission.VIBRATE" />
   <uses-permission android:name="android.permission.READ_MEDIA_AUDIO" />
@@ -57,7 +62,7 @@
       android:foregroundServiceType="mediaPlayback" />
 
     <activity
-      android:name=".features.alarms.presentation.play_alarm.AlarmsActivity"
+      android:name=".features.alarms.presentation.activity.AlarmsActivity"
       android:showWhenLocked="true"
       android:theme="@style/Theme.ClockApp"
       android:turnScreenOn="true" />
