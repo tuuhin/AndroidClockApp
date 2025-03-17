@@ -45,6 +45,7 @@ fun CircularRangedNumberPicker(
 	onFocusItem: (Int) -> Unit,
 	startIndex: Int = range.first,
 	elementSize: DpSize = DpSize(64.dp, 64.dp),
+	rowCount: Int = 3,
 	modifier: Modifier = Modifier,
 	hapticEffectEnabled: Boolean = true,
 	scrollEnabled: Boolean = true,
@@ -64,10 +65,8 @@ fun CircularRangedNumberPicker(
 	val haptic = LocalHapticFeedback.current
 	val updatedOnFocusItem by rememberUpdatedState(onFocusItem)
 
+	val containerSize = DpSize(elementSize.width, elementSize.height * rowCount)
 	val itemCount = remember(range) { range.last - range.first + 1 }
-	val containerSize = remember(elementSize) {
-		DpSize(elementSize.width, elementSize.height * 3)
-	}
 
 	val isScrollInProgress by remember(lazyListState) {
 		derivedStateOf { lazyListState.isScrollInProgress }
@@ -80,6 +79,8 @@ fun CircularRangedNumberPicker(
 
 		// update the values on first configure
 		val index = calculateIndexToFocus(lazyListState, containerSize.height)
+			?: return@LaunchedEffect
+
 		val indexToFocus = (index + 1) % itemCount
 		updatedOnFocusItem(indexToFocus)
 	}
@@ -89,12 +90,15 @@ fun CircularRangedNumberPicker(
 
 		// update the values when the scroll is changes
 		val index = calculateIndexToFocus(lazyListState, containerSize.height)
-		val indexToFocus = (index + 1) % itemCount
+			?: return@LaunchedEffect
 
+		val indexToFocus = (index + 1) % itemCount
+		updatedOnFocusItem(indexToFocus)
+
+		// adjust the focus item
 		if (lazyListState.firstVisibleItemScrollOffset != 0)
 			lazyListState.animateScrollToItem(index, 0)
 
-		updatedOnFocusItem(indexToFocus)
 	}
 
 	LaunchedEffect(key1 = lazyListState, key2 = hapticEffectEnabled) {
@@ -163,9 +167,9 @@ fun CircularRangedNumberPicker(
 	}
 }
 
-private fun calculateIndexToFocus(state: LazyListState, height: Dp): Int {
+private fun calculateIndexToFocus(state: LazyListState, height: Dp): Int? {
 	// Get the current visible item
-	val currentItem = state.layoutInfo.visibleItemsInfo.firstOrNull() ?: return 0
+	val currentItem = state.layoutInfo.visibleItemsInfo.firstOrNull() ?: return null
 	// visible item index
 	val idx = currentItem.index
 	// if the offset is crossed a certain amount then use the next index

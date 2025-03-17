@@ -28,7 +28,8 @@ object AlarmPreviewFakes {
 			type = if (idx % 2 == 0) RingtoneMusicFile.RingtoneType.DEVICE_LOCAL
 			else RingtoneMusicFile.RingtoneType.APPLICATION_LOCAL
 		)
-	}.groupBy { it.type }.toImmutableMap()
+	}.groupBy { it.type }.map { (key, ringtones) -> key to ringtones.toImmutableList() }
+		.toMap().toImmutableMap()
 
 	val FAKE_ASSOCIATE_FLAGS_STATE = AssociateAlarmFlags(
 		isVibrationEnabled = false,
@@ -59,5 +60,11 @@ object AlarmPreviewFakes {
 	val FAKE_ALARMS_MODEL_LIST_EMPTY = persistentListOf<SelectableAlarmModel>()
 
 	val RANDOM_BACKGROUND_OPTIONS =
-		List(10) { WallpaperPhoto(id = it.toLong(), placeholderColor = 0, uri = "") }.toImmutableList()
+		List(10) {
+			WallpaperPhoto(
+				id = it.toLong(),
+				placeholderColor = 0,
+				uri = ""
+			)
+		}.toImmutableList()
 }

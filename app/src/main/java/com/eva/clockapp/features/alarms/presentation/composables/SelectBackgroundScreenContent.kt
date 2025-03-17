@@ -18,7 +18,7 @@ import androidx.compose.ui.draw.scale
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.unit.dp
 import com.eva.clockapp.features.alarms.domain.models.WallpaperPhoto
-import com.eva.clockapp.features.alarms.presentation.play_alarm.PlayAlarmsScreen
+import com.eva.clockapp.features.alarms.presentation.alarms.PlayAlarmsScreen
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.datetime.LocalTime
 import kotlinx.datetime.atTime

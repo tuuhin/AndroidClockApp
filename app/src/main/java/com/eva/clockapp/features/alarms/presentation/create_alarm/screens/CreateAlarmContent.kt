@@ -22,6 +22,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -184,7 +185,7 @@ private fun CreateAlarmContent(
 				)
 				ListItem(
 					headlineContent = { Text(text = stringResource(R.string.select_alarms_background_title)) },
-					supportingContent = {Text(text = stringResource(R.string.select_alarms_background_desc))},
+					supportingContent = { Text(text = stringResource(R.string.select_alarms_background_desc)) },
 					colors = optionsColors,
 					modifier = Modifier
 						.clip(MaterialTheme.shapes.medium)
@@ -208,6 +209,13 @@ fun CreateAlarmContent(
 	onNavigateSoundScreen: () -> Unit = {},
 	onNavigateBackgroundScreen: () -> Unit = {},
 ) {
+
+	DisposableEffect(Unit) {
+		onDispose {
+			onEvent(CreateAlarmEvents.SetStartTimeAsSelectedTime)
+		}
+	}
+
 	CreateAlarmContent(
 		timePickerStartTime = state.startTime,
 		selectedDays = state.selectedDays,

@@ -1,6 +1,5 @@
 package com.eva.clockapp.features.alarms.presentation.create_alarm
 
-import android.util.Log
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.viewModelScope
 import androidx.navigation.toRoute
@@ -26,8 +25,10 @@ import com.eva.clockapp.features.alarms.presentation.create_alarm.state.CreateAl
 import com.eva.clockapp.features.alarms.presentation.create_alarm.state.DateTimePickerState
 import com.eva.clockapp.features.alarms.presentation.util.toAlarmModel
 import com.eva.clockapp.features.alarms.presentation.util.toCreateModel
+import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.ImmutableMap
 import kotlinx.collections.immutable.persistentMapOf
+import kotlinx.collections.immutable.toImmutableList
 import kotlinx.collections.immutable.toImmutableMap
 import kotlinx.collections.immutable.toImmutableSet
 import kotlinx.coroutines.flow.MutableSharedFlow
@@ -47,7 +48,8 @@ import kotlinx.coroutines.flow.updateAndGet
 import kotlinx.coroutines.launch
 import kotlinx.datetime.LocalTime
 
-typealias CategoricalRingtones = ImmutableMap<RingtoneMusicFile.RingtoneType, List<RingtoneMusicFile>>
+typealias CategoricalRingtones =
+		ImmutableMap<RingtoneMusicFile.RingtoneType, ImmutableList<RingtoneMusicFile>>
 
 class CreateAlarmViewModel(
 	private val vibrationController: VibrationController,
@@ -116,7 +118,12 @@ class CreateAlarmViewModel(
 		)
 
 	val soundOptions: StateFlow<CategoricalRingtones> = _soundOptions
-		.map { ringtones -> ringtones.groupBy { it.type }.toImmutableMap() }
+		.map { ringtones ->
+			val mapped = ringtones.groupBy { it.type }
+				.map { (key, ringtones) -> key to ringtones.toImmutableList() }
+				.toMap()
+			mapped.toImmutableMap()
+		}
 		.onStart { loadContentRingtone() }
 		.stateIn(
 			scope = viewModelScope,
@@ -127,11 +134,7 @@ class CreateAlarmViewModel(
 
 	fun onEvent(event: CreateAlarmEvents) {
 		when (event) {
-			is CreateAlarmEvents.OnAlarmTimeChange -> {
-				Log.d("ALARMS", "${event.time}")
-				_alarmTime.update { event.time }
-			}
-
+			is CreateAlarmEvents.OnAlarmTimeChange -> _alarmTime.update { event.time }
 			is CreateAlarmEvents.OnLabelValueChange -> _alarmLabel.update { event.newValue }
 			is CreateAlarmEvents.OnSelectUriForBackground -> _background.update { event.background }
 			is CreateAlarmEvents.OnAddOrRemoveWeekDay -> _selectedDays.update { days ->
@@ -140,6 +143,7 @@ class CreateAlarmViewModel(
 				else days + event.dayOfWeek
 			}
 
+			CreateAlarmEvents.SetStartTimeAsSelectedTime -> _startTime.update { _alarmTime.value }
 			CreateAlarmEvents.LoadDeviceRingtoneFiles -> loadContentRingtone()
 			CreateAlarmEvents.OnExitAlarmSoundScreen -> soundPlayer.stopSound()
 			CreateAlarmEvents.OnSaveAlarm -> onCreateNewAlarm()

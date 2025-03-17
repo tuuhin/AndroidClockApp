@@ -101,6 +101,9 @@ class AlarmsControllerService : LifecycleService(), KoinComponent {
 		Log.d(TAG, "ALARM :$alarm")
 		// acquire the wake lock
 		_wakeLock.acquireLock()
+
+		//cancel upcoming notification
+		cancelIfUpcomingNotificationShown()
 		// then show foreground service
 		startAlarmsForegroundService(
 			NotificationsConstants.ALARMS_FOREGROUND_SERVICE_NOTIFICATION_ID,
@@ -192,6 +195,15 @@ class AlarmsControllerService : LifecycleService(), KoinComponent {
 					.launchIn(lifecycleScope)
 			}
 		}
+	}
+
+	private fun cancelIfUpcomingNotificationShown() {
+		val alarmModel = _currentAlarm ?: return
+		val notificationIfPresent = _notificationManager?.activeNotifications
+			?.find { it.id == NotificationsConstants.notificationIdFromModel(alarmModel) }
+			?: return
+		// cancel the notification if shown
+		_notificationManager?.cancel(notificationIfPresent.id)
 	}
 
 	override fun onDestroy() {

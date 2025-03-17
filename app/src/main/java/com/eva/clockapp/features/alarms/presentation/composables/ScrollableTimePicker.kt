@@ -1,10 +1,5 @@
 package com.eva.clockapp.features.alarms.presentation.composables
 
-import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.fadeIn
-import androidx.compose.animation.fadeOut
-import androidx.compose.animation.slideInVertically
-import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -68,25 +63,12 @@ fun ScrollableTimePicker(
 	val updatedOnTimeSelected by rememberUpdatedState(onTimeSelected)
 	val formatter = remember { NumberFormat.getInstance() }
 
-	var newTimeSelection by remember { mutableStateOf(startTime) }
+	var selectedTime by remember { mutableStateOf(startTime) }
 	var isTimeInAm by remember { mutableStateOf(startTime.hour < 12) }
 
-	LaunchedEffect(newTimeSelection, isTimeInAm, is24HrFormat) {
+	LaunchedEffect(selectedTime, isTimeInAm, is24HrFormat) {
 
-		val newTime = when {
-			is24HrFormat -> newTimeSelection
-			!isTimeInAm && newTimeSelection.hour in 0..<12 -> LocalTime(
-				newTimeSelection.hour + 12,
-				newTimeSelection.minute
-			)
-
-			isTimeInAm && newTimeSelection.hour in 12..23 -> LocalTime(
-				newTimeSelection.hour - 12,
-				newTimeSelection.minute
-			)
-
-			else -> newTimeSelection
-		}
+		val newTime = provideLocaltime(selectedTime, is24HrFormat, isTimeInAm)
 
 		snapshotFlow { newTime }
 			.debounce(200.milliseconds)
@@ -118,7 +100,7 @@ fun ScrollableTimePicker(
 				containerColor = containerColor,
 				onFocusItem = { idx ->
 					val hour = idx % 24
-					newTimeSelection = LocalTime(hour, newTimeSelection.minute)
+					selectedTime = LocalTime(hour, selectedTime.minute)
 				},
 			) { hour24 ->
 				val hour = formatHour(hour24, is24HrFormat)
@@ -147,7 +129,7 @@ fun ScrollableTimePicker(
 				containerColor = containerColor,
 				onFocusItem = { idx ->
 					val minute = idx % 60
-					newTimeSelection = LocalTime(newTimeSelection.hour, minute)
+					selectedTime = LocalTime(selectedTime.hour, minute)
 				},
 			) { idx ->
 				val minute = idx % 60
@@ -160,12 +142,7 @@ fun ScrollableTimePicker(
 					modifier = Modifier.widthIn(min = 40.dp)
 				)
 			}
-			AnimatedVisibility(
-				visible = !is24HrFormat,
-				enter = slideInVertically() + fadeIn(),
-				exit = slideOutVertically() + fadeOut(),
-				modifier = Modifier.align(Alignment.Bottom)
-			) {
+			if (!is24HrFormat){
 				CircularRangedNumberPicker(
 					range = 0..1,
 					startIndex = if (startTime.hour > 12) 1 else 0,
@@ -198,6 +175,16 @@ private fun formatHour(hour24: Int, is24HrFormat: Boolean): Int {
 		hour24 == 0 -> 12
 		hour24 > 12 -> hour24 - 12
 		else -> hour24
+	}
+}
+
+private fun provideLocaltime(time: LocalTime, is24HrFormat: Boolean, isTimeInAm: Boolean)
+		: LocalTime {
+	return when {
+		is24HrFormat -> time
+		!isTimeInAm && time.hour in 0..<12 -> LocalTime(time.hour + 12, time.minute)
+		isTimeInAm && time.hour in 12..23 -> LocalTime(time.hour - 12, time.minute)
+		else -> time
 	}
 }
 
