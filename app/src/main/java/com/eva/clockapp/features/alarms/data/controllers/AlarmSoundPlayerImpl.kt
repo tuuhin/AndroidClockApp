@@ -7,7 +7,9 @@ import android.media.RingtoneManager
 import android.os.Build
 import android.util.Log
 import androidx.core.net.toUri
+import com.eva.clockapp.core.utils.Resource
 import com.eva.clockapp.features.alarms.domain.controllers.AlarmsSoundPlayer
+import com.eva.clockapp.features.alarms.domain.exceptions.FeatureUnavailableException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.delay
@@ -31,7 +33,17 @@ class AlarmSoundPlayerImpl(private val context: Context) : AlarmsSoundPlayer {
 		get() = _checkTheLoop.flatMapLatest(::checkIfRingtonePlaying)
 			.distinctUntilChanged()
 
-	override fun playSound(musicUri: String, soundVolume: Float, loop: Boolean): Result<Unit> {
+	override val canSetVolume: Boolean
+		get() = Build.VERSION.SDK_INT >= Build.VERSION_CODES.P
+
+	private val attributes: AudioAttributes
+		get() = AudioAttributes.Builder()
+			.setUsage(AudioAttributes.USAGE_ALARM)
+			.setContentType(AudioAttributes.CONTENT_TYPE_MUSIC)
+			.build()
+
+	override fun playSound(musicUri: String, soundVolume: Float, loop: Boolean)
+			: Resource<Unit, Exception> {
 		return try {
 			val uri = musicUri.toUri()
 			// stop the ringtone if its being played
@@ -40,44 +52,43 @@ class AlarmSoundPlayerImpl(private val context: Context) : AlarmsSoundPlayer {
 			Log.d(TAG, "STOPPING THE PLAYER")
 			// set up the ringtone
 			ringtone = RingtoneManager.getRingtone(context, uri)?.apply {
-				if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+				if (canSetVolume) {
 					volume = soundVolume / 100f
 					isLooping = loop
 				}
 				if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
 					isHapticGeneratorEnabled = false
 				}
-				audioAttributes = AudioAttributes.Builder()
-					.setUsage(AudioAttributes.USAGE_ALARM)
-					.setContentType(AudioAttributes.CONTENT_TYPE_MUSIC)
-					.build()
-
+				audioAttributes = attributes
 			}
 			// play the ringtone
 			ringtone?.play()
 			_checkTheLoop.update { true }
 			Log.d(TAG, "STARTING PLAY SOUND FOR :$uri :LOOPING:$loop :VOLUME:$soundVolume")
 			// success
-			Result.success(Unit)
+			Resource.Success(Unit)
+		} catch (e: SecurityException) {
+			Log.e(TAG, "ISSUE WITH PERMISSION", e)
+			Resource.Error(e, message = "Cannot play this file")
 		} catch (e: Exception) {
 			e.printStackTrace()
 			// some error
-			Result.failure(e)
+			Resource.Error(e)
 		}
 	}
 
-	override fun changeVolume(soundVolume: Float): Result<Boolean> {
+	override fun changeVolume(soundVolume: Float): Resource<Unit, Exception> {
 		return try {
 			if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
 				ringtone?.volume = soundVolume / 100f
 				Log.d(TAG, "SOUND VOLUME SET TO :${ringtone?.volume ?: 0}")
-				return Result.success(true)
+				return Resource.Success(Unit)
 			}
 			Log.d(TAG, "CANNOT CHANGE VOLUME API NOT SUPPORTED")
-			Result.success(false)
+			Resource.Error(FeatureUnavailableException())
 		} catch (e: Exception) {
 			e.printStackTrace()
-			Result.failure(e)
+			Resource.Error(e)
 		}
 	}
 
@@ -90,7 +101,7 @@ class AlarmSoundPlayerImpl(private val context: Context) : AlarmsSoundPlayer {
 
 	private fun checkIfRingtonePlaying(shouldPoll: Boolean) = flow {
 		while (shouldPoll) {
-			val isPLaying = ringtone?.isPlaying ?: false
+			val isPLaying = ringtone?.isPlaying == true
 			emit(isPLaying)
 			delay(100)
 		}

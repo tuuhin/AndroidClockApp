@@ -195,13 +195,18 @@ class CreateAlarmViewModel(
 	private fun onSelectSound(ringtone: RingtoneMusicFile) {
 		val newSound = _selectedSound.updateAndGet { ringtone }
 		val volume = _alarmFlags.value.alarmVolume
-		val result = soundPlayer.playSound(newSound.uri, volume)
+		val resource = soundPlayer.playSound(newSound.uri, volume)
 		// show toast on failure
-		result.onFailure {
-			viewModelScope.launch {
-				_uiEvents.emit(UiEvents.ShowToast(it.message ?: "Some error"))
-			}
-		}
+		resource.fold(
+			onError = { err, message ->
+				val event = (message ?: err.message)
+					?.let(UiEvents::ShowSnackBar) ?: return@fold
+
+				viewModelScope.launch {
+					_uiEvents.emit(event)
+				}
+			},
+		)
 	}
 
 	private fun onSoundVolumeChange(volume: Float) {

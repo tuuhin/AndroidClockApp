@@ -30,6 +30,15 @@ val Context.checkPostNotificationPermission: Boolean
 		) == PermissionChecker.PERMISSION_GRANTED
 	else true
 
+val Context.checkImageReadPermission: Boolean
+	get() {
+		val permission = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU)
+			ContextCompat.checkSelfPermission(this, Manifest.permission.READ_MEDIA_IMAGES)
+		else
+			ContextCompat.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE)
+		return permission == PermissionChecker.PERMISSION_GRANTED
+	}
+
 
 fun buildNotificationAction(
 	context: Context,

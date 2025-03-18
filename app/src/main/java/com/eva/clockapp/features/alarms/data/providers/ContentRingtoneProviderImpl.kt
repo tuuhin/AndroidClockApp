@@ -1,4 +1,4 @@
-package com.eva.clockapp.features.alarms.data.controllers
+package com.eva.clockapp.features.alarms.data.providers
 
 import android.content.ContentResolver
 import android.content.ContentUris
@@ -71,10 +71,9 @@ class ContentRingtoneProviderImpl(private val context: Context) : ContentRington
 		}
 		val selectionArgs = arrayOf("1", "1")
 		val queryArgs = bundleOf(
-			// items only of this package
 
-			ContentResolver.QUERY_ARG_SQL_SELECTION to selection,
-			ContentResolver.QUERY_ARG_SQL_SELECTION_ARGS to selectionArgs,
+//			ContentResolver.QUERY_ARG_SQL_SELECTION to selection,
+//			ContentResolver.QUERY_ARG_SQL_SELECTION_ARGS to selectionArgs,
 
 			ContentResolver.QUERY_ARG_SORT_COLUMNS to arrayOf(MediaStore.Audio.Media.DATE_MODIFIED),
 			ContentResolver.QUERY_ARG_SORT_DIRECTION to ContentResolver.QUERY_SORT_DIRECTION_DESCENDING
@@ -147,8 +146,5 @@ class ContentRingtoneProviderImpl(private val context: Context) : ContentRington
 			}
 		}
 	}
-
-	private class CannotAccessContentResolverException :
-		Exception("Cannot get the underlying content-resolver")
 
 }

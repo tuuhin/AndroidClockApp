@@ -103,7 +103,7 @@ class EnqueueDailyAlarmWorker(
 		fun startWorker(context: Context) {
 			val workManager = WorkManager.getInstance(context)
 
-			Log.d(TAG,"WORK REQUEST ENQUEUED, WILL RUN AT :$durationDifference")
+			Log.d(TAG,"WORK REQUEST ENQUEUED, WILL RUN AFTER :$durationDifference")
 
 			workManager.enqueueUniquePeriodicWork(
 				UNIQUE_NAME,

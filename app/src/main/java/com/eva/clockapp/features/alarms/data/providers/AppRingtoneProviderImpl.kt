@@ -1,4 +1,4 @@
-package com.eva.clockapp.features.alarms.data.controllers
+package com.eva.clockapp.features.alarms.data.providers
 
 import android.content.Context
 import android.media.RingtoneManager
@@ -25,22 +25,23 @@ class AppRingtoneProviderImpl(private val context: Context) : AppRingtoneProvide
 
 	override val ringtones: Result<List<RingtoneMusicFile>>
 		get() = try {
-			val simple = RingtoneMusicFile(
-				name = "Simple",
-				uri = toResourceUri(R.raw.alarm_clock_simple).toString(),
-				type = RingtoneMusicFile.RingtoneType.APPLICATION_LOCAL
-			)
-
-			val clock = RingtoneMusicFile(
-				name = "Clock",
-				uri = toResourceUri(R.raw.alarm_clock_sound).toString(),
-				type = RingtoneMusicFile.RingtoneType.APPLICATION_LOCAL
-			)
-			val list = listOf(default, simple, clock)
-			Result.success(list)
+			val listOfAlarms = buildList {
+				add(default)
+				add(buildRingtone(name = "Simple", audio = R.raw.alarm_clock_simple))
+				add(buildRingtone(name = "Clock", audio = R.raw.alarm_clock_sound))
+				add(buildRingtone(name = "Bird Sound", audio = R.raw.birds_alarm))
+				add(buildRingtone(name = "Whistle", audio = R.raw.happy_whistle))
+			}
+			Result.success(listOfAlarms)
 		} catch (e: Exception) {
 			e.printStackTrace()
 			Result.failure(e)
 		}
+
+	private fun buildRingtone(name: String, @RawRes audio: Int) = RingtoneMusicFile(
+		name = name,
+		uri = toResourceUri(audio).toString(),
+		type = RingtoneMusicFile.RingtoneType.APPLICATION_LOCAL
+	)
 }
 

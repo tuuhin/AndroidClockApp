@@ -21,6 +21,7 @@ import kotlinx.datetime.LocalDateTime
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.toKotlinLocalTime
 import kotlinx.datetime.toLocalDateTime
+import java.time.LocalTime
 
 private const val TAG = "ALARMS_CONTROLLER"
 
@@ -140,7 +141,7 @@ class AlarmsControllerImpl(private val context: Context) : AlarmsController {
 
 	private fun cancelUpcomingAlarm(model: AlarmsModel) {
 
-		val time = java.time.LocalTime.now().toKotlinLocalTime()
+		val time = LocalTime.now().toKotlinLocalTime()
 
 		val hasTimePassed = model.time < time
 		if (hasTimePassed) return

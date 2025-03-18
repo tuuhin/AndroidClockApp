@@ -91,7 +91,16 @@ class AlarmsRepositoryImpl(
 				val id = alarmsDao.insertOrUpdateAlarm(model.toEntity())
 				val alarm = alarmsDao.getAlarmFromId(id.toInt())
 					?: return@withContext Resource.Error(NoMatchingAlarmFoundException())
-				Resource.Success(alarm.toModel())
+
+				val model = alarm.toModel()
+				val result = controller.createAlarm(model, true)
+
+				val message = if (result.isSuccess) {
+					val alarmTime = result.getOrThrow()
+					context.createAlarmToastMessage(alarmTime)
+				} else null
+
+				Resource.Success(model, message)
 			}
 		}
 	}

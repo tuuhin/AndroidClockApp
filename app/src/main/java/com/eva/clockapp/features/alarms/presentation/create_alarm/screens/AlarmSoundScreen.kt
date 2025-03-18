@@ -36,7 +36,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.dimensionResource
@@ -83,7 +82,7 @@ private fun AlarmSoundScreen(
 
 	val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
 
-	var hasExternalMusicRead by remember { mutableStateOf(context.checkMusicReadPermission) }
+	var hasPermission by remember { mutableStateOf(context.checkMusicReadPermission) }
 	var showBottomSheet by remember { mutableStateOf(false) }
 
 	val sheetState = rememberModalBottomSheetState()
@@ -149,7 +148,7 @@ private fun AlarmSoundScreen(
 					stickyHeader {
 						ListItem(
 							headlineContent = { Text(text = key.toText) },
-							colors = ListItemDefaults.colors(containerColor = Color.Transparent)
+							colors = ListItemDefaults.colors(containerColor = MaterialTheme.colorScheme.background)
 						)
 					}
 					itemsIndexed(items = ringtones) { _, item ->
@@ -160,39 +159,41 @@ private fun AlarmSoundScreen(
 							modifier = Modifier.fillMaxWidth()
 						)
 					}
+					val isNoRingtones = ringtones.isEmpty() && hasPermission
+					if (key == RingtoneMusicFile.RingtoneType.APPLICATION_LOCAL && isNoRingtones) {
+						item {
+							Column(
+								modifier = Modifier
+									.fillMaxWidth()
+									.heightIn(min = 240.dp)
+									.animateItem(),
+								horizontalAlignment = Alignment.CenterHorizontally,
+								verticalArrangement = Arrangement.Center
+							) {
+								Icon(
+									painter = painterResource(R.drawable.ic_music_notes),
+									contentDescription = null,
+									tint = MaterialTheme.colorScheme.secondary,
+									modifier = Modifier.size(72.dp)
+								)
+								Spacer(modifier = Modifier.height(20.dp))
+								Text(
+									text = stringResource(R.string.no_music_files_type_alarm),
+									style = MaterialTheme.typography.bodyMedium
+								)
+							}
+						}
+					}
 				}
-				when {
-					!hasExternalMusicRead -> item {
+				if (!hasPermission) {
+					item {
 						CheckReadMusicPermission(
 							onPermissionChanged = { isAllowed ->
-								hasExternalMusicRead = isAllowed
+								hasPermission = isAllowed
 								onLoadExternalRingtones()
 							},
 							modifier = Modifier.animateItem()
 						)
-					}
-
-					else -> item {
-						Column(
-							modifier = Modifier
-								.fillMaxWidth()
-								.heightIn(min = 240.dp)
-								.animateItem(),
-							horizontalAlignment = Alignment.CenterHorizontally,
-							verticalArrangement = Arrangement.Center
-						) {
-							Icon(
-								painter = painterResource(R.drawable.ic_music_notes),
-								contentDescription = null,
-								tint = MaterialTheme.colorScheme.secondary,
-								modifier = Modifier.size(72.dp)
-							)
-							Spacer(modifier = Modifier.height(20.dp))
-							Text(
-								text = stringResource(R.string.no_music_files_type_alarm),
-								style = MaterialTheme.typography.bodyMedium
-							)
-						}
 					}
 				}
 			}

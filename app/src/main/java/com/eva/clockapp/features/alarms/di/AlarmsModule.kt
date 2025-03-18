@@ -2,10 +2,10 @@ package com.eva.clockapp.features.alarms.di
 
 import com.eva.clockapp.features.alarms.data.controllers.AlarmSoundPlayerImpl
 import com.eva.clockapp.features.alarms.data.controllers.AlarmsControllerImpl
-import com.eva.clockapp.features.alarms.data.controllers.AppRingtoneProviderImpl
-import com.eva.clockapp.features.alarms.data.controllers.ContentRingtoneProviderImpl
 import com.eva.clockapp.features.alarms.data.controllers.VibrationControllerImpl
 import com.eva.clockapp.features.alarms.data.controllers.WallpaperProviderImpl
+import com.eva.clockapp.features.alarms.data.providers.AppRingtoneProviderImpl
+import com.eva.clockapp.features.alarms.data.providers.ContentRingtoneProviderImpl
 import com.eva.clockapp.features.alarms.data.repository.AlarmsRepositoryImpl
 import com.eva.clockapp.features.alarms.data.services.AlarmsNotificationProvider
 import com.eva.clockapp.features.alarms.domain.controllers.AlarmsController
@@ -41,6 +41,8 @@ val alarmsModule = module {
 
 	//factory
 	factoryOf(::AlarmsRepositoryImpl).bind<AlarmsRepository>()
+
+	//use-cases
 	factoryOf(::RingtoneProviderUseCase)
 	factoryOf(::ValidateAlarmUseCase)
 
