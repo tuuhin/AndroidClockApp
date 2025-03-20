@@ -2,6 +2,8 @@ package com.eva.clockapp.features.alarms.presentation.util
 
 import com.eva.clockapp.features.alarms.domain.models.AlarmsModel
 import com.eva.clockapp.features.alarms.domain.models.AssociateAlarmFlags
+import com.eva.clockapp.features.alarms.domain.models.GalleryBucketModel
+import com.eva.clockapp.features.alarms.domain.models.GalleryImageModel
 import com.eva.clockapp.features.alarms.domain.models.RingtoneMusicFile
 import com.eva.clockapp.features.alarms.domain.models.VibrationPattern
 import com.eva.clockapp.features.alarms.domain.models.WallpaperPhoto
@@ -67,4 +69,17 @@ object AlarmPreviewFakes {
 				uri = ""
 			)
 		}.toImmutableList()
+
+	val GALLEY_IMAGE_MODELS = List(20) {
+		GalleryImageModel(
+			id = it.toLong(),
+			title = "Gallery Image",
+			bucketId = 0,
+			uri = "",
+		)
+	}.toImmutableList()
+
+	val GALLEY_IMAGE_BUCKET_MODELS = List(20) {
+		GalleryBucketModel(bucketId = it.toLong(), bucketName = "Something", null)
+	}.toImmutableList()
 }
