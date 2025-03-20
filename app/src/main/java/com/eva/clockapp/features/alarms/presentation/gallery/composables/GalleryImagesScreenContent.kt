@@ -56,7 +56,7 @@ fun GalleryImagesScreenContent(
 
 	Column(
 		modifier = modifier.fillMaxSize(),
-		verticalArrangement = Arrangement.spacedBy(20.dp)
+		verticalArrangement = Arrangement.spacedBy(4.dp)
 	) {
 		PrimaryTabRow(selectedTabIndex = selectedTabIndex) {
 			GalleryScreenTabs.entries.forEach { tab ->

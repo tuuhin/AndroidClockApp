@@ -13,7 +13,9 @@ import kotlinx.collections.immutable.persistentListOf
 import kotlinx.collections.immutable.toImmutableList
 import kotlinx.collections.immutable.toImmutableMap
 import kotlinx.datetime.LocalTime
+import kotlinx.datetime.toKotlinLocalDate
 import java.time.DayOfWeek
+import java.time.LocalDate
 
 object AlarmPreviewFakes {
 
@@ -73,9 +75,9 @@ object AlarmPreviewFakes {
 	val GALLEY_IMAGE_MODELS = List(20) {
 		GalleryImageModel(
 			id = it.toLong(),
-			title = "Gallery Image",
 			bucketId = 0,
 			uri = "",
+			dateModified = LocalDate.now().toKotlinLocalDate()
 		)
 	}.toImmutableList()
 

@@ -43,3 +43,12 @@ val LocalDateTime.Formats.WEEK_DAY_AM_TIME: DateTimeFormat<LocalDateTime>
 		chars(" ")
 		amPmMarker(am = "am", pm = "pm")
 	}
+
+val LocalDate.Formats.DATE_MONTH_YEAR : DateTimeFormat<LocalDate>
+	get() = LocalDate.Format {
+		monthName(names = MonthNames.ENGLISH_ABBREVIATED)
+		chars(" ")
+		dayOfMonth()
+		chars(", ")
+		yearTwoDigits(1960)
+	}

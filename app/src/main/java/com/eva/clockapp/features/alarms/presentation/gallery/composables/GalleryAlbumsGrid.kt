@@ -88,7 +88,8 @@ fun GalleryAlbumGrid(
 				Box(
 					modifier = Modifier
 						.clip(MaterialTheme.shapes.medium)
-						.clickable(onClick = { onSelectAlbum(album) }, role = Role.Image),
+						.clickable(onClick = { onSelectAlbum(album) }, role = Role.Image)
+						.animateItem(),
 				) {
 					Column(
 						modifier = Modifier.padding(4.dp),

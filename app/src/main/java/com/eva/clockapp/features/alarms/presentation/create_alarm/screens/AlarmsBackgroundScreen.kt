@@ -1,8 +1,5 @@
 package com.eva.clockapp.features.alarms.presentation.create_alarm.screens
 
-import androidx.activity.compose.rememberLauncherForActivityResult
-import androidx.activity.result.PickVisualMediaRequest
-import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
@@ -42,31 +39,17 @@ private fun AlarmsBackgroundScreen(
 	alarmTime: LocalTime = LocalTime(0, 0),
 	navigation: @Composable () -> Unit = {},
 	onSelectionDone: () -> Unit = {},
+	onSelectFromDevice: () -> Unit = {},
 ) {
 
 	val snackBarHostState = LocalSnackBarHostState.current
 	val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
 
-	val launcher = rememberLauncherForActivityResult(
-		contract = ActivityResultContracts.PickVisualMedia(),
-		onResult = { selectedUri ->
-			if (selectedUri != null) {
-				onSelectUri(selectedUri.toString())
-			}
-		}
-	)
 
 	Scaffold(
 		topBar = {
 			BackgroundScreenTopBar(
-				onSelectFromDevice = {
-					val requestBuilder = PickVisualMediaRequest.Builder()
-						.setDefaultTab(ActivityResultContracts.PickVisualMedia.DefaultTab.PhotosTab)
-						.setMediaType(ActivityResultContracts.PickVisualMedia.ImageOnly)
-						.build()
-
-					launcher.launch(requestBuilder)
-				},
+				onSelectFromDevice = onSelectFromDevice,
 				navigation = navigation,
 				onDone = onSelectionDone,
 				scrollBehavior = scrollBehavior
@@ -97,6 +80,7 @@ fun AlarmsBackgroundScreen(
 	modifier: Modifier = Modifier,
 	navigation: @Composable () -> Unit = {},
 	onSelectionDone: () -> Unit = {},
+	onSelectFromDevice: () -> Unit = {},
 ) = AlarmsBackgroundScreen(
 	isItemsLoaded = wallpapersState.isLoaded,
 	wallpaperOptions = wallpapersState.options,
@@ -106,6 +90,7 @@ fun AlarmsBackgroundScreen(
 	modifier = modifier,
 	navigation = navigation,
 	onSelectionDone = onSelectionDone,
+	onSelectFromDevice = onSelectFromDevice,
 )
 
 

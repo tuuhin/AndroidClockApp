@@ -15,7 +15,10 @@ import com.eva.clockapp.features.alarms.domain.exceptions.FileReadPermissionNotF
 import com.eva.clockapp.features.alarms.domain.models.GalleryBucketModel
 import com.eva.clockapp.features.alarms.domain.models.GalleryImageModel
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.async
+import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.channels.awaitClose
+import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.callbackFlow
 import kotlinx.coroutines.launch
@@ -59,31 +62,31 @@ class GalleryImageProviderImpl(private val context: Context) : GalleryImageProvi
 	override suspend fun readImageAlbums(): Result<List<GalleryBucketModel>> {
 		if (!hasPermission) return Result.failure(FileReadPermissionNotFound())
 
+		val projections = arrayOf(
+			MediaStore.Images.ImageColumns.BUCKET_ID,
+			MediaStore.Images.ImageColumns.BUCKET_DISPLAY_NAME,
+		)
+
 		return try {
 			withContext(Dispatchers.IO) {
-				val contentResolverResult = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
-					val projections = arrayOf(
-						MediaStore.Images.ImageColumns.BUCKET_ID,
-						MediaStore.Images.ImageColumns.BUCKET_DISPLAY_NAME,
-					)
-					val selectionArgs = bundleOf(
+				val bucketsData = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+					val bundle = bundleOf(
 						ContentResolver.QUERY_ARG_SQL_GROUP_BY to MediaStore.Images.ImageColumns.BUCKET_ID,
 						ContentResolver.QUERY_ARG_SORT_COLUMNS to arrayOf(MediaStore.Images.ImageColumns.BUCKET_ID),
 						ContentResolver.QUERY_ARG_SORT_DIRECTION to ContentResolver.QUERY_SORT_DIRECTION_ASCENDING
 					)
-					context.contentResolver.query(volume, projections, selectionArgs, null)
+					context.contentResolver.query(volume, projections, bundle, null)
+						?.use { cursor -> readImageBucketsFromCursor(cursor) }
 				} else {
-					val projections = arrayOf(
-						"DISTINCT " + MediaStore.Images.ImageColumns.BUCKET_ID,
-						MediaStore.Images.ImageColumns.BUCKET_DISPLAY_NAME,
-					)
-					context.contentResolver.query(volume, projections, null, null, null)
+					val sortOrder = MediaStore.Images.Media.DATE_MODIFIED
+					context.contentResolver.query(volume, projections, null, null, sortOrder)
+						?.use { cursor -> readImageBucketsFromCursor(cursor) }
 				}
-				contentResolverResult?.use { cursor ->
-					Result.success(readImageBucketsFromCursor(cursor))
-				} ?: Result.failure(CannotAccessContentResolverException())
+				bucketsData?.let { Result.success(it) }
+					?: Result.failure(CannotAccessContentResolverException())
 			}
 		} catch (e: Exception) {
+			e.printStackTrace()
 			Result.failure(e)
 		}
 	}
@@ -95,7 +98,6 @@ class GalleryImageProviderImpl(private val context: Context) : GalleryImageProvi
 
 		val projection = arrayOf(
 			MediaStore.Images.ImageColumns._ID,
-			MediaStore.Images.ImageColumns.TITLE,
 			MediaStore.Images.ImageColumns.BUCKET_ID,
 			MediaStore.Images.ImageColumns.DATE_MODIFIED,
 			MediaStore.Images.ImageColumns.DATA
@@ -149,25 +151,36 @@ class GalleryImageProviderImpl(private val context: Context) : GalleryImageProvi
 	}
 
 	private suspend fun readImageBucketsFromCursor(cursor: Cursor): List<GalleryBucketModel> {
-		val idColumn = cursor.getColumnIndexOrThrow(MediaStore.Images.ImageColumns.BUCKET_ID)
-		val nameColumn =
-			cursor.getColumnIndexOrThrow(MediaStore.Images.ImageColumns.BUCKET_DISPLAY_NAME)
+		return coroutineScope {
 
-		return buildList {
-			while (cursor.moveToNext()) {
-				val id = cursor.getLong(idColumn)
-				val bucketName = cursor.getString(nameColumn)
-				val imageUri = readAlbumThumbnail(id)
+			val idColumn = cursor.getColumnIndexOrThrow(MediaStore.Images.ImageColumns.BUCKET_ID)
+			val nameColumn = cursor
+				.getColumnIndexOrThrow(MediaStore.Images.ImageColumns.BUCKET_DISPLAY_NAME)
 
-				val image = GalleryBucketModel(
-					bucketId = id,
-					bucketName = bucketName,
-					thumbnail = imageUri
-				)
-				add(image)
-			}
+			val items = buildList {
+				while (cursor.moveToNext()) {
+					val id = cursor.getLong(idColumn)
+					val bucketName = cursor.getString(nameColumn)
+
+					// will be modified later.
+					val image = GalleryBucketModel(
+						bucketId = id,
+						bucketName = bucketName,
+						thumbnail = null
+					)
+					add(image)
+				}
+			}.distinctBy { it.bucketId }
+			// we want distinct ids
+			items.map { model ->
+				async {
+					val imageUri = readAlbumThumbnail(model.bucketId)
+					model.copy(thumbnail = imageUri)
+				}
+			}.awaitAll()
 		}
 	}
+
 
 	private fun readImageUriFromCursor(cursor: Cursor): String? {
 		val idColumn = cursor.getColumnIndexOrThrow(MediaStore.Images.ImageColumns._ID)
@@ -186,7 +199,6 @@ class GalleryImageProviderImpl(private val context: Context) : GalleryImageProvi
 
 	private fun readImagesFromCursor(cursor: Cursor): List<GalleryImageModel> {
 		val idColumn = cursor.getColumnIndexOrThrow(MediaStore.Images.ImageColumns._ID)
-		val nameColumn = cursor.getColumnIndexOrThrow(MediaStore.Images.ImageColumns.TITLE)
 		val bucketIdColumn = cursor.getColumnIndexOrThrow(MediaStore.Images.ImageColumns.BUCKET_ID)
 		val dateModifiedColumn =
 			cursor.getColumnIndexOrThrow(MediaStore.Images.ImageColumns.DATE_MODIFIED)
@@ -195,7 +207,6 @@ class GalleryImageProviderImpl(private val context: Context) : GalleryImageProvi
 		return buildList {
 			while (cursor.moveToNext()) {
 				val id = cursor.getLong(idColumn)
-				val title = cursor.getString(nameColumn)
 				val bucketId = cursor.getLong(bucketIdColumn)
 				val uri = ContentUris.withAppendedId(volume, id).toString()
 				val modifiedOn = cursor.getLong(dateModifiedColumn)
@@ -209,7 +220,6 @@ class GalleryImageProviderImpl(private val context: Context) : GalleryImageProvi
 
 					val image = GalleryImageModel(
 						id = id,
-						title = title,
 						bucketId = bucketId,
 						uri = uri,
 						dateModified = date

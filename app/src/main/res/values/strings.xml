@@ -6,6 +6,8 @@
   <string name="all_week_days">Everyday</string>
   <string name="every_week_day">Every</string>
   <string name="tomorrow">Tomorrow</string>
+  <string name="today">Today</string>
+  <string name="yesterday">Yesterday</string>
   <string name="create_alarm_screen_title">Create Alarm</string>
   <string name="save_action">Save</string>
   <!--  Vibration Patterns-->
@@ -91,6 +93,8 @@
   <string name="missed_alarm_notification_title">Alarm Missed</string>
   <string name="missed_alarm_notification_text">Missed notification at: %s</string>
   <string name="read_images_permission_title">Cannot read images</string>
-  <string name="read_images_permission_desc">Images permission need to to granted in order to read and use images in your phone</string>
+  <string name="read_images_permission_desc">Images permission need to granted in order to read and use images in your phone</string>
   <string name="image_gallery_screen_title">Gallery</string>
+  <string name="gallery_screen_tab_images">Images</string>
+  <string name="gallery_screen_tab_albums">Albums</string>
 </resources>

@@ -28,6 +28,7 @@ import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -104,6 +105,18 @@ private fun AlarmSoundScreen(
 		}
 	}
 
+	// ensures each type exists if the type is empty least show the label
+	val ringtonesMap by remember(ringtones) {
+		derivedStateOf {
+			buildMap {
+				RingtoneMusicFile.RingtoneType.entries.forEach { type ->
+					val values = ringtones.getOrDefault(type, defaultValue = emptyList())
+					put(type, values)
+				}
+			}
+		}
+	}
+
 	Scaffold(
 		topBar = {
 			MediumTopAppBar(
@@ -144,7 +157,7 @@ private fun AlarmSoundScreen(
 				modifier = Modifier.weight(1f),
 				verticalArrangement = Arrangement.spacedBy(4.dp)
 			) {
-				ringtones.forEach { (key, ringtones) ->
+				ringtonesMap.forEach { (key, ringtones) ->
 					stickyHeader {
 						ListItem(
 							headlineContent = { Text(text = key.toText) },

@@ -5,14 +5,15 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.GridItemSpan
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.itemsIndexed
-import androidx.compose.material3.ListItem
-import androidx.compose.material3.ListItemDefaults
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
@@ -41,6 +42,8 @@ import coil3.compose.LocalAsyncImagePreviewHandler
 import coil3.compose.SubcomposeAsyncImage
 import coil3.compose.SubcomposeAsyncImageContent
 import coil3.request.ImageRequest
+import com.eva.clockapp.R
+import com.eva.clockapp.core.utils.DATE_MONTH_YEAR
 import com.eva.clockapp.features.alarms.domain.models.GalleryImageModel
 import com.eva.clockapp.features.alarms.presentation.util.AlarmPreviewFakes
 import com.eva.clockapp.ui.theme.ClockAppTheme
@@ -59,7 +62,7 @@ fun GalleryImagesGrid(
 	modifier: Modifier = Modifier,
 	contentPadding: PaddingValues = PaddingValues(0.dp),
 ) {
-
+	val context = LocalContext.current
 	val inspectionMode = LocalInspectionMode.current
 
 	val today = remember { LocalDate.now().toKotlinLocalDate() }
@@ -94,23 +97,31 @@ fun GalleryImagesGrid(
 			items.groupBy { it.dateModified }.forEach { (date, images) ->
 				date?.let {
 					val readableDate = when {
-						today == date -> "Today"
-						today.minus(DatePeriod(days = 1)) == date -> "Yesterday"
-						else -> date.format(kotlinx.datetime.LocalDate.Formats.ISO)
+						today == date -> context.getString(R.string.today)
+						today.minus(DatePeriod(days = 1)) == date -> context.getString(R.string.yesterday)
+						else -> date.format(kotlinx.datetime.LocalDate.Formats.DATE_MONTH_YEAR)
 					}
 					item(
 						span = { GridItemSpan(maxLineSpan) },
 						contentType = "Heading"
 					) {
-						ListItem(
-							headlineContent = { Text(text = readableDate) },
-							colors = ListItemDefaults.colors(containerColor = MaterialTheme.colorScheme.background)
+						Text(
+							text = readableDate,
+							style = MaterialTheme.typography.titleMedium,
+							color = MaterialTheme.colorScheme.onSurface,
+							modifier = Modifier
+								.fillMaxWidth()
+								.padding(vertical = 12.dp)
 						)
 					}
 				}
 
 				itemsIndexed(items = images, key = keys, contentType = contentType) { _, image ->
-					GalleryGridImageItem(image = image, onClick = { onSelectImage(image) })
+					GalleryGridImageItem(
+						image = image,
+						onClick = { onSelectImage(image) },
+						modifier = Modifier.animateItem()
+					)
 				}
 			}
 		}
@@ -164,5 +175,10 @@ fun GalleryGridImageItem(
 @PreviewLightDark
 @Composable
 private fun GalleryImagesGridPreview() = ClockAppTheme {
-	GalleryImagesGrid(items = AlarmPreviewFakes.GALLEY_IMAGE_MODELS, onSelectImage = {})
+	Surface {
+		GalleryImagesGrid(
+			items = AlarmPreviewFakes.GALLEY_IMAGE_MODELS,
+			onSelectImage = {}
+		)
+	}
 }

@@ -20,6 +20,7 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.callbackFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import java.io.File
 
 class ContentRingtoneProviderImpl(private val context: Context) : ContentRingtoneProvider {
 
@@ -31,6 +32,12 @@ class ContentRingtoneProviderImpl(private val context: Context) : ContentRington
 			MediaStore.Audio.Media.getContentUri(MediaStore.VOLUME_EXTERNAL)
 		else MediaStore.Audio.Media.EXTERNAL_CONTENT_URI
 
+	val projection: Array<String>
+		get() = arrayOf(
+			MediaStore.Audio.AudioColumns._ID,
+			MediaStore.Audio.AudioColumns.DISPLAY_NAME,
+			MediaStore.Audio.AudioColumns.DATA,
+		)
 
 	override val loadRingtonesAsFlow: Flow<Result<List<RingtoneMusicFile>>>
 		get() = callbackFlow {
@@ -56,24 +63,25 @@ class ContentRingtoneProviderImpl(private val context: Context) : ContentRington
 
 		if (!checkPermission) return Result.failure(FileReadPermissionNotFound())
 
-		val projection = arrayOf(
-			MediaStore.Audio.AudioColumns._ID,
-			MediaStore.Audio.AudioColumns.DISPLAY_NAME,
-			MediaStore.Audio.AudioColumns.DURATION,
+		val ringtoneTypes = arrayOf(
+			MediaStore.Audio.AudioColumns.IS_ALARM,
+			MediaStore.Audio.AudioColumns.IS_RINGTONE,
+			MediaStore.Audio.AudioColumns.IS_NOTIFICATION
 		)
 
 		val selection = buildString {
-			append(MediaStore.Audio.AudioColumns.IS_ALARM)
-			append(" = ? ")
-			append(" OR ")
-			append(MediaStore.Audio.AudioColumns.IS_RINGTONE)
-			append(" = ? ")
+			ringtoneTypes.forEachIndexed { idx, type ->
+				append(type)
+				append(" = ? ")
+				if (idx + 1 != ringtoneTypes.size)
+					append(" OR ")
+			}
 		}
-		val selectionArgs = arrayOf("1", "1")
+		val selectionArgs = arrayOf("1", "1", "1")
 		val queryArgs = bundleOf(
 
-//			ContentResolver.QUERY_ARG_SQL_SELECTION to selection,
-//			ContentResolver.QUERY_ARG_SQL_SELECTION_ARGS to selectionArgs,
+			ContentResolver.QUERY_ARG_SQL_SELECTION to selection,
+			ContentResolver.QUERY_ARG_SQL_SELECTION_ARGS to selectionArgs,
 
 			ContentResolver.QUERY_ARG_SORT_COLUMNS to arrayOf(MediaStore.Audio.Media.DATE_MODIFIED),
 			ContentResolver.QUERY_ARG_SORT_DIRECTION to ContentResolver.QUERY_SORT_DIRECTION_DESCENDING
@@ -93,10 +101,6 @@ class ContentRingtoneProviderImpl(private val context: Context) : ContentRington
 	override suspend fun getRingtoneFromId(id: Long): Result<RingtoneMusicFile> {
 		if (!checkPermission) return Result.failure(FileReadPermissionNotFound())
 
-		val projection = arrayOf(
-			MediaStore.Audio.AudioColumns._ID,
-			MediaStore.Audio.AudioColumns.DISPLAY_NAME,
-		)
 
 		val selection = buildString {
 			append(MediaStore.Audio.AudioColumns._ID)
@@ -131,20 +135,23 @@ class ContentRingtoneProviderImpl(private val context: Context) : ContentRington
 		val idColumn = cursor.getColumnIndexOrThrow(MediaStore.Audio.AudioColumns._ID)
 		val displayNameColumn =
 			cursor.getColumnIndexOrThrow(MediaStore.Audio.AudioColumns.DISPLAY_NAME)
+		val dataColumn = cursor.getColumnIndexOrThrow(MediaStore.Audio.AudioColumns.DATA)
 
 		return buildList {
 			while (cursor.moveToNext()) {
 				val id = cursor.getLong(idColumn)
 				val name = cursor.getString(displayNameColumn)
+				val data = cursor.getString(dataColumn)
 
-				val ringtone = RingtoneMusicFile(
-					name = name,
-					uri = ContentUris.withAppendedId(volume, id).toString(),
-					type = RingtoneMusicFile.RingtoneType.DEVICE_LOCAL
-				)
-				add(ringtone)
+				if (File(data).exists()) {
+					val ringtone = RingtoneMusicFile(
+						name = name,
+						uri = ContentUris.withAppendedId(volume, id).toString(),
+						type = RingtoneMusicFile.RingtoneType.DEVICE_LOCAL,
+					)
+					add(ringtone)
+				}
 			}
 		}
 	}
-
 }

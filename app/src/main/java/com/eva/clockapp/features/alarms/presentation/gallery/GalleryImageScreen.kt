@@ -2,7 +2,6 @@ package com.eva.clockapp.features.alarms.presentation.gallery
 
 import android.Manifest
 import android.os.Build
-import android.util.Log
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.Crossfade
@@ -124,14 +123,13 @@ private fun GalleryImageScreen(
 				buckets = buckets,
 				onSelectImage = onSelectImage,
 				onSelectAlbum = { bucket ->
-					Log.d("SOME_TAG", "$bucket")
 					onSelectAlbum(bucket)
 					// show the sheet
 					scope.launch {
 						sheetState.show()
 					}
 				},
-				contentPadding = PaddingValues(dimensionResource(R.dimen.sc_padding))
+				contentPadding = PaddingValues(horizontal = dimensionResource(R.dimen.sc_padding))
 			)
 			else ImagesPermissionPlaceholder(
 				onAllowPermission = {
