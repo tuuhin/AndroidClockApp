@@ -8,6 +8,7 @@ import com.eva.clockapp.features.alarms.data.providers.AppRingtoneProviderImpl
 import com.eva.clockapp.features.alarms.data.providers.ContentRingtoneProviderImpl
 import com.eva.clockapp.features.alarms.data.providers.GalleryImageProviderImpl
 import com.eva.clockapp.features.alarms.data.repository.AlarmsRepositoryImpl
+import com.eva.clockapp.features.alarms.data.repository.RingtonesRepositoryImpl
 import com.eva.clockapp.features.alarms.data.services.AlarmsNotificationProvider
 import com.eva.clockapp.features.alarms.domain.controllers.AlarmsController
 import com.eva.clockapp.features.alarms.domain.controllers.AlarmsSoundPlayer
@@ -17,10 +18,11 @@ import com.eva.clockapp.features.alarms.domain.controllers.GalleryImageProvider
 import com.eva.clockapp.features.alarms.domain.controllers.VibrationController
 import com.eva.clockapp.features.alarms.domain.controllers.WallpaperProvider
 import com.eva.clockapp.features.alarms.domain.repository.AlarmsRepository
-import com.eva.clockapp.features.alarms.domain.use_case.RingtoneProviderUseCase
+import com.eva.clockapp.features.alarms.domain.repository.RingtonesRepository
 import com.eva.clockapp.features.alarms.domain.use_case.ValidateAlarmUseCase
 import com.eva.clockapp.features.alarms.presentation.alarms.AlarmsViewModel
 import com.eva.clockapp.features.alarms.presentation.create_alarm.AlarmsBackgroundViewModel
+import com.eva.clockapp.features.alarms.presentation.create_alarm.AlarmsSoundsViewmodel
 import com.eva.clockapp.features.alarms.presentation.create_alarm.CreateAlarmViewModel
 import com.eva.clockapp.features.alarms.presentation.gallery.GalleryScreenViewModel
 import org.koin.core.module.dsl.factoryOf
@@ -45,9 +47,9 @@ val alarmsModule = module {
 
 	//factory
 	factoryOf(::AlarmsRepositoryImpl).bind<AlarmsRepository>()
+	factoryOf(::RingtonesRepositoryImpl).bind<RingtonesRepository>()
 
 	//use-cases
-	factoryOf(::RingtoneProviderUseCase)
 	factoryOf(::ValidateAlarmUseCase)
 
 	// view models
@@ -55,4 +57,5 @@ val alarmsModule = module {
 	viewModelOf(::AlarmsViewModel)
 	viewModelOf(::AlarmsBackgroundViewModel)
 	viewModelOf(::GalleryScreenViewModel)
+	viewModelOf(::AlarmsSoundsViewmodel)
 }

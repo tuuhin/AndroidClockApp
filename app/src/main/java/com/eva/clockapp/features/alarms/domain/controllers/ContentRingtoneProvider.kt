@@ -9,5 +9,5 @@ interface ContentRingtoneProvider {
 
 	suspend fun loadRingtones(): Result<List<RingtoneMusicFile>>
 
-	suspend fun getRingtoneFromId(id: Long): Result<RingtoneMusicFile>
+	suspend fun getRingtoneFromUri(uri: String): Result<RingtoneMusicFile>
 }

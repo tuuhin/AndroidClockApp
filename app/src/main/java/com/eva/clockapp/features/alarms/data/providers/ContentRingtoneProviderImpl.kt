@@ -8,6 +8,7 @@ import android.database.Cursor
 import android.net.Uri
 import android.os.Build
 import android.provider.MediaStore
+import androidx.core.net.toUri
 import androidx.core.os.bundleOf
 import com.eva.clockapp.core.utils.checkMusicReadPermission
 import com.eva.clockapp.features.alarms.domain.controllers.ContentRingtoneProvider
@@ -22,7 +23,9 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.io.File
 
-class ContentRingtoneProviderImpl(private val context: Context) : ContentRingtoneProvider {
+class ContentRingtoneProviderImpl(
+	private val context: Context,
+) : ContentRingtoneProvider {
 
 	private val checkPermission: Boolean
 		get() = context.checkMusicReadPermission
@@ -98,25 +101,26 @@ class ContentRingtoneProviderImpl(private val context: Context) : ContentRington
 		}
 	}
 
-	override suspend fun getRingtoneFromId(id: Long): Result<RingtoneMusicFile> {
+	override suspend fun getRingtoneFromUri(uri: String): Result<RingtoneMusicFile> {
 		if (!checkPermission) return Result.failure(FileReadPermissionNotFound())
 
-
-		val selection = buildString {
-			append(MediaStore.Audio.AudioColumns._ID)
-			append(" = ? ")
-		}
-		val selectionArgs = arrayOf("$id")
-		val queryArgs = bundleOf(
-			// items only of this package
-
-			ContentResolver.QUERY_ARG_SQL_SELECTION to selection,
-			ContentResolver.QUERY_ARG_SQL_SELECTION_ARGS to selectionArgs,
-
-			ContentResolver.QUERY_ARG_SORT_COLUMNS to arrayOf(MediaStore.Audio.Media.DATE_MODIFIED),
-			ContentResolver.QUERY_ARG_SORT_DIRECTION to ContentResolver.QUERY_SORT_DIRECTION_DESCENDING
-		)
 		return try {
+			val itemId = ContentUris.parseId(uri.toUri())
+
+			val selection = buildString {
+				append(MediaStore.Audio.AudioColumns._ID)
+				append(" = ? ")
+			}
+			val selectionArgs = arrayOf("$itemId")
+			val queryArgs = bundleOf(
+				// items only of this package
+
+				ContentResolver.QUERY_ARG_SQL_SELECTION to selection,
+				ContentResolver.QUERY_ARG_SQL_SELECTION_ARGS to selectionArgs,
+
+				ContentResolver.QUERY_ARG_SORT_COLUMNS to arrayOf(MediaStore.Audio.Media.DATE_MODIFIED),
+				ContentResolver.QUERY_ARG_SORT_DIRECTION to ContentResolver.QUERY_SORT_DIRECTION_DESCENDING
+			)
 			withContext(Dispatchers.IO) {
 				context.contentResolver.query(volume, projection, queryArgs, null)
 					?.use { cursor ->
@@ -126,6 +130,7 @@ class ContentRingtoneProviderImpl(private val context: Context) : ContentRington
 					} ?: Result.failure(CannotAccessContentResolverException())
 			}
 		} catch (e: Exception) {
+			e.printStackTrace()
 			Result.failure(e)
 		}
 	}

@@ -11,9 +11,10 @@ import androidx.lifecycle.repeatOnLifecycle
 import com.eva.clockapp.core.presentation.LocalSnackBarHostState
 import com.eva.clockapp.core.presentation.UiEvents
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.merge
 
 @Composable
-fun UIEventsSideEffect(eventsFlow: Flow<UiEvents>, onBack: () -> Unit = {}) {
+fun UIEventsSideEffect(vararg eventFlow: Flow<UiEvents>, onBack: () -> Unit = {}) {
 
 	val context = LocalContext.current
 	val lifecyleOwner = LocalLifecycleOwner.current
@@ -21,7 +22,7 @@ fun UIEventsSideEffect(eventsFlow: Flow<UiEvents>, onBack: () -> Unit = {}) {
 
 	LaunchedEffect(key1 = lifecyleOwner) {
 		lifecyleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
-			eventsFlow.collect { event ->
+			merge(*eventFlow).collect { event ->
 				when (event) {
 					is UiEvents.ShowSnackBar -> snackBarState.showSnackbar(
 						message = event.message,

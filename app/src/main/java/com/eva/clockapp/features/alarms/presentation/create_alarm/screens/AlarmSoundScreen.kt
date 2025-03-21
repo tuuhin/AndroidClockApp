@@ -44,7 +44,6 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.PreviewLightDark
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.compose.LifecycleStartEffect
 import com.eva.clockapp.R
 import com.eva.clockapp.core.presentation.LocalSnackBarHostState
 import com.eva.clockapp.core.utils.checkMusicReadPermission
@@ -55,6 +54,7 @@ import com.eva.clockapp.features.alarms.presentation.composables.ConfigureAlarmS
 import com.eva.clockapp.features.alarms.presentation.composables.RadioButtonWithTextItem
 import com.eva.clockapp.features.alarms.presentation.create_alarm.CategoricalRingtones
 import com.eva.clockapp.features.alarms.presentation.create_alarm.state.AlarmFlagsChangeEvent
+import com.eva.clockapp.features.alarms.presentation.create_alarm.state.AlarmSoundScreenEvent
 import com.eva.clockapp.features.alarms.presentation.create_alarm.state.CreateAlarmEvents
 import com.eva.clockapp.features.alarms.presentation.create_alarm.state.CreateAlarmState
 import com.eva.clockapp.features.alarms.presentation.util.AlarmPreviewFakes
@@ -62,7 +62,10 @@ import com.eva.clockapp.features.alarms.presentation.util.toText
 import com.eva.clockapp.ui.theme.ClockAppTheme
 import kotlinx.coroutines.launch
 
-@OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
+@OptIn(
+	ExperimentalMaterial3Api::class,
+	ExperimentalFoundationApi::class
+)
 @Composable
 private fun AlarmSoundScreen(
 	flags: AssociateAlarmFlags,
@@ -73,7 +76,7 @@ private fun AlarmSoundScreen(
 	modifier: Modifier = Modifier,
 	enabled: Boolean = true,
 	onIncreaseVolumeByStep: (Boolean) -> Unit = {},
-	onLoadExternalRingtones: () -> Unit = {},
+	onPermissionChanged: (Boolean) -> Unit = {},
 	onEnableChange: (Boolean) -> Unit = {},
 	navigation: @Composable () -> Unit = {},
 ) {
@@ -203,7 +206,7 @@ private fun AlarmSoundScreen(
 						CheckReadMusicPermission(
 							onPermissionChanged = { isAllowed ->
 								hasPermission = isAllowed
-								onLoadExternalRingtones()
+								onPermissionChanged(isAllowed)
 							},
 							modifier = Modifier.animateItem()
 						)
@@ -219,28 +222,31 @@ fun AlarmSoundScreen(
 	state: CreateAlarmState,
 	flags: AssociateAlarmFlags,
 	ringtones: CategoricalRingtones,
-	onEvent: (CreateAlarmEvents) -> Unit,
 	onFlagsEvent: (AlarmFlagsChangeEvent) -> Unit,
+	onCreateEvent: (CreateAlarmEvents) -> Unit,
+	onEvent: (AlarmSoundScreenEvent) -> Unit,
 	modifier: Modifier = Modifier,
 	navigation: @Composable () -> Unit = {},
 ) {
-	LifecycleStartEffect(Unit) {
-		onStopOrDispose {
-			// called on-stop or disposed
-			onEvent(CreateAlarmEvents.OnExitAlarmSoundScreen)
-		}
-	}
-
 	AlarmSoundScreen(
 		flags = flags,
 		selectedOption = state.ringtone,
 		ringtones = ringtones,
 		enabled = flags.isSoundEnabled,
-		onItemSelected = { onFlagsEvent(AlarmFlagsChangeEvent.OnSoundSelected(it)) },
-		onEnableChange = { onFlagsEvent(AlarmFlagsChangeEvent.OnSoundOptionEnabled(it)) },
-		onLoadExternalRingtones = { onEvent(CreateAlarmEvents.LoadDeviceRingtoneFiles) },
+		onPermissionChanged = { onEvent(AlarmSoundScreenEvent.OnMusicReadPermissionChange(it)) },
+		onItemSelected = { music ->
+			onEvent(AlarmSoundScreenEvent.OnSelectRingtone(music, flags.alarmVolume))
+			onCreateEvent(CreateAlarmEvents.OnSoundSelected(music))
+		},
+		onEnableChange = { isEnabled ->
+			onEvent(AlarmSoundScreenEvent.OnSoundEnableChange(isEnabled))
+			onFlagsEvent(AlarmFlagsChangeEvent.OnSoundOptionEnabled(isEnabled))
+		},
+		onVolumeChange = { volume ->
+			onFlagsEvent(AlarmFlagsChangeEvent.OnSoundVolumeChange(volume))
+			onEvent(AlarmSoundScreenEvent.OnMusicVolumeChange(volume))
+		},
 		onIncreaseVolumeByStep = { onFlagsEvent(AlarmFlagsChangeEvent.OnIncreaseVolumeByStep(it)) },
-		onVolumeChange = { onFlagsEvent(AlarmFlagsChangeEvent.OnSoundVolumeChange(it)) },
 		modifier = modifier,
 		navigation = navigation,
 	)
@@ -256,6 +262,7 @@ private fun AlarmsSoundsScreenPreview() = ClockAppTheme {
 		ringtones = AlarmPreviewFakes.FAKE_RINGTONES_OPTIONS,
 		onFlagsEvent = {},
 		onEvent = {},
+		onCreateEvent = {},
 		navigation = {
 			Icon(
 				imageVector = Icons.AutoMirrored.Default.ArrowBack,

@@ -7,16 +7,12 @@ import com.eva.clockapp.core.navigation.navgraphs.NavRoutes
 import com.eva.clockapp.core.presentation.AppViewModel
 import com.eva.clockapp.core.presentation.UiEvents
 import com.eva.clockapp.core.utils.Resource
-import com.eva.clockapp.features.alarms.domain.controllers.AlarmsSoundPlayer
 import com.eva.clockapp.features.alarms.domain.controllers.VibrationController
-import com.eva.clockapp.features.alarms.domain.exceptions.FileReadPermissionNotFound
 import com.eva.clockapp.features.alarms.domain.models.AssociateAlarmFlags
-import com.eva.clockapp.features.alarms.domain.models.RingtoneMusicFile
 import com.eva.clockapp.features.alarms.domain.models.VibrationPattern
 import com.eva.clockapp.features.alarms.domain.models.WeekDays
 import com.eva.clockapp.features.alarms.domain.repository.AlarmsRepository
-import com.eva.clockapp.features.alarms.domain.use_case.RingtoneProviderUseCase
-import com.eva.clockapp.features.alarms.domain.use_case.Ringtones
+import com.eva.clockapp.features.alarms.domain.repository.RingtonesRepository
 import com.eva.clockapp.features.alarms.domain.use_case.ValidateAlarmUseCase
 import com.eva.clockapp.features.alarms.domain.utils.AlarmUtils
 import com.eva.clockapp.features.alarms.presentation.create_alarm.state.AlarmFlagsChangeEvent
@@ -25,11 +21,6 @@ import com.eva.clockapp.features.alarms.presentation.create_alarm.state.CreateAl
 import com.eva.clockapp.features.alarms.presentation.create_alarm.state.DateTimePickerState
 import com.eva.clockapp.features.alarms.presentation.util.toAlarmModel
 import com.eva.clockapp.features.alarms.presentation.util.toCreateModel
-import kotlinx.collections.immutable.ImmutableList
-import kotlinx.collections.immutable.ImmutableMap
-import kotlinx.collections.immutable.persistentMapOf
-import kotlinx.collections.immutable.toImmutableList
-import kotlinx.collections.immutable.toImmutableMap
 import kotlinx.collections.immutable.toImmutableSet
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -38,9 +29,6 @@ import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
-import kotlinx.coroutines.flow.launchIn
-import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
@@ -48,13 +36,9 @@ import kotlinx.coroutines.flow.updateAndGet
 import kotlinx.coroutines.launch
 import kotlinx.datetime.LocalTime
 
-typealias CategoricalRingtones =
-		ImmutableMap<RingtoneMusicFile.RingtoneType, ImmutableList<RingtoneMusicFile>>
-
 class CreateAlarmViewModel(
 	private val vibrationController: VibrationController,
-	private val ringtonesUseCase: RingtoneProviderUseCase,
-	private val soundPlayer: AlarmsSoundPlayer,
+	private val ringtonesRepository: RingtonesRepository,
 	private val repository: AlarmsRepository,
 	private val validator: ValidateAlarmUseCase,
 	private val savedStateHandle: SavedStateHandle,
@@ -67,8 +51,7 @@ class CreateAlarmViewModel(
 
 	// additional states
 	private val _alarmLabel = MutableStateFlow("")
-	private val _selectedSound = MutableStateFlow(ringtonesUseCase.default)
-	private val _soundOptions = MutableStateFlow<Ringtones>(emptySet())
+	private val _selectedSound = MutableStateFlow(ringtonesRepository.default)
 	private val _background = MutableStateFlow<String?>(null)
 
 	// alarms flags
@@ -82,18 +65,14 @@ class CreateAlarmViewModel(
 	private val route: NavRoutes.CreateOrUpdateAlarmRoute
 		get() = savedStateHandle.toRoute<NavRoutes.CreateOrUpdateAlarmRoute>()
 
-	private val _pickerState =
-		combine(_selectedDays, _startTime, _alarmTime) { weekDays, startTime, selectedTime ->
-			DateTimePickerState(
-				weekDays = weekDays,
-				startTime = startTime,
-				selectedTime = selectedTime
-			)
-		}.stateIn(
-			scope = viewModelScope,
-			started = SharingStarted.Eagerly,
-			initialValue = DateTimePickerState()
-		)
+	private val _pickerState = combine(
+		_selectedDays, _startTime, _alarmTime,
+		transform = ::DateTimePickerState
+	).stateIn(
+		scope = viewModelScope,
+		started = SharingStarted.Eagerly,
+		initialValue = DateTimePickerState()
+	)
 
 	val createAlarmState: StateFlow<CreateAlarmState> = combine(
 		_pickerState, _alarmLabel, _selectedSound, _background
@@ -112,23 +91,9 @@ class CreateAlarmViewModel(
 			scope = viewModelScope,
 			started = SharingStarted.WhileSubscribed(5000),
 			initialValue = CreateAlarmState(
-				ringtone = ringtonesUseCase.default,
+				ringtone = ringtonesRepository.default,
 				isAlarmCreate = route.alarmId == null
 			)
-		)
-
-	val soundOptions: StateFlow<CategoricalRingtones> = _soundOptions
-		.map { ringtones ->
-			val mapped = ringtones.groupBy { it.type }
-				.map { (key, ringtones) -> key to ringtones.toImmutableList() }
-				.toMap()
-			mapped.toImmutableMap()
-		}
-		.onStart { loadContentRingtone() }
-		.stateIn(
-			scope = viewModelScope,
-			started = SharingStarted.Eagerly,
-			initialValue = persistentMapOf()
 		)
 
 
@@ -137,6 +102,11 @@ class CreateAlarmViewModel(
 			is CreateAlarmEvents.OnAlarmTimeChange -> _alarmTime.update { event.time }
 			is CreateAlarmEvents.OnLabelValueChange -> _alarmLabel.update { event.newValue }
 			is CreateAlarmEvents.OnSelectUriForBackground -> _background.update { event.background }
+			is CreateAlarmEvents.OnSelectGalleryImage -> {
+				_background.update { event.model.uri }
+				viewModelScope.launch { _uiEvents.emit(UiEvents.NavigateBack) }
+			}
+
 			is CreateAlarmEvents.OnAddOrRemoveWeekDay -> _selectedDays.update { days ->
 				if (event.dayOfWeek in days)
 					days.filterNot { it == event.dayOfWeek }.toSet()
@@ -144,8 +114,7 @@ class CreateAlarmViewModel(
 			}
 
 			CreateAlarmEvents.SetStartTimeAsSelectedTime -> _startTime.update { _alarmTime.value }
-			CreateAlarmEvents.LoadDeviceRingtoneFiles -> loadContentRingtone()
-			CreateAlarmEvents.OnExitAlarmSoundScreen -> soundPlayer.stopSound()
+			is CreateAlarmEvents.OnSoundSelected -> _selectedSound.update { event.sound }
 			CreateAlarmEvents.OnSaveAlarm -> onCreateNewAlarm()
 			CreateAlarmEvents.OnUpdateAlarm -> onUpdateAlarm()
 		}
@@ -170,59 +139,19 @@ class CreateAlarmViewModel(
 				state.copy(snoozeRepeatMode = event.mode)
 			}
 
-			is AlarmFlagsChangeEvent.OnSoundOptionEnabled -> onSoundEnabled(event.isEnabled)
-			is AlarmFlagsChangeEvent.OnSoundSelected -> onSelectSound(event.sound)
-			is AlarmFlagsChangeEvent.OnSoundVolumeChange -> onSoundVolumeChange(event.volume)
+			is AlarmFlagsChangeEvent.OnSoundOptionEnabled -> _alarmFlags.update { state ->
+				state.copy(isSoundEnabled = event.isEnabled)
+			}
+
+			is AlarmFlagsChangeEvent.OnSoundVolumeChange -> _alarmFlags.update { state ->
+				state.copy(alarmVolume = event.volume)
+			}
+
 			is AlarmFlagsChangeEvent.OnVibrationEnabled -> onVibrationPatternEnabled(event.isEnabled)
 			is AlarmFlagsChangeEvent.OnVibrationPatternSelected -> onSelectVibration(event.pattern)
 		}
 	}
 
-	private fun loadContentRingtone() = ringtonesUseCase.invoke()
-		.onEach { result ->
-			result.fold(
-				onSuccess = { files -> _soundOptions.update { files } },
-				onFailure = { err ->
-					if (err is FileReadPermissionNotFound) return@onEach
-					_uiEvents.emit(
-						UiEvents.ShowSnackBar(message = err.localizedMessage ?: "FAILED")
-					)
-				},
-			)
-		}.launchIn(viewModelScope)
-
-
-	private fun onSelectSound(ringtone: RingtoneMusicFile) {
-		val newSound = _selectedSound.updateAndGet { ringtone }
-		val volume = _alarmFlags.value.alarmVolume
-		val resource = soundPlayer.playSound(newSound.uri, volume)
-		// show toast on failure
-		resource.fold(
-			onError = { err, message ->
-				val event = (message ?: err.message)
-					?.let(UiEvents::ShowSnackBar) ?: return@fold
-
-				viewModelScope.launch {
-					_uiEvents.emit(event)
-				}
-			},
-		)
-	}
-
-	private fun onSoundVolumeChange(volume: Float) {
-		val flags = _alarmFlags.updateAndGet { state -> state.copy(alarmVolume = volume) }
-		val alarmVolume = if (flags.alarmVolume <= AssociateAlarmFlags.MIN_ALARM_SOUND)
-			AssociateAlarmFlags.MIN_ALARM_SOUND
-		else flags.alarmVolume
-		// change the volume
-		soundPlayer.changeVolume(alarmVolume)
-	}
-
-	private fun onSoundEnabled(isEnabled: Boolean) {
-		val flags = _alarmFlags.updateAndGet { state -> state.copy(isSoundEnabled = isEnabled) }
-		// turn off the player
-		if (!flags.isSoundEnabled) soundPlayer.stopSound()
-	}
 
 	private fun onSelectVibration(pattern: VibrationPattern) {
 		val flags = _alarmFlags.updateAndGet { state -> state.copy(vibrationPattern = pattern) }
@@ -309,8 +238,9 @@ class CreateAlarmViewModel(
 				_alarmLabel.update { alarm.label ?: "" }
 				_background.update { alarm.background }
 
-				val sound = _soundOptions.value.find { it.uri == alarm.soundUri }
-					?: ringtonesUseCase.default
+				val sound = alarm.soundUri?.let { ringtonesRepository.getRingtoneFromUri(it) }
+					?: ringtonesRepository.default
+
 				_selectedSound.update { sound }
 			},
 			onError = { err, message ->

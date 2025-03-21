@@ -18,4 +18,7 @@ interface CreateAlarmNavRoute {
 
 	@Serializable
 	data object SelectBackgroundRoute : CreateAlarmNavRoute
+
+	@Serializable
+	data object GalleryRoute : CreateAlarmNavRoute
 }

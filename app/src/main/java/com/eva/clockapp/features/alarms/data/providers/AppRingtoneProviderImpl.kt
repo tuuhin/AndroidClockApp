@@ -23,20 +23,18 @@ class AppRingtoneProviderImpl(private val context: Context) : AppRingtoneProvide
 			)
 		}
 
-	override val ringtones: Result<List<RingtoneMusicFile>>
-		get() = try {
-			val listOfAlarms = buildList {
-				add(default)
-				add(buildRingtone(name = "Simple", audio = R.raw.alarm_clock_simple))
-				add(buildRingtone(name = "Clock", audio = R.raw.alarm_clock_sound))
-				add(buildRingtone(name = "Bird Sound", audio = R.raw.birds_alarm))
-				add(buildRingtone(name = "Whistle", audio = R.raw.happy_whistle))
-			}
-			Result.success(listOfAlarms)
-		} catch (e: Exception) {
-			e.printStackTrace()
-			Result.failure(e)
+	override val ringtones: List<RingtoneMusicFile>
+		get() = buildList {
+			add(default)
+			add(buildRingtone(name = "Simple", audio = R.raw.alarm_clock_simple))
+			add(buildRingtone(name = "Clock", audio = R.raw.alarm_clock_sound))
+			add(buildRingtone(name = "Bird Sound", audio = R.raw.birds_alarm))
+			add(buildRingtone(name = "Whistle", audio = R.raw.happy_whistle))
 		}
+
+	override fun getRingtoneFromUri(uri: String): RingtoneMusicFile? {
+		return ringtones.find { it.uri == uri }
+	}
 
 	private fun buildRingtone(name: String, @RawRes audio: Int) = RingtoneMusicFile(
 		name = name,

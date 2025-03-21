@@ -24,7 +24,7 @@ fun NavGraphBuilder.alarmsRoute(controller: NavController) =
 		val nextAlarmDuration by viewModel.nextAlarmTime.collectAsStateWithLifecycle()
 		val lifecyle by lifecyleOwner.lifecycle.currentStateFlow.collectAsStateWithLifecycle()
 
-		UIEventsSideEffect(eventsFlow = viewModel.uiEvents)
+		UIEventsSideEffect(viewModel.uiEvents)
 
 		AlarmScreen(
 			selectableAlarms = alarms,

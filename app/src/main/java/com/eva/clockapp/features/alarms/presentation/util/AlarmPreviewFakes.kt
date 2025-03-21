@@ -27,7 +27,7 @@ object AlarmPreviewFakes {
 
 	val FAKE_CREATE_ALARM_STATE = CreateAlarmState(ringtone = FAKE_RINGTONE_MODEL)
 
-	val FAKE_RINGTONES_OPTIONS = List(20) { idx ->
+	val FAKE_RINGTONES_OPTIONS = List(10) { idx ->
 		FAKE_RINGTONE_MODEL.copy(
 			type = if (idx % 2 == 0) RingtoneMusicFile.RingtoneType.DEVICE_LOCAL
 			else RingtoneMusicFile.RingtoneType.APPLICATION_LOCAL
@@ -63,14 +63,9 @@ object AlarmPreviewFakes {
 
 	val FAKE_ALARMS_MODEL_LIST_EMPTY = persistentListOf<SelectableAlarmModel>()
 
-	val RANDOM_BACKGROUND_OPTIONS =
-		List(10) {
-			WallpaperPhoto(
-				id = it.toLong(),
-				placeholderColor = 0,
-				uri = ""
-			)
-		}.toImmutableList()
+	val RANDOM_BACKGROUND_OPTIONS = List(10) {
+		WallpaperPhoto(id = it.toLong(), placeholderColor = 0, uri = "")
+	}.toImmutableList()
 
 	val GALLEY_IMAGE_MODELS = List(20) {
 		GalleryImageModel(

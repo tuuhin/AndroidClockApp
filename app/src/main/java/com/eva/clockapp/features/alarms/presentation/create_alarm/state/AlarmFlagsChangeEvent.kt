@@ -1,6 +1,5 @@
 package com.eva.clockapp.features.alarms.presentation.create_alarm.state
 
-import com.eva.clockapp.features.alarms.domain.models.RingtoneMusicFile
 import com.eva.clockapp.features.alarms.domain.models.SnoozeIntervalOption
 import com.eva.clockapp.features.alarms.domain.models.SnoozeRepeatMode
 import com.eva.clockapp.features.alarms.domain.models.VibrationPattern
@@ -17,7 +16,6 @@ sealed interface AlarmFlagsChangeEvent {
 	data class OnSnoozeEnabled(val isEnabled: Boolean) : AlarmFlagsChangeEvent
 
 	// modifies properties associated with alarm sound
-	data class OnSoundSelected(val sound: RingtoneMusicFile) : AlarmFlagsChangeEvent
 	data class OnSoundOptionEnabled(val isEnabled: Boolean) : AlarmFlagsChangeEvent
 	data class OnIncreaseVolumeByStep(val isEnabled: Boolean) : AlarmFlagsChangeEvent
 	data class OnSoundVolumeChange(val volume: Float) : AlarmFlagsChangeEvent

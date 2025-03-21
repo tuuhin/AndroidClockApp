@@ -6,5 +6,7 @@ interface AppRingtoneProvider {
 
 	val default: RingtoneMusicFile
 
-	val ringtones: Result<List<RingtoneMusicFile>>
+	val ringtones: List<RingtoneMusicFile>
+
+	fun getRingtoneFromUri(uri: String): RingtoneMusicFile?
 }

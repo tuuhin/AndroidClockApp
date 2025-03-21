@@ -10,6 +10,7 @@ import androidx.core.net.toUri
 import com.eva.clockapp.core.utils.Resource
 import com.eva.clockapp.features.alarms.domain.controllers.AlarmsSoundPlayer
 import com.eva.clockapp.features.alarms.domain.exceptions.FeatureUnavailableException
+import com.eva.clockapp.features.alarms.domain.models.AssociateAlarmFlags
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.delay
@@ -78,9 +79,13 @@ class AlarmSoundPlayerImpl(private val context: Context) : AlarmsSoundPlayer {
 	}
 
 	override fun changeVolume(soundVolume: Float): Resource<Unit, Exception> {
+		val minVolume = if (soundVolume <= AssociateAlarmFlags.MIN_ALARM_SOUND)
+			AssociateAlarmFlags.MIN_ALARM_SOUND
+		else soundVolume
+
 		return try {
 			if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
-				ringtone?.volume = soundVolume / 100f
+				ringtone?.volume = minVolume / 100f
 				Log.d(TAG, "SOUND VOLUME SET TO :${ringtone?.volume ?: 0}")
 				return Resource.Success(Unit)
 			}

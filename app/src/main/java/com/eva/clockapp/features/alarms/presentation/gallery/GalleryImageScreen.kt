@@ -36,6 +36,7 @@ import com.eva.clockapp.core.presentation.LocalSnackBarHostState
 import com.eva.clockapp.core.utils.checkImageReadPermission
 import com.eva.clockapp.features.alarms.domain.models.GalleryBucketModel
 import com.eva.clockapp.features.alarms.domain.models.GalleryImageModel
+import com.eva.clockapp.features.alarms.presentation.create_alarm.state.CreateAlarmEvents
 import com.eva.clockapp.features.alarms.presentation.gallery.composables.GalleryImagesCompactGrid
 import com.eva.clockapp.features.alarms.presentation.gallery.composables.GalleryImagesScreenContent
 import com.eva.clockapp.features.alarms.presentation.gallery.composables.ImagesPermissionPlaceholder
@@ -149,7 +150,7 @@ private fun GalleryImageScreen(
 fun GalleryImageScreen(
 	state: GalleryScreenState,
 	onEvent: (GalleryScreenEvent) -> Unit,
-	onSelectImage: (GalleryImageModel) -> Unit,
+	onCreateEvent: (CreateAlarmEvents) -> Unit,
 	modifier: Modifier = Modifier,
 	navigation: @Composable () -> Unit = {},
 ) {
@@ -159,7 +160,7 @@ fun GalleryImageScreen(
 		queriedImages = state.results,
 		selectedBucket = state.selectedBucket,
 		showSheet = state.showSheet,
-		onSelectImage = onSelectImage,
+		onSelectImage = { onCreateEvent(CreateAlarmEvents.OnSelectGalleryImage(it)) },
 		onPermissionChange = { onEvent(GalleryScreenEvent.LoadImages) },
 		onDismissModalSheet = { onEvent(GalleryScreenEvent.OnDismissModalSheet) },
 		onSelectAlbum = { onEvent(GalleryScreenEvent.OnSelectAlbum(it)) },

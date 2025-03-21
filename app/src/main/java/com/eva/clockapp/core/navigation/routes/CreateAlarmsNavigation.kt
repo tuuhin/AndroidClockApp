@@ -18,12 +18,15 @@ import com.eva.clockapp.core.navigation.navgraphs.NavRoutes
 import com.eva.clockapp.core.presentation.composables.UIEventsSideEffect
 import com.eva.clockapp.core.presentation.composables.sharedViewModel
 import com.eva.clockapp.features.alarms.presentation.create_alarm.AlarmsBackgroundViewModel
+import com.eva.clockapp.features.alarms.presentation.create_alarm.AlarmsSoundsViewmodel
 import com.eva.clockapp.features.alarms.presentation.create_alarm.CreateAlarmViewModel
 import com.eva.clockapp.features.alarms.presentation.create_alarm.screens.AlarmSnoozeScreen
 import com.eva.clockapp.features.alarms.presentation.create_alarm.screens.AlarmSoundScreen
 import com.eva.clockapp.features.alarms.presentation.create_alarm.screens.AlarmVibrationScreen
 import com.eva.clockapp.features.alarms.presentation.create_alarm.screens.AlarmsBackgroundScreen
 import com.eva.clockapp.features.alarms.presentation.create_alarm.screens.CreateAlarmScreen
+import com.eva.clockapp.features.alarms.presentation.gallery.GalleryImageScreen
+import com.eva.clockapp.features.alarms.presentation.gallery.GalleryScreenViewModel
 import org.koin.compose.viewmodel.koinViewModel
 
 fun NavGraphBuilder.creteAlarmsNavGraph(controller: NavController) =
@@ -37,7 +40,7 @@ fun NavGraphBuilder.creteAlarmsNavGraph(controller: NavController) =
 			val flagsState by viewModel.flagsState.collectAsStateWithLifecycle()
 
 			UIEventsSideEffect(
-				eventsFlow = viewModel.uiEvents,
+				viewModel.uiEvents,
 				onBack = dropUnlessResumed { controller.popBackStack() },
 			)
 
@@ -76,7 +79,7 @@ fun NavGraphBuilder.creteAlarmsNavGraph(controller: NavController) =
 			val viewModel = backStack.sharedViewModel<CreateAlarmViewModel>(controller)
 			val flagsState by viewModel.flagsState.collectAsStateWithLifecycle()
 
-			UIEventsSideEffect(eventsFlow = viewModel.uiEvents)
+			UIEventsSideEffect(viewModel.uiEvents)
 
 			AlarmVibrationScreen(
 				state = flagsState,
@@ -97,7 +100,7 @@ fun NavGraphBuilder.creteAlarmsNavGraph(controller: NavController) =
 			val viewModel = backStack.sharedViewModel<CreateAlarmViewModel>(controller)
 			val flagsState by viewModel.flagsState.collectAsStateWithLifecycle()
 
-			UIEventsSideEffect(eventsFlow = viewModel.uiEvents)
+			UIEventsSideEffect(viewModel.uiEvents)
 
 			AlarmSnoozeScreen(
 				state = flagsState,
@@ -115,20 +118,23 @@ fun NavGraphBuilder.creteAlarmsNavGraph(controller: NavController) =
 
 		animatedComposable<CreateAlarmNavRoute.SelectSoundOptionRoute> { backStack ->
 
-			val viewModel = backStack.sharedViewModel<CreateAlarmViewModel>(controller)
-			val flags by viewModel.flagsState.collectAsStateWithLifecycle()
-			val ringtoneOptions by viewModel.soundOptions.collectAsStateWithLifecycle()
-			val alarmState by viewModel.createAlarmState.collectAsStateWithLifecycle()
+			val sharedViewmodel = backStack.sharedViewModel<CreateAlarmViewModel>(controller)
+			val flags by sharedViewmodel.flagsState.collectAsStateWithLifecycle()
+			val alarmState by sharedViewmodel.createAlarmState.collectAsStateWithLifecycle()
 
-			UIEventsSideEffect(eventsFlow = viewModel.uiEvents)
+			val viewModel = koinViewModel<AlarmsSoundsViewmodel>()
+			val soundOptions by viewModel.soundOptions.collectAsStateWithLifecycle()
 
+
+			UIEventsSideEffect(sharedViewmodel.uiEvents, viewModel.uiEvents)
 
 			AlarmSoundScreen(
 				state = alarmState,
 				flags = flags,
-				ringtones = ringtoneOptions,
-				onFlagsEvent = viewModel::onFlagsEvent,
+				ringtones = soundOptions,
 				onEvent = viewModel::onEvent,
+				onFlagsEvent = sharedViewmodel::onFlagsEvent,
+				onCreateEvent = sharedViewmodel::onEvent,
 				navigation = {
 					IconButton(onClick = dropUnlessResumed(block = controller::popBackStack)) {
 						Icon(
@@ -149,14 +155,14 @@ fun NavGraphBuilder.creteAlarmsNavGraph(controller: NavController) =
 			val sharedViewmodel = backStack.sharedViewModel<CreateAlarmViewModel>(controller)
 			val state by sharedViewmodel.createAlarmState.collectAsStateWithLifecycle()
 
-			UIEventsSideEffect(eventsFlow = viewModel.uiEvents)
-			UIEventsSideEffect(eventsFlow = sharedViewmodel.uiEvents)
+			UIEventsSideEffect(sharedViewmodel.uiEvents, viewModel.uiEvents)
 
 			AlarmsBackgroundScreen(
 				wallpapersState = screenState,
 				state = state,
 				onEvent = sharedViewmodel::onEvent,
 				onSelectionDone = dropUnlessResumed { controller.popBackStack() },
+				onSelectFromDevice = dropUnlessResumed { controller.navigate(CreateAlarmNavRoute.GalleryRoute) },
 				navigation = {
 					IconButton(onClick = dropUnlessResumed(block = controller::popBackStack)) {
 						Icon(
@@ -165,6 +171,34 @@ fun NavGraphBuilder.creteAlarmsNavGraph(controller: NavController) =
 						)
 					}
 				}
+			)
+		}
+
+		animatedComposable<CreateAlarmNavRoute.GalleryRoute> { backStack ->
+
+			val viewModel = koinViewModel<GalleryScreenViewModel>()
+
+			val screenState by viewModel.screenState.collectAsStateWithLifecycle()
+			val sharedViewmodel = backStack.sharedViewModel<CreateAlarmViewModel>(controller)
+
+			UIEventsSideEffect(
+				viewModel.uiEvents,
+				sharedViewmodel.uiEvents,
+				onBack = dropUnlessResumed { controller.popBackStack() },
+			)
+
+			GalleryImageScreen(
+				state = screenState,
+				onEvent = viewModel::onEvent,
+				onCreateEvent = sharedViewmodel::onEvent,
+				navigation = {
+					IconButton(onClick = dropUnlessResumed(block = controller::popBackStack)) {
+						Icon(
+							imageVector = Icons.AutoMirrored.Default.ArrowBack,
+							contentDescription = stringResource(R.string.back_arrow)
+						)
+					}
+				},
 			)
 		}
 	}
