@@ -16,6 +16,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.asSharedFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onEach
@@ -30,6 +31,7 @@ class AlarmsViewModel(
 
 	private val _alarms = MutableStateFlow<List<SelectableAlarmModel>>(emptyList())
 	private val _isAlarmsLoaded = MutableStateFlow(false)
+	val isLoaded = _isAlarmsLoaded.asStateFlow()
 
 	val selectableAlarms = _alarms.map { it.toImmutableList() }
 		.onStart { fillSavedAlarms() }
@@ -49,9 +51,11 @@ class AlarmsViewModel(
 	)
 
 	private val _uiEvents = MutableSharedFlow<UiEvents>()
-
 	override val uiEvents: SharedFlow<UiEvents>
 		get() = _uiEvents.asSharedFlow()
+
+	private val _selectedAlarms: List<AlarmsModel>
+		get() = _alarms.value.filter { it.isSelected }.map { it.model }
 
 	fun onEvent(event: AlarmsScreenEvents) {
 		when (event) {
@@ -95,8 +99,19 @@ class AlarmsViewModel(
 		}
 	}
 
-	private fun enableSelectedAlarms(enable: Boolean) {
+	private fun enableSelectedAlarms(enable: Boolean) = viewModelScope.launch {
+		val result = repository.toggleIsAlarmEnabledBuck(enable, _selectedAlarms)
+		when (result) {
+			is Resource.Error -> result.message?.let { message ->
+				_uiEvents.emit(UiEvents.ShowSnackBar(message))
+			}
 
+			is Resource.Success -> result.message?.let { message ->
+				_uiEvents.emit(UiEvents.ShowSnackBar(message))
+			}
+
+			else -> {}
+		}
 	}
 
 
@@ -121,10 +136,7 @@ class AlarmsViewModel(
 	}
 
 	private fun deleteSelectedAlarms() = viewModelScope.launch {
-
-		val selectedAlarms = _alarms.value.filter { it.isSelected }.map { it.model }
-
-		when (val result = repository.deleteAlarms(selectedAlarms)) {
+		when (val result = repository.deleteAlarms(_selectedAlarms)) {
 			is Resource.Error -> result.message?.let { message ->
 				_uiEvents.emit(UiEvents.ShowSnackBar(message))
 			}
@@ -132,5 +144,4 @@ class AlarmsViewModel(
 			else -> {}
 		}
 	}
-
 }

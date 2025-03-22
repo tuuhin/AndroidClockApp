@@ -15,11 +15,14 @@ import com.eva.clockapp.features.alarms.domain.models.AlarmsModel
 import com.eva.clockapp.features.alarms.domain.models.CreateAlarmModel
 import com.eva.clockapp.features.alarms.domain.repository.AlarmsRepository
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.async
+import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.emitAll
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.supervisorScope
 import kotlinx.coroutines.withContext
 import kotlinx.datetime.Clock
 import kotlinx.datetime.LocalDateTime
@@ -82,6 +85,25 @@ class AlarmsRepositoryImpl(
 				controller.cancelAlarm(model)
 				Resource.Success(model)
 			}
+		}
+	}
+
+	override suspend fun toggleIsAlarmEnabledBuck(isEnabled: Boolean, models: List<AlarmsModel>)
+			: Resource<Unit, Exception> {
+		return checkAndReturnDbError {
+			supervisorScope {
+				val operations = models.map { model ->
+					// update the alarm
+					async(Dispatchers.IO) {
+						alarmsDao.switchIsEnableAlarm(alarmId = model.id, isEnabled = isEnabled)
+						// turn on/ off alarm
+						if (model.isAlarmEnabled) controller.createAlarm(model)
+						else controller.cancelAlarm(model)
+					}
+				}
+				operations.awaitAll()
+			}
+			Resource.Success(Unit, message = context.getString(R.string.update_alarm_bulk))
 		}
 	}
 

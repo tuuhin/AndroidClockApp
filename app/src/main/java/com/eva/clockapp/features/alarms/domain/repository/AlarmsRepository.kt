@@ -14,6 +14,9 @@ interface AlarmsRepository {
 	suspend fun toggleIsAlarmEnabled(isEnabled: Boolean, model: AlarmsModel)
 			: Resource<AlarmsModel, Exception>
 
+	suspend fun toggleIsAlarmEnabledBuck(isEnabled: Boolean, models: List<AlarmsModel>)
+			: Resource<Unit, Exception>
+
 	suspend fun createAlarm(model: CreateAlarmModel): Resource<AlarmsModel, Exception>
 
 	suspend fun updateAlarm(model: AlarmsModel): Resource<AlarmsModel, Exception>

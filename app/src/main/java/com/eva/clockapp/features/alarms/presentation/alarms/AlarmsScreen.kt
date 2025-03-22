@@ -1,9 +1,12 @@
 package com.eva.clockapp.features.alarms.presentation.alarms
 
 import androidx.activity.compose.BackHandler
+import androidx.compose.animation.Crossfade
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
@@ -14,6 +17,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.res.dimensionResource
@@ -39,6 +43,7 @@ import kotlin.time.Duration.Companion.days
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AlarmScreen(
+	isContentReady: Boolean,
 	selectableAlarms: ImmutableList<SelectableAlarmModel>,
 	onEvent: (AlarmsScreenEvents) -> Unit,
 	modifier: Modifier = Modifier,
@@ -95,17 +100,33 @@ fun AlarmScreen(
 		snackbarHost = { SnackbarHost(snackBarHostState) },
 		modifier = modifier.nestedScroll(scrollBehavior.nestedScrollConnection)
 	) { scPadding ->
-		AlarmsScreenContent(
-			alarms = selectableAlarms,
-			nextAlarmAfter = nextAlarmScheduledAfter,
-			onEnableAlarm = { _, alarm -> onEvent(AlarmsScreenEvents.OnEnableOrDisAbleAlarm(alarm)) },
-			onAlarmSelect = { alarm -> onEvent(AlarmsScreenEvents.OnSelectOrUnSelectAlarm(alarm)) },
-			onSelectAlarm = onSelectAlarm,
-			contentPadding = PaddingValues(all = dimensionResource(R.dimen.sc_padding)),
-			modifier = Modifier
-				.fillMaxSize()
-				.padding(scPadding),
-		)
+		Crossfade(
+			targetState = isContentReady,
+			modifier = Modifier.padding(scPadding),
+		) { ready ->
+			if (ready) {
+				AlarmsScreenContent(
+					alarms = selectableAlarms,
+					nextAlarmAfter = nextAlarmScheduledAfter,
+					onEnableAlarm = { _, alarm ->
+						onEvent(AlarmsScreenEvents.OnEnableOrDisAbleAlarm(alarm))
+					},
+					onAlarmSelect = { alarm ->
+						onEvent(AlarmsScreenEvents.OnSelectOrUnSelectAlarm(alarm))
+					},
+					onSelectAlarm = onSelectAlarm,
+					contentPadding = PaddingValues(all = dimensionResource(R.dimen.sc_padding)),
+					modifier = Modifier.fillMaxSize()
+				)
+			} else {
+				Box(
+					modifier = Modifier.fillMaxSize(),
+					contentAlignment = Alignment.Center
+				) {
+					CircularProgressIndicator()
+				}
+			}
+		}
 	}
 }
 
@@ -126,6 +147,7 @@ private fun AlarmScreenPreview(
 	alarm: ImmutableList<SelectableAlarmModel>,
 ) = ClockAppTheme {
 	AlarmScreen(
+		isContentReady = true,
 		selectableAlarms = alarm,
 		nextAlarmScheduledAfter = 4.days,
 		onEvent = {},
