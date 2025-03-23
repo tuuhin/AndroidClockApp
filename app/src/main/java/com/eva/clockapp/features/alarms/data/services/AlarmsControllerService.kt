@@ -17,7 +17,6 @@ import com.eva.clockapp.features.alarms.domain.utils.BasicTimerWatch
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.launchIn
@@ -62,30 +61,31 @@ class AlarmsControllerService : LifecycleService(), KoinComponent {
 		super.onCreate()
 
 		// check timer watch is completed
-		basicTimerWatch.isCompleted
-			.filter { result -> result == true }
-			.onEach { completed ->
-				// stop the watch
-				basicTimerWatch.stop()
+		basicTimerWatch.runIfCompletedAsync {
+			_snoozeCount++
+			Log.d(TAG, "UPDATING SNOOZE COUNT")
 
-				_snoozeCount++
-				Log.d(TAG, "UPDATING SNOOZE COUNT")
+			val alarm = _currentAlarm ?: return@runIfCompletedAsync
 
-				_currentAlarm?.let { model ->
+			val snoozeDuration = alarm.flags.snoozeInterval.duration
+			val updatedTime = alarm.time.toSecondOfDay() + snoozeDuration.inWholeSeconds.toInt()
 
-					val updatedTimeInSeconds = model.time.toSecondOfDay() +
-							model.flags.snoozeInterval.duration.inWholeSeconds.toInt()
+			val updatedAlarm = alarm.copy(time = LocalTime.fromSecondOfDay(updatedTime))
 
-					val updatedAlarm = model
-						.copy(time = LocalTime.fromSecondOfDay(updatedTimeInSeconds))
+			_wakeLock.acquireLock()
 
-					startAlarmsForegroundService(
-						NotificationsConstants.ALARMS_FOREGROUND_SERVICE_NOTIFICATION_ID,
-						notifications.createNotification(applicationContext, updatedAlarm)
-					)
-				}
-			}.launchIn(lifecycleScope)
+			// we cannot use start foreground again as it need to done from startForeground
+			// so we show the notification only and the service will be run until it cancels or
+			// stop is placed.
+			_notificationManager?.notify(
+				NotificationsConstants.ALARMS_FOREGROUND_SERVICE_NOTIFICATION_ID,
+				notifications.createNotification(applicationContext, updatedAlarm)
+			)
+
+			alarm.playSoundAndVibration()
+		}
 	}
+
 
 	private fun prepareAlarm(alarmId: Int) = lifecycleScope.launch {
 		val resource = repository.getAlarmFromId(alarmId)
@@ -117,7 +117,8 @@ class AlarmsControllerService : LifecycleService(), KoinComponent {
 
 		val isSnoozeEnabled = alarm.flags.isSnoozeEnabled
 		val snoozeDuration = alarm.flags.snoozeInterval.duration
-		val snoozeRepeat = alarm.flags.snoozeRepeatMode.times
+		// times to repeat = repeat + 1
+		val snoozeRepeat = alarm.flags.snoozeRepeatMode.times + 1
 
 		if (!isSnoozeEnabled || snoozeDuration == Duration.ZERO) {
 			Log.d(TAG, "SNOOZE WAS NOT ENABLED OR SNOOZE DURATION IS ZERO")
@@ -174,6 +175,7 @@ class AlarmsControllerService : LifecycleService(), KoinComponent {
 		player.stopSound()
 		// the broadcast receiver at the alarm activity to finish the alarm
 		sendBroadcast(Intent(ClockAppIntents.ACTION_FINISH_ALARM_ACTIVITY))
+		Log.d(TAG, "RUNNING TASKS DISMISSED")
 	}
 
 	private fun AlarmsModel.playSoundAndVibration() {

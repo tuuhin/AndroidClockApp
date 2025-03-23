@@ -26,7 +26,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.PreviewLightDark
 import androidx.compose.ui.tooling.preview.PreviewParameter
@@ -36,6 +35,7 @@ import androidx.compose.ui.unit.dp
 import com.eva.clockapp.R
 import com.eva.clockapp.features.alarms.domain.models.SnoozeIntervalOption
 import com.eva.clockapp.ui.theme.ClockAppTheme
+import com.eva.clockapp.ui.theme.DownloadableFonts
 
 @Composable
 fun SnoozeIntervalPicker(
@@ -60,6 +60,13 @@ fun SnoozeIntervalPicker(
 		interval is SnoozeIntervalOption.IntervalCustomMinutes
 	}
 
+	val customStartIndex = remember {
+		when (interval) {
+			is SnoozeIntervalOption.IntervalCustomMinutes -> interval.minutes - 1
+			else -> 10
+		}
+	}
+
 
 	Column(
 		modifier = modifier,
@@ -67,7 +74,7 @@ fun SnoozeIntervalPicker(
 	) {
 		ListItem(
 			headlineContent = { Text(text = stringResource(R.string.snooze_options_title)) },
-			colors = ListItemDefaults.colors(containerColor = Color.Transparent)
+			colors = ListItemDefaults.colors(containerColor = MaterialTheme.colorScheme.background)
 		)
 
 		staticOptions.forEach { option ->
@@ -83,7 +90,9 @@ fun SnoozeIntervalPicker(
 			isSelected = isCustomModeSelected,
 			enabled = enabled,
 			text = stringResource(R.string.snooze_interval_custom),
-			onClick = { onIntervalChange(SnoozeIntervalOption.IntervalCustomMinutes(0)) },
+			onClick = {
+				onIntervalChange(SnoozeIntervalOption.IntervalCustomMinutes(customStartIndex))
+			},
 			colors = optionColors,
 		)
 		AnimatedVisibility(
@@ -100,26 +109,24 @@ fun SnoozeIntervalPicker(
 					.padding(vertical = 4.dp),
 			) {
 				CircularRangedNumberPicker(
-					range = 0..<60,
+					range = 1..<100,
 					contentColor = contentColor,
 					containerColor = containerColor,
-					startIndex = (interval as? SnoozeIntervalOption.IntervalCustomMinutes)?.minutes
-						?: 10,
+					startIndex = maxOf(customStartIndex, 1),
 					elementSize = DpSize(48.dp, 48.dp),
 					onFocusItem = { idx ->
-						val minute = idx % 60
+						val minute = (idx + 1) % 100
 						onIntervalChange(SnoozeIntervalOption.IntervalCustomMinutes(minute))
 					},
 				) { idx ->
-					val minute = idx % 60
+					val minute = (idx + 1) % 100
 					Text(
 						text = "$minute".padStart(2, '0'),
 						textAlign = TextAlign.Center,
-						fontFamily = FontFamily.SansSerif,
+						fontFamily = DownloadableFonts.CHELSEA_MARKET,
 						style = MaterialTheme.typography.titleLarge,
 						modifier = Modifier.widthIn(min = 40.dp)
 					)
-
 				}
 				Spacer(modifier = Modifier.width(36.dp))
 				Text(

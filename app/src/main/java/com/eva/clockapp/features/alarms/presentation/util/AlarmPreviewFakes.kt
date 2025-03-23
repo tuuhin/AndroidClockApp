@@ -79,4 +79,7 @@ object AlarmPreviewFakes {
 	val GALLEY_IMAGE_BUCKET_MODELS = List(20) {
 		GalleryBucketModel(bucketId = it.toLong(), bucketName = "Something", null)
 	}.toImmutableList()
+
+	const val LOREM_TEXT =
+		"Lorem ipsum dolor sit amet, consectetur adipiscing elit. Quisque nunc neque, maximus sed ex vel, ultrices ultrices odio. Aliquam dapibus dui enim, quis pulvinar enim dictum et. Nam congue ut neque eget viverra."
 }

@@ -139,7 +139,9 @@ private fun GalleryImageScreen(
 					else Manifest.permission.READ_EXTERNAL_STORAGE
 					launcher.launch(perms)
 				},
-				modifier = Modifier.fillMaxSize(),
+				modifier = Modifier
+					.fillMaxSize()
+					.padding(dimensionResource(R.dimen.sc_padding)),
 			)
 		}
 	}

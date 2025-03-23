@@ -2,8 +2,7 @@ package com.eva.clockapp.features.alarms.presentation.create_alarm.screens
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.calculateEndPadding
-import androidx.compose.foundation.layout.calculateStartPadding
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.icons.Icons
@@ -23,7 +22,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.input.nestedscroll.nestedScroll
-import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.PreviewLightDark
@@ -51,7 +49,6 @@ private fun AlarmSnoozeScreen(
 	navigation: @Composable () -> Unit = {},
 ) {
 
-	val layoutDirection = LocalLayoutDirection.current
 	val snackBarHostState = LocalSnackBarHostState.current
 	val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
 
@@ -67,12 +64,10 @@ private fun AlarmSnoozeScreen(
 		modifier = modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
 	) { scPadding ->
 		Column(
-			modifier = Modifier.padding(
-				top = scPadding.calculateTopPadding() + dimensionResource(R.dimen.sc_padding),
-				bottom = scPadding.calculateBottomPadding() + dimensionResource(R.dimen.sc_padding),
-				start = scPadding.calculateStartPadding(layoutDirection) + dimensionResource(R.dimen.sc_padding),
-				end = scPadding.calculateEndPadding(layoutDirection) + dimensionResource(R.dimen.sc_padding)
-			),
+			modifier = Modifier
+				.padding(paddingValues = scPadding)
+				.padding(all = dimensionResource(R.dimen.sc_padding))
+				.fillMaxWidth(),
 			verticalArrangement = Arrangement.spacedBy(12.dp),
 		) {
 			ListItem(

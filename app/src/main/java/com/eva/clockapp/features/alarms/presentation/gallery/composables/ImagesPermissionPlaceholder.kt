@@ -40,19 +40,20 @@ fun ImagesPermissionPlaceholder(
 			colorFilter = ColorFilter.tint(color = MaterialTheme.colorScheme.primary),
 			modifier = Modifier.size(200.dp)
 		)
-		Spacer(modifier = Modifier.height(12.dp))
+		Spacer(modifier = Modifier.height(16.dp))
 		Text(
 			text = stringResource(R.string.read_images_permission_title),
 			style = MaterialTheme.typography.titleLarge,
 			color = MaterialTheme.colorScheme.onSurface
 		)
+		Spacer(modifier = Modifier.height(4.dp))
 		Text(
 			text = stringResource(R.string.read_images_permission_desc),
 			style = MaterialTheme.typography.labelLarge,
 			textAlign = TextAlign.Center,
 			color = MaterialTheme.colorScheme.onSurfaceVariant
 		)
-		Spacer(modifier = Modifier.height(12.dp))
+		Spacer(modifier = Modifier.height(16.dp))
 		Button(
 			onClick = onAllowPermission,
 			shape = MaterialTheme.shapes.medium,

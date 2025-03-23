@@ -33,6 +33,7 @@ import com.eva.clockapp.features.alarms.presentation.composables.AlarmsBottomBar
 import com.eva.clockapp.features.alarms.presentation.composables.AlarmsScreenContent
 import com.eva.clockapp.features.alarms.presentation.composables.AlarmsTopAppBar
 import com.eva.clockapp.features.alarms.presentation.composables.DeleteAlarmsDialog
+import com.eva.clockapp.features.alarms.presentation.composables.HasNotificationPermission
 import com.eva.clockapp.features.alarms.presentation.composables.HasScheduleAlarmPermissionsDialog
 import com.eva.clockapp.features.alarms.presentation.util.AlarmPreviewFakes
 import com.eva.clockapp.ui.theme.ClockAppTheme
@@ -76,7 +77,11 @@ fun AlarmScreen(
 		onDismiss = { showDeleteDialog = false },
 	)
 
+	// check schedule exact alarm permission
 	HasScheduleAlarmPermissionsDialog()
+
+	// check notification permission
+	HasNotificationPermission()
 
 	Scaffold(
 		topBar = {

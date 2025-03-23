@@ -86,7 +86,10 @@ class GalleryScreenViewModel(
 
 	fun onEvent(event: GalleryScreenEvent) {
 		when (event) {
-			GalleryScreenEvent.LoadImages -> loadImages()
+			GalleryScreenEvent.LoadImages -> {
+				loadImages()
+				loadImageBuckets()
+			}
 			GalleryScreenEvent.OnDismissModalSheet -> {
 				// hide the sheet and clear the results
 				_selectedBucket.update { null }

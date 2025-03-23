@@ -8,7 +8,6 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.imeNestedScroll
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.TextFields
@@ -27,8 +26,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.focus.FocusRequester
-import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
@@ -82,7 +79,6 @@ private fun CreateAlarmContent(
 	optionsColors: ListItemColors = ListItemDefaults.colors(containerColor = Color.Transparent),
 ) {
 
-	val focusRequester = remember { FocusRequester() }
 	val is24HourClock = remember { LocalePreferences.getHourCycle() == HourCycle.H23 }
 
 	LazyColumn(
@@ -112,7 +108,6 @@ private fun CreateAlarmContent(
 				onValueChange = onLabelStateChange,
 				placeholder = { Text(text = stringResource(R.string.create_alarm_label_placeholder)) },
 				singleLine = true,
-				keyboardActions = KeyboardActions(onDone = { focusRequester.freeFocus() }),
 				keyboardOptions = KeyboardOptions(
 					imeAction = ImeAction.Done,
 					keyboardType = KeyboardType.Text,
@@ -132,7 +127,6 @@ private fun CreateAlarmContent(
 				),
 				shape = MaterialTheme.shapes.small,
 				modifier = Modifier
-					.focusRequester(focusRequester)
 					.fillMaxWidth()
 					.imeNestedScroll(),
 			)

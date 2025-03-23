@@ -6,13 +6,15 @@ import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.flow.updateAndGet
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.seconds
 
@@ -24,36 +26,43 @@ class BasicTimerWatch {
 	private val _isRunning = MutableStateFlow(false)
 	private val _timerDuration = MutableStateFlow(Duration.ZERO)
 
-	private val _isCompleted = MutableStateFlow(false)
-	val isCompleted = _isCompleted.asStateFlow()
+	private val _isCompleted = _isRunning.map { !it }
 
 	init {
 		_isRunning.flatMapLatest(::runTimerWatch)
 			.onEach { duration ->
-				if (duration == Duration.ZERO) _isCompleted.update { true }
-				_timerDuration.update { duration }
+				val newDuration = _timerDuration.updateAndGet { duration }
+				if (newDuration == Duration.ZERO) _isRunning.update { false }
 			}.launchIn(scope)
 	}
 
 	fun start(time: Duration) {
+		// reset it
+		reset()
+		// then start
 		_timerDuration.update { time }
-		_isCompleted.update { false }
 		// set running to true
 		_isRunning.update { true }
 	}
 
-	fun stop() {
+	private fun reset() {
 		_isRunning.update { false }
 		_timerDuration.update { Duration.ZERO }
 	}
 
+	fun runIfCompletedAsync(callback: () -> Unit) {
+		_isCompleted.filter { result -> result == true }
+			// make sure its true
+			.onEach { callback() }
+			.launchIn(scope)
+	}
 
 	fun cleanUp() = scope.cancel()
 
 	private fun runTimerWatch(running: Boolean) = flow<Duration> {
 		while (running) {
 			val subtracted = _timerDuration.value - 1.seconds
-			if (subtracted.isNegative()) {
+			if (subtracted.isNegative() || subtracted == Duration.ZERO) {
 				emit(Duration.ZERO)
 				break
 			}
