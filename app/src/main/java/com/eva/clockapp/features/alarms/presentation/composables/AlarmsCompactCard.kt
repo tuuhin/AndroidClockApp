@@ -41,11 +41,12 @@ import androidx.compose.ui.unit.dp
 import com.eva.clockapp.R
 import com.eva.clockapp.core.utils.HH_MM
 import com.eva.clockapp.core.utils.HH_MM_A
-import com.eva.clockapp.features.alarms.domain.models.AlarmsModel
 import com.eva.clockapp.features.alarms.presentation.alarms.state.SelectableAlarmModel
 import com.eva.clockapp.features.alarms.presentation.util.AlarmPreviewFakes
 import com.eva.clockapp.ui.theme.ClockAppTheme
 import com.eva.clockapp.ui.theme.DownloadableFonts
+import kotlinx.collections.immutable.ImmutableSet
+import kotlinx.collections.immutable.toImmutableSet
 import kotlinx.datetime.DayOfWeek
 import kotlinx.datetime.LocalTime
 import kotlinx.datetime.format
@@ -111,7 +112,8 @@ fun AlarmsCompactCard(
 					)
 				}
 				AlarmsTimeAndWeekdays(
-					model = selectableModel.model,
+					time = selectableModel.model.time,
+					weekDays = selectableModel.model.weekDays.toImmutableSet(),
 					is24HrsFormat = is24HrsFormat,
 					isStartOfWeekSunday = isStartOfWeekSunday,
 					modifier = Modifier.weight(1f)
@@ -135,7 +137,8 @@ fun AlarmsCompactCard(
 
 @Composable
 private fun AlarmsTimeAndWeekdays(
-	model: AlarmsModel,
+	time: LocalTime,
+	weekDays: ImmutableSet<DayOfWeek>,
 	modifier: Modifier = Modifier,
 	isStartOfWeekSunday: Boolean = true,
 	is24HrsFormat: Boolean = false,
@@ -145,11 +148,11 @@ private fun AlarmsTimeAndWeekdays(
 	val locale = remember { Locale.getDefault() }
 	val textMeasurer = rememberTextMeasurer()
 
-	val textFormat = remember(model.time, is24HrsFormat) {
+	val textFormat = remember(time, is24HrsFormat) {
 		val format = if (is24HrsFormat) LocalTime.Formats.HH_MM
 		else LocalTime.Formats.HH_MM_A
 
-		model.time.format(format)
+		time.format(format)
 	}
 
 	val dayOfWeeks = remember {
@@ -184,7 +187,7 @@ private fun AlarmsTimeAndWeekdays(
 				val textStyle = MaterialTheme.typography.labelLarge
 					.copy(fontWeight = FontWeight.SemiBold)
 
-				val color = if (day in model.weekDays) overlayColor
+				val color = if (day in weekDays) overlayColor
 				else MaterialTheme.colorScheme.outline
 
 				Canvas(
@@ -194,7 +197,7 @@ private fun AlarmsTimeAndWeekdays(
 						java.time.format.TextStyle.NARROW_STANDALONE, locale
 					)
 
-					if (day in model.weekDays) {
+					if (day in weekDays) {
 						drawCircle(
 							color = color,
 							radius = 2.dp.toPx(),

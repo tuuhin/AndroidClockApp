@@ -1,6 +1,7 @@
 package com.eva.clockapp.features.alarms.presentation.alarms
 
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
@@ -23,6 +24,7 @@ import coil3.request.ImageRequest
 import coil3.request.allowHardware
 import coil3.request.placeholder
 import coil3.size.Size
+import com.eva.clockapp.features.alarms.presentation.util.AlarmPreviewFakes
 import com.eva.clockapp.ui.theme.ClockAppTheme
 import kotlinx.datetime.LocalDateTime
 
@@ -39,47 +41,65 @@ fun PlayAlarmsScreen(
 	shape: Shape = RectangleShape,
 	borderStroke: BorderStroke? = null,
 ) {
-	val context = LocalContext.current
-	val config = LocalConfiguration.current
-
 	Surface(
 		modifier = modifier,
 		shape = shape,
 		border = borderStroke,
 		color = containerColor
 	) {
-		backgroundImage?.let { uri ->
-			AsyncImage(
-				model = ImageRequest.Builder(context)
-					.data(uri)
-					.size { Size(config.screenWidthDp, config.screenHeightDp) }
-					.allowHardware(false)
-					.placeholder(containerColor.toArgb().toDrawable())
-					.build(),
-				contentDescription = "Alarm Screen background Image",
-				contentScale = ContentScale.Crop,
-				filterQuality = FilterQuality.Medium,
-				modifier = Modifier
-					.fillMaxSize()
-					.drawWithContent {
-						drawContent()
-						drawRect(
-							color = Color.Black,
-							size = size,
-							alpha = .4f,
-							blendMode = BlendMode.Multiply
-						)
-					}
-			)
-		}
+		PlayAlarmScreenBackground(
+			backgroundImage,
+			containerColor = containerColor
+		)
 		PlayAlarmScreenContent(
 			dateTime = dateTime,
 			onSnoozeAlarm = onSnoozeAlarm,
 			onStopAlarm = onStopAlarm,
 			labelText = labelText,
 			isActionEnabled = isActionEnabled,
+			buttonContentColor = MaterialTheme.colorScheme.inverseOnSurface,
+			buttonContainerColor = MaterialTheme.colorScheme.inverseSurface,
 		)
 	}
+}
+
+@Composable
+fun PlayAlarmScreenBackground(
+	backgroundImage: String?,
+	modifier: Modifier = Modifier,
+	containerColor: Color = MaterialTheme.colorScheme.background,
+) {
+	val context = LocalContext.current
+	val config = LocalConfiguration.current
+
+	val overlayModifier = Modifier
+		.fillMaxSize()
+		.drawWithContent {
+			drawContent()
+			drawRect(
+				color = Color.Black,
+				size = size,
+				alpha = .4f,
+				blendMode = BlendMode.Multiply
+			)
+		}
+
+	backgroundImage?.let { uri ->
+		AsyncImage(
+			model = ImageRequest.Builder(context)
+				.data(uri)
+				.size {
+					Size(config.screenWidthDp, config.screenHeightDp)
+				}
+				.allowHardware(false)
+				.placeholder(containerColor.toArgb().toDrawable())
+				.build(),
+			contentDescription = "Alarm Screen background Image",
+			contentScale = ContentScale.Crop,
+			filterQuality = FilterQuality.Medium,
+			modifier = modifier.then(overlayModifier)
+		)
+	} ?: Box(modifier = modifier.then(overlayModifier))
 }
 
 @PreviewLightDark
@@ -87,6 +107,7 @@ fun PlayAlarmsScreen(
 private fun PlayAlarmsScreenPreview() = ClockAppTheme {
 	PlayAlarmsScreen(
 		dateTime = LocalDateTime(2025, 3, 4, 12, 0),
+		labelText = AlarmPreviewFakes.LOREM_TEXT,
 		onStopAlarm = {},
 		onSnoozeAlarm = {},
 	)

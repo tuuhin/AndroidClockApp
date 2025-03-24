@@ -30,7 +30,7 @@ fun NavGraphBuilder.alarmsRoute(controller: NavController) =
 		AlarmScreen(
 			isContentReady = isLoaded,
 			selectableAlarms = alarms,
-			nextAlarmScheduledAfter = nextAlarmDuration,
+			nextAlarmScheduled = nextAlarmDuration,
 			onEvent = viewModel::onEvent,
 			onCreateNewAlarm = dropUnlessResumed {
 				controller.navigate(NavRoutes.CreateOrUpdateAlarmRoute())

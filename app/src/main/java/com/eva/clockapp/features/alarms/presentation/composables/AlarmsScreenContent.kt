@@ -1,7 +1,9 @@
 package com.eva.clockapp.features.alarms.presentation.composables
 
+import androidx.compose.animation.Crossfade
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Spacer
@@ -11,7 +13,9 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.derivedStateOf
@@ -31,6 +35,7 @@ import androidx.core.text.util.LocalePreferences.FirstDayOfWeek
 import androidx.core.text.util.LocalePreferences.HourCycle
 import com.eva.clockapp.R
 import com.eva.clockapp.features.alarms.domain.models.AlarmsModel
+import com.eva.clockapp.features.alarms.presentation.alarms.state.ContentState
 import com.eva.clockapp.features.alarms.presentation.alarms.state.SelectableAlarmModel
 import com.eva.clockapp.features.alarms.presentation.util.AlarmPreviewFakes
 import com.eva.clockapp.ui.theme.ClockAppTheme
@@ -39,54 +44,75 @@ import kotlin.time.Duration
 
 @Composable
 fun AlarmsScreenContent(
+	isLoaded: Boolean,
 	alarms: ImmutableList<SelectableAlarmModel>,
 	onSelectAlarm: (AlarmsModel) -> Unit,
 	onAlarmSelect: (AlarmsModel) -> Unit,
 	onEnableAlarm: (isEnabled: Boolean, alarm: AlarmsModel) -> Unit,
 	modifier: Modifier = Modifier,
-	nextAlarmAfter: Duration? = null,
+	nextAlarmSchedule: Duration? = null,
 	contentPadding: PaddingValues = PaddingValues(),
 ) {
-	val isAlarmsEmpty by remember(alarms) {
-		derivedStateOf { alarms.isEmpty() }
+	val contentState by remember(alarms, isLoaded) {
+		derivedStateOf {
+			if (!isLoaded) ContentState.Loading
+			else if (alarms.isEmpty()) ContentState.Empty
+			else ContentState.Content(alarms)
+		}
 	}
 
-	if (isAlarmsEmpty) {
-		Column(
-			modifier = modifier,
-			horizontalAlignment = Alignment.CenterHorizontally,
-			verticalArrangement = Arrangement.Center,
-		) {
-			Image(
-				painter = painterResource(R.drawable.ic_alam_clock),
-				contentDescription = "Alarm Clock",
-				colorFilter = ColorFilter.tint(color = MaterialTheme.colorScheme.secondary),
-				modifier = Modifier.size(120.dp)
-			)
-			Spacer(modifier = Modifier.height(16.dp))
-			Text(
-				text = stringResource(R.string.no_alarm_title),
-				style = MaterialTheme.typography.headlineSmall,
-				color = MaterialTheme.colorScheme.onBackground
-			)
-			Text(
-				text = stringResource(R.string.no_alarm_desc),
-				style = MaterialTheme.typography.bodyMedium,
-				color = MaterialTheme.colorScheme.tertiary
+	Crossfade(contentState) { state ->
+		when (state) {
+			ContentState.Loading -> BasicLoading()
+			ContentState.Empty -> EmptyAlarmsList(modifier = modifier)
+			is ContentState.Content -> AlarmsListContent(
+				alarms = state.data,
+				duration = nextAlarmSchedule,
+				onAlarmClick = onSelectAlarm,
+				onAlarmSelect = onAlarmSelect,
+				onEnableAlarm = onEnableAlarm,
+				contentPadding = contentPadding,
+				modifier = modifier
 			)
 		}
-		return
 	}
+}
 
-	AlarmsListContent(
-		alarms = alarms,
-		duration = nextAlarmAfter,
-		onAlarmClick = onSelectAlarm,
-		onAlarmSelect = onAlarmSelect,
-		onEnableAlarm = onEnableAlarm,
-		contentPadding = contentPadding,
-		modifier = modifier
-	)
+@Composable
+private fun BasicLoading(modifier: Modifier = Modifier) {
+	Box(
+		modifier = modifier,
+		contentAlignment = Alignment.Center
+	) {
+		CircularProgressIndicator()
+	}
+}
+
+@Composable
+private fun EmptyAlarmsList(modifier: Modifier = Modifier) {
+	Column(
+		modifier = modifier,
+		horizontalAlignment = Alignment.CenterHorizontally,
+		verticalArrangement = Arrangement.Center,
+	) {
+		Image(
+			painter = painterResource(R.drawable.ic_alam_clock),
+			contentDescription = "Alarm Clock",
+			colorFilter = ColorFilter.tint(color = MaterialTheme.colorScheme.secondary),
+			modifier = Modifier.size(120.dp)
+		)
+		Spacer(modifier = Modifier.height(24.dp))
+		Text(
+			text = stringResource(R.string.no_alarm_title),
+			style = MaterialTheme.typography.headlineSmall,
+			color = MaterialTheme.colorScheme.secondary
+		)
+		Text(
+			text = stringResource(R.string.no_alarm_desc),
+			style = MaterialTheme.typography.bodyMedium,
+			color = MaterialTheme.colorScheme.secondary
+		)
+	}
 }
 
 @Composable
@@ -170,12 +196,15 @@ private fun AlarmsListContent(
 @PreviewLightDark
 @Composable
 private fun AlarmsScreenContentPreview() = ClockAppTheme {
-	AlarmsScreenContent(
-		alarms = AlarmPreviewFakes.FAKE_SELECTABLE_ALARM_MODEL_LIST,
-		onSelectAlarm = {},
-		onAlarmSelect = {},
-		onEnableAlarm = { _, _ -> },
-		contentPadding = PaddingValues(20.dp),
-		modifier = Modifier.fillMaxSize()
-	)
+	Surface {
+		AlarmsScreenContent(
+			isLoaded = true,
+			alarms = AlarmPreviewFakes.FAKE_SELECTABLE_ALARM_MODEL_LIST,
+			onSelectAlarm = {},
+			onAlarmSelect = {},
+			onEnableAlarm = { _, _ -> },
+			contentPadding = PaddingValues(20.dp),
+			modifier = Modifier.fillMaxSize()
+		)
+	}
 }
