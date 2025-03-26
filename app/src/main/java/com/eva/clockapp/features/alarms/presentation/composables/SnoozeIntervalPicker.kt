@@ -21,7 +21,13 @@ import androidx.compose.material3.RadioButtonDefaults
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberUpdatedState
+import androidx.compose.runtime.setValue
+import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -36,6 +42,13 @@ import com.eva.clockapp.R
 import com.eva.clockapp.features.alarms.domain.models.SnoozeIntervalOption
 import com.eva.clockapp.ui.theme.ClockAppTheme
 import com.eva.clockapp.ui.theme.DownloadableFonts
+import kotlinx.coroutines.FlowPreview
+import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.debounce
+import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlin.time.Duration
+import kotlin.time.Duration.Companion.milliseconds
+import kotlin.time.Duration.Companion.minutes
 
 @Composable
 fun SnoozeIntervalPicker(
@@ -47,26 +60,10 @@ fun SnoozeIntervalPicker(
 	contentColor: Color = MaterialTheme.colorScheme.onBackground,
 	optionColors: RadioButtonColors = RadioButtonDefaults.colors(),
 ) {
-	val staticOptions = remember {
-		setOf(
-			SnoozeIntervalOption.IntervalThreeMinutes,
-			SnoozeIntervalOption.IntervalTenMinutes,
-			SnoozeIntervalOption.IntervalFifteenMinutes,
-			SnoozeIntervalOption.IntervalThirtyMinutes
-		)
-	}
 
 	val isCustomModeSelected = remember(interval) {
 		interval is SnoozeIntervalOption.IntervalCustomMinutes
 	}
-
-	val customStartIndex = remember {
-		when (interval) {
-			is SnoozeIntervalOption.IntervalCustomMinutes -> interval.minutes - 1
-			else -> 10
-		}
-	}
-
 
 	Column(
 		modifier = modifier,
@@ -76,8 +73,7 @@ fun SnoozeIntervalPicker(
 			headlineContent = { Text(text = stringResource(R.string.snooze_options_title)) },
 			colors = ListItemDefaults.colors(containerColor = MaterialTheme.colorScheme.background)
 		)
-
-		staticOptions.forEach { option ->
+		SnoozeIntervalOption.predefinedOptions.forEach { option ->
 			RadioButtonWithTextItem(
 				text = "${option.duration}",
 				isSelected = option == interval,
@@ -91,7 +87,8 @@ fun SnoozeIntervalPicker(
 			enabled = enabled,
 			text = stringResource(R.string.snooze_interval_custom),
 			onClick = {
-				onIntervalChange(SnoozeIntervalOption.IntervalCustomMinutes(customStartIndex))
+				val minutes = interval.duration.inWholeMinutes.toInt()
+				onIntervalChange(SnoozeIntervalOption.IntervalCustomMinutes(minutes))
 			},
 			colors = optionColors,
 		)
@@ -101,41 +98,80 @@ fun SnoozeIntervalPicker(
 			exit = shrinkVertically() + fadeOut(),
 			modifier = Modifier.align(Alignment.Start)
 		) {
-			Row(
-				horizontalArrangement = Arrangement.Center,
-				verticalAlignment = Alignment.CenterVertically,
-				modifier = Modifier
-					.fillMaxWidth()
-					.padding(vertical = 4.dp),
-			) {
-				CircularRangedNumberPicker(
-					range = 1..<100,
-					contentColor = contentColor,
-					containerColor = containerColor,
-					startIndex = maxOf(customStartIndex, 1),
-					elementSize = DpSize(48.dp, 48.dp),
-					onFocusItem = { idx ->
-						val minute = (idx + 1) % 100
-						onIntervalChange(SnoozeIntervalOption.IntervalCustomMinutes(minute))
-					},
-				) { idx ->
-					val minute = (idx + 1) % 100
-					Text(
-						text = "$minute".padStart(2, '0'),
-						textAlign = TextAlign.Center,
-						fontFamily = DownloadableFonts.CHELSEA_MARKET,
-						style = MaterialTheme.typography.titleLarge,
-						modifier = Modifier.widthIn(min = 40.dp)
-					)
-				}
-				Spacer(modifier = Modifier.width(36.dp))
-				Text(
-					text = stringResource(R.string.clock_minutes),
-					style = MaterialTheme.typography.displaySmall,
-					color = MaterialTheme.colorScheme.secondary
-				)
-			}
+			CustomSnoozeTimePicker(
+				starTime = interval.duration,
+				onTimeChange = { duration ->
+					val minutes = duration.inWholeMinutes.toInt()
+					onIntervalChange(SnoozeIntervalOption.IntervalCustomMinutes(minutes))
+				},
+				containerColor = containerColor,
+				contentColor = contentColor,
+				modifier = Modifier.fillMaxWidth()
+			)
 		}
+	}
+}
+
+@OptIn(FlowPreview::class)
+@Composable
+private fun CustomSnoozeTimePicker(
+	starTime: Duration,
+	onTimeChange: (Duration) -> Unit,
+	modifier: Modifier = Modifier,
+	containerColor: Color = MaterialTheme.colorScheme.background,
+	contentColor: Color = MaterialTheme.colorScheme.onBackground,
+) {
+
+	val minuteRange = 0..98
+	val startIndex = remember {
+		val minute = starTime.inWholeMinutes.toInt()
+		val index = minuteRange.toList().indexOf(minute) - 1
+		// ensures its not negative
+		maxOf(index, minuteRange.start)
+	}
+
+	var selectedDuration by remember { mutableStateOf(starTime) }
+	val currentOnTimeChange by rememberUpdatedState(onTimeChange)
+
+	LaunchedEffect(selectedDuration) {
+		snapshotFlow { selectedDuration }
+			.distinctUntilChanged()
+			.debounce(50.milliseconds)
+			.collectLatest { duration -> currentOnTimeChange(duration) }
+	}
+
+	Row(
+		horizontalArrangement = Arrangement.Center,
+		verticalAlignment = Alignment.CenterVertically,
+		modifier = modifier.padding(vertical = 4.dp),
+	) {
+		CircularRangedNumberPicker(
+			range = minuteRange,
+			contentColor = contentColor,
+			containerColor = containerColor,
+			startIndex = startIndex,
+			hapticEffectEnabled = false,
+			elementSize = DpSize(48.dp, 48.dp),
+			onFocusItem = { idx ->
+				val minute = (idx + 1) % 100
+				selectedDuration = minute.minutes
+			},
+		) { idx ->
+			val minute = (idx + 1) % 100
+			Text(
+				text = "$minute".padStart(2, '0'),
+				textAlign = TextAlign.Center,
+				fontFamily = DownloadableFonts.CHELSEA_MARKET,
+				style = MaterialTheme.typography.titleLarge,
+				modifier = Modifier.widthIn(min = 40.dp)
+			)
+		}
+		Spacer(modifier = Modifier.width(36.dp))
+		Text(
+			text = stringResource(R.string.clock_minutes),
+			style = MaterialTheme.typography.displaySmall,
+			color = MaterialTheme.colorScheme.secondary
+		)
 	}
 }
 
@@ -143,7 +179,7 @@ private class SnoozeIntervalOptionPreviewParams :
 	CollectionPreviewParameterProvider<SnoozeIntervalOption>(
 		listOf(
 			SnoozeIntervalOption.IntervalTenMinutes,
-			SnoozeIntervalOption.IntervalCustomMinutes(10)
+			SnoozeIntervalOption.IntervalCustomMinutes(30)
 		)
 	)
 

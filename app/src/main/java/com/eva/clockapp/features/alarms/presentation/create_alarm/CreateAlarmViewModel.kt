@@ -7,9 +7,7 @@ import com.eva.clockapp.core.navigation.navgraphs.NavRoutes
 import com.eva.clockapp.core.presentation.AppViewModel
 import com.eva.clockapp.core.presentation.UiEvents
 import com.eva.clockapp.core.utils.Resource
-import com.eva.clockapp.features.alarms.domain.controllers.VibrationController
 import com.eva.clockapp.features.alarms.domain.models.AssociateAlarmFlags
-import com.eva.clockapp.features.alarms.domain.models.VibrationPattern
 import com.eva.clockapp.features.alarms.domain.models.WeekDays
 import com.eva.clockapp.features.alarms.domain.repository.AlarmsRepository
 import com.eva.clockapp.features.alarms.domain.repository.RingtonesRepository
@@ -17,6 +15,7 @@ import com.eva.clockapp.features.alarms.domain.use_case.ValidateAlarmUseCase
 import com.eva.clockapp.features.alarms.domain.utils.AlarmUtils
 import com.eva.clockapp.features.alarms.presentation.create_alarm.state.AlarmFlagsChangeEvent
 import com.eva.clockapp.features.alarms.presentation.create_alarm.state.CreateAlarmEvents
+import com.eva.clockapp.features.alarms.presentation.create_alarm.state.CreateAlarmNavEvent
 import com.eva.clockapp.features.alarms.presentation.create_alarm.state.CreateAlarmState
 import com.eva.clockapp.features.alarms.presentation.create_alarm.state.DateTimePickerState
 import com.eva.clockapp.features.alarms.presentation.util.toAlarmModel
@@ -27,17 +26,16 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
-import kotlinx.coroutines.flow.updateAndGet
 import kotlinx.coroutines.launch
 import kotlinx.datetime.LocalTime
 
 class CreateAlarmViewModel(
-	private val vibrationController: VibrationController,
 	private val ringtonesRepository: RingtonesRepository,
 	private val repository: AlarmsRepository,
 	private val validator: ValidateAlarmUseCase,
@@ -96,6 +94,12 @@ class CreateAlarmViewModel(
 			)
 		)
 
+	private val _navEvent = MutableSharedFlow<CreateAlarmNavEvent>()
+	val navEvents = _navEvent.asSharedFlow()
+
+	fun onNavEvent(event: CreateAlarmNavEvent) = viewModelScope.launch {
+		_navEvent.emit(event)
+	}
 
 	fun onEvent(event: CreateAlarmEvents) {
 		when (event) {
@@ -147,78 +151,68 @@ class CreateAlarmViewModel(
 				state.copy(alarmVolume = event.volume)
 			}
 
-			is AlarmFlagsChangeEvent.OnVibrationEnabled -> onVibrationPatternEnabled(event.isEnabled)
-			is AlarmFlagsChangeEvent.OnVibrationPatternSelected -> onSelectVibration(event.pattern)
-		}
-	}
-
-
-	private fun onSelectVibration(pattern: VibrationPattern) {
-		val flags = _alarmFlags.updateAndGet { state -> state.copy(vibrationPattern = pattern) }
-		// make a vibration pattern
-		vibrationController.startVibration(flags.vibrationPattern)
-	}
-
-	private fun onVibrationPatternEnabled(isEnabled: Boolean) {
-		val flags = _alarmFlags.updateAndGet { state -> state.copy(isVibrationEnabled = isEnabled) }
-		// if it's not enabled stop the ongoing  vibration
-		if (!flags.isVibrationEnabled) vibrationController.stopVibration()
-	}
-
-	private fun onCreateNewAlarm() {
-		viewModelScope.launch {
-			val model = createAlarmState.value.toCreateModel(
-				flags = flagsState.value,
-			)
-
-			val result = validator.validateCreateAlarm(model)
-			if (!result.isValid && result.message != null) {
-				_uiEvents.emit(UiEvents.ShowSnackBar(result.message))
-				return@launch
+			is AlarmFlagsChangeEvent.OnVibrationEnabled -> _alarmFlags.update { state ->
+				state.copy(isVibrationEnabled = event.isEnabled)
 			}
 
-			// TODO: Add a validator
-			when (val result = repository.createAlarm(model)) {
-				is Resource.Error -> (result.message ?: result.message)?.let { message ->
-					_uiEvents.emit(UiEvents.ShowSnackBar(message))
-				}
-
-				is Resource.Success -> _uiEvents.emit(UiEvents.NavigateBack)
-				else -> {}
+			is AlarmFlagsChangeEvent.OnVibrationPatternSelected -> _alarmFlags.update { state ->
+				state.copy(vibrationPattern = event.pattern)
 			}
 		}
 	}
 
-	private fun onUpdateAlarm() {
-		val alarmId = route.alarmId ?: return
-		viewModelScope.launch {
-			val updateModel = createAlarmState.value.toAlarmModel(
-				alarmId = alarmId,
-				flags = flagsState.value,
-			)
 
-			val result = validator.validateUpdate(updateModel)
-			if (!result.isValid && result.message != null) {
-				_uiEvents.emit(UiEvents.ShowSnackBar(result.message))
-				return@launch
+	private fun onCreateNewAlarm() = viewModelScope.launch {
+		val model = createAlarmState.value.toCreateModel(flags = flagsState.value)
+
+		val result = validator.validateCreateAlarm(model)
+		if (!result.isValid && result.message != null) {
+			_uiEvents.emit(UiEvents.ShowSnackBar(result.message))
+			return@launch
+		}
+
+		// TODO: Add a validator
+		when (val result = repository.createAlarm(model)) {
+			is Resource.Error -> (result.message ?: result.message)?.let { message ->
+				_uiEvents.emit(UiEvents.ShowSnackBar(message))
 			}
 
-			when (val result = repository.updateAlarm(updateModel)) {
-				is Resource.Error -> (result.message ?: result.message)?.let { message ->
-					_uiEvents.emit(UiEvents.ShowSnackBar(message))
-				}
-
-				is Resource.Success -> {
-					result.message?.let { message ->
-						_uiEvents.emit(UiEvents.ShowToast(message))
-					}
-					_uiEvents.emit(UiEvents.NavigateBack)
-				}
-
-				else -> {}
-			}
+			is Resource.Success -> _uiEvents.emit(UiEvents.NavigateBack)
+			else -> {}
 		}
 	}
+
+
+	private fun onUpdateAlarm() = viewModelScope.launch {
+		val alarmId = route.alarmId ?: return@launch
+
+		val updateModel = createAlarmState.value.toAlarmModel(
+			alarmId = alarmId,
+			flags = flagsState.value,
+		)
+
+		val result = validator.validateUpdate(updateModel)
+		if (!result.isValid && result.message != null) {
+			_uiEvents.emit(UiEvents.ShowSnackBar(result.message))
+			return@launch
+		}
+
+		when (val result = repository.updateAlarm(updateModel)) {
+			is Resource.Error -> (result.message ?: result.message)?.let { message ->
+				_uiEvents.emit(UiEvents.ShowSnackBar(message))
+			}
+
+			is Resource.Success -> {
+				result.message?.let { message ->
+					_uiEvents.emit(UiEvents.ShowToast(message))
+				}
+				_uiEvents.emit(UiEvents.NavigateBack)
+			}
+
+			else -> {}
+		}
+	}
+
 
 	private fun updateParametersForAlarm() = viewModelScope.launch {
 

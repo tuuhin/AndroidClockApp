@@ -42,7 +42,8 @@ fun SnoozeRepeatModePicker(
 		)
 		SnoozeRepeatMode.entries.forEach { option ->
 			RadioButtonWithTextItem(
-				text = option.toText, isSelected = option == repeat,
+				text = option.toText,
+				isSelected = option == repeat,
 				onClick = { onRepeatModeChange(option) },
 				colors = optionsColor,
 				enabled = enabled

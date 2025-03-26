@@ -24,6 +24,7 @@ import com.eva.clockapp.core.presentation.LocalSnackBarHostState
 import com.eva.clockapp.features.alarms.domain.models.AssociateAlarmFlags
 import com.eva.clockapp.features.alarms.presentation.create_alarm.state.AlarmFlagsChangeEvent
 import com.eva.clockapp.features.alarms.presentation.create_alarm.state.CreateAlarmEvents
+import com.eva.clockapp.features.alarms.presentation.create_alarm.state.CreateAlarmNavEvent
 import com.eva.clockapp.features.alarms.presentation.create_alarm.state.CreateAlarmState
 import com.eva.clockapp.features.alarms.presentation.util.AlarmPreviewFakes
 import com.eva.clockapp.ui.theme.ClockAppTheme
@@ -33,14 +34,11 @@ import com.eva.clockapp.ui.theme.ClockAppTheme
 fun CreateAlarmScreen(
 	state: CreateAlarmState,
 	flags: AssociateAlarmFlags,
-	onEvent: (CreateAlarmEvents) -> Unit,
+	onCreateEvent: (CreateAlarmEvents) -> Unit,
+	onNavEvent:(CreateAlarmNavEvent)-> Unit,
 	onFlagsEvent: (AlarmFlagsChangeEvent) -> Unit,
 	modifier: Modifier = Modifier,
 	navigation: @Composable () -> Unit = {},
-	onNavigateVibrationScreen: () -> Unit = {},
-	onNavigateSnoozeScreen: () -> Unit = {},
-	onNavigateSoundScreen: () -> Unit = {},
-	onNavigateBackgroundScreen: () -> Unit = {},
 ) {
 	val snackBarHostState = LocalSnackBarHostState.current
 	val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior()
@@ -56,11 +54,11 @@ fun CreateAlarmScreen(
 				},
 				actions = {
 					if (state.isAlarmCreate) {
-						TextButton(onClick = { onEvent(CreateAlarmEvents.OnSaveAlarm) }) {
+						TextButton(onClick = { onCreateEvent(CreateAlarmEvents.OnSaveAlarm) }) {
 							Text(text = stringResource(R.string.save_action))
 						}
 					} else {
-						TextButton(onClick = { onEvent(CreateAlarmEvents.OnUpdateAlarm) }) {
+						TextButton(onClick = { onCreateEvent(CreateAlarmEvents.OnUpdateAlarm) }) {
 							Text(text = stringResource(R.string.update_action))
 						}
 					}
@@ -75,12 +73,9 @@ fun CreateAlarmScreen(
 		CreateAlarmContent(
 			state = state,
 			flags = flags,
-			onEvent = onEvent,
+			onEvent = onCreateEvent,
 			onFlagsEvent = onFlagsEvent,
-			onNavigateVibrationScreen = onNavigateVibrationScreen,
-			onNavigateSnoozeScreen = onNavigateSnoozeScreen,
-			onNavigateSoundScreen = onNavigateSoundScreen,
-			onNavigateBackgroundScreen = onNavigateBackgroundScreen,
+			onNavigationEvent = onNavEvent,
 			contentPadding = PaddingValues(all = dimensionResource(R.dimen.sc_padding)),
 			modifier = Modifier
 				.fillMaxSize()
@@ -96,8 +91,9 @@ private fun AlarmScreenPreview() = ClockAppTheme {
 	CreateAlarmScreen(
 		state = AlarmPreviewFakes.FAKE_CREATE_ALARM_STATE,
 		flags = AlarmPreviewFakes.FAKE_ASSOCIATE_FLAGS_STATE,
-		onEvent = {},
+		onCreateEvent = {},
 		onFlagsEvent = {},
+		onNavEvent = {},
 		navigation = {
 			Icon(
 				imageVector = Icons.AutoMirrored.Default.ArrowBack,

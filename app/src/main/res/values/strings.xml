@@ -34,7 +34,7 @@
   <string name="snooze_repeat_options_title">Repeat</string>
   <string name="snooze_options_title">Snooze</string>
   <string name="clock_minutes">Minute</string>
-  <string name="select_snooze_option_screen_title">Snooze Options</string>
+  <string name="select_snooze_option_screen_title">Snooze And Repeat Option</string>
   <string name="select_alarm_sound_screen_title">Alarm Sound</string>
   <string name="snooze_interval_title">Snooze</string>
   <string name="create_alarm_label_placeholder">Description</string>
@@ -84,9 +84,8 @@
   <string name="upcoming_notification_title">Upcoming Alarm</string>
   <string name="select_alarms_background_title">Background</string>
   <string name="action_search">Search</string>
-  <string name="select_image_from_device">Device</string>
+  <string name="select_image_from_gallery">Gallery</string>
   <string name="select_image_generate">Generate</string>
-  <string name="background_images_provider">Images are provided from pexels.com</string>
   <string name="select_alarms_background_desc">Select Alarm Background</string>
   <string name="action_done">Done</string>
   <string name="action_stop">Stop</string>

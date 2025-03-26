@@ -21,6 +21,7 @@ import com.eva.clockapp.features.alarms.domain.repository.AlarmsRepository
 import com.eva.clockapp.features.alarms.domain.repository.RingtonesRepository
 import com.eva.clockapp.features.alarms.domain.use_case.ValidateAlarmUseCase
 import com.eva.clockapp.features.alarms.presentation.alarms.AlarmsViewModel
+import com.eva.clockapp.features.alarms.presentation.create_alarm.AlarmVibrationViewModel
 import com.eva.clockapp.features.alarms.presentation.create_alarm.AlarmsBackgroundViewModel
 import com.eva.clockapp.features.alarms.presentation.create_alarm.AlarmsSoundsViewmodel
 import com.eva.clockapp.features.alarms.presentation.create_alarm.CreateAlarmViewModel
@@ -58,4 +59,5 @@ val alarmsModule = module {
 	viewModelOf(::AlarmsBackgroundViewModel)
 	viewModelOf(::GalleryScreenViewModel)
 	viewModelOf(::AlarmsSoundsViewmodel)
+	viewModelOf(::AlarmVibrationViewModel)
 }

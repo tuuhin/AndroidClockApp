@@ -35,15 +35,16 @@ import com.eva.clockapp.features.alarms.domain.models.AssociateAlarmFlags
 import com.eva.clockapp.features.alarms.domain.models.VibrationPattern
 import com.eva.clockapp.features.alarms.presentation.composables.RadioButtonWithTextItem
 import com.eva.clockapp.features.alarms.presentation.create_alarm.state.AlarmFlagsChangeEvent
+import com.eva.clockapp.features.alarms.presentation.create_alarm.state.AlarmVibrationEvents
 import com.eva.clockapp.features.alarms.presentation.util.toText
 import com.eva.clockapp.ui.theme.ClockAppTheme
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun AlarmVibrationScreen(
-	selected: VibrationPattern? = VibrationPattern.SHORT,
-	onPatternChange: (VibrationPattern) -> Unit = {},
 	modifier: Modifier = Modifier,
+	selected: VibrationPattern = VibrationPattern.SHORT,
+	onPatternChange: (VibrationPattern) -> Unit = {},
 	enabled: Boolean = true,
 	onEnableChange: (Boolean) -> Unit = {},
 	navigation: @Composable () -> Unit = {},
@@ -104,14 +105,21 @@ private fun AlarmVibrationScreen(
 @Composable
 fun AlarmVibrationScreen(
 	state: AssociateAlarmFlags,
-	onEvent: (AlarmFlagsChangeEvent) -> Unit,
+	onScreenEvent: (AlarmVibrationEvents) -> Unit,
+	onFlagEvent: (AlarmFlagsChangeEvent) -> Unit,
 	modifier: Modifier = Modifier,
 	navigation: @Composable () -> Unit = {},
 ) = AlarmVibrationScreen(
 	selected = state.vibrationPattern,
 	enabled = state.isVibrationEnabled,
-	onEnableChange = { onEvent(AlarmFlagsChangeEvent.OnVibrationEnabled(it)) },
-	onPatternChange = { onEvent(AlarmFlagsChangeEvent.OnVibrationPatternSelected(it)) },
+	onEnableChange = { isEnabled ->
+		onFlagEvent(AlarmFlagsChangeEvent.OnVibrationEnabled(isEnabled))
+		onScreenEvent(AlarmVibrationEvents.OnVibrationEnabled(isEnabled))
+	},
+	onPatternChange = { pattern ->
+		onFlagEvent(AlarmFlagsChangeEvent.OnVibrationPatternSelected(pattern))
+		onScreenEvent(AlarmVibrationEvents.OnVibrationSelected(pattern))
+	},
 	modifier = modifier,
 	navigation = navigation
 )

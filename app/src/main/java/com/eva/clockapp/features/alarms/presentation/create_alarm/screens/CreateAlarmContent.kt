@@ -21,7 +21,6 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -34,6 +33,7 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.core.text.util.LocalePreferences
 import androidx.core.text.util.LocalePreferences.HourCycle
+import androidx.lifecycle.compose.LifecycleStartEffect
 import com.eva.clockapp.R
 import com.eva.clockapp.features.alarms.domain.models.AssociateAlarmFlags
 import com.eva.clockapp.features.alarms.domain.models.RingtoneMusicFile
@@ -44,6 +44,7 @@ import com.eva.clockapp.features.alarms.presentation.composables.ScrollableTimeP
 import com.eva.clockapp.features.alarms.presentation.composables.WeekDayPicker
 import com.eva.clockapp.features.alarms.presentation.create_alarm.state.AlarmFlagsChangeEvent
 import com.eva.clockapp.features.alarms.presentation.create_alarm.state.CreateAlarmEvents
+import com.eva.clockapp.features.alarms.presentation.create_alarm.state.CreateAlarmNavEvent
 import com.eva.clockapp.features.alarms.presentation.create_alarm.state.CreateAlarmState
 import com.eva.clockapp.features.alarms.presentation.util.toText
 import com.eva.clockapp.ui.theme.DownloadableFonts
@@ -196,16 +197,13 @@ fun CreateAlarmContent(
 	flags: AssociateAlarmFlags,
 	onEvent: (CreateAlarmEvents) -> Unit,
 	onFlagsEvent: (AlarmFlagsChangeEvent) -> Unit,
+	onNavigationEvent: (CreateAlarmNavEvent) -> Unit,
 	modifier: Modifier = Modifier,
 	contentPadding: PaddingValues = PaddingValues(0.dp),
-	onNavigateVibrationScreen: () -> Unit = {},
-	onNavigateSnoozeScreen: () -> Unit = {},
-	onNavigateSoundScreen: () -> Unit = {},
-	onNavigateBackgroundScreen: () -> Unit = {},
 ) {
 
-	DisposableEffect(Unit) {
-		onDispose {
+	LifecycleStartEffect (Unit) {
+		onStopOrDispose {
 			onEvent(CreateAlarmEvents.SetStartTimeAsSelectedTime)
 		}
 	}
@@ -227,10 +225,10 @@ fun CreateAlarmContent(
 		onSnoozeEnabledChange = { onFlagsEvent(AlarmFlagsChangeEvent.OnSnoozeEnabled(it)) },
 		onVibrationEnabledChange = { onFlagsEvent(AlarmFlagsChangeEvent.OnVibrationEnabled(it)) },
 		onSoundEnabledChange = { onFlagsEvent(AlarmFlagsChangeEvent.OnSoundOptionEnabled(it)) },
-		onSelectVibrationOption = onNavigateVibrationScreen,
-		onSelectSnoozeOption = onNavigateSnoozeScreen,
-		onSelectAlarmSound = onNavigateSoundScreen,
-		onSelectAlarmBackground = onNavigateBackgroundScreen,
+		onSelectVibrationOption = { onNavigationEvent(CreateAlarmNavEvent.NavigateToVibrationScreen) },
+		onSelectSnoozeOption = { onNavigationEvent(CreateAlarmNavEvent.NavigateToSnoozeScreen) },
+		onSelectAlarmSound = { onNavigationEvent(CreateAlarmNavEvent.NavigateToSoundScreen) },
+		onSelectAlarmBackground = { onNavigationEvent(CreateAlarmNavEvent.NavigateToBackgroundScreen) },
 		contentPadding = contentPadding,
 		modifier = modifier,
 	)

@@ -38,8 +38,7 @@ private fun AlarmsBackgroundScreen(
 	selectedBackground: String? = null,
 	alarmTime: LocalTime = LocalTime(0, 0),
 	navigation: @Composable () -> Unit = {},
-	onSelectionDone: () -> Unit = {},
-	onSelectFromDevice: () -> Unit = {},
+	onOpenGallery: () -> Unit = {},
 ) {
 
 	val snackBarHostState = LocalSnackBarHostState.current
@@ -49,9 +48,8 @@ private fun AlarmsBackgroundScreen(
 	Scaffold(
 		topBar = {
 			BackgroundScreenTopBar(
-				onSelectFromDevice = onSelectFromDevice,
+				onOpenGallery = onOpenGallery,
 				navigation = navigation,
-				onDone = onSelectionDone,
 				scrollBehavior = scrollBehavior
 			)
 		},
@@ -79,7 +77,6 @@ fun AlarmsBackgroundScreen(
 	onEvent: (CreateAlarmEvents) -> Unit,
 	modifier: Modifier = Modifier,
 	navigation: @Composable () -> Unit = {},
-	onSelectionDone: () -> Unit = {},
 	onSelectFromDevice: () -> Unit = {},
 ) = AlarmsBackgroundScreen(
 	isItemsLoaded = wallpapersState.isLoaded,
@@ -89,8 +86,7 @@ fun AlarmsBackgroundScreen(
 	onSelectUri = { onEvent(CreateAlarmEvents.OnSelectUriForBackground(it)) },
 	modifier = modifier,
 	navigation = navigation,
-	onSelectionDone = onSelectionDone,
-	onSelectFromDevice = onSelectFromDevice,
+	onOpenGallery = onSelectFromDevice,
 )
 
 

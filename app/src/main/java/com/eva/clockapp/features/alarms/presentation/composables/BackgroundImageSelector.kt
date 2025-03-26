@@ -1,5 +1,6 @@
 package com.eva.clockapp.features.alarms.presentation.composables
 
+import android.content.Intent
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -7,6 +8,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -24,6 +26,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.collectAsState
@@ -42,11 +45,13 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalInspectionMode
 import androidx.compose.ui.res.dimensionResource
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.tooling.preview.PreviewLightDark
 import androidx.compose.ui.unit.dp
 import androidx.core.graphics.drawable.toDrawable
+import androidx.core.net.toUri
 import coil3.ColorImage
 import coil3.annotation.ExperimentalCoilApi
 import coil3.compose.AsyncImagePainter
@@ -72,6 +77,7 @@ fun BackgroundImageSelector(
 	shape: Shape = MaterialTheme.shapes.medium,
 	colors: CardColors = CardDefaults.elevatedCardColors(),
 ) {
+	val context = LocalContext.current
 	val isInspectionMode = LocalInspectionMode.current
 
 	val lazyColumKey: ((Int, WallpaperPhoto) -> Any)? = remember {
@@ -112,12 +118,36 @@ fun BackgroundImageSelector(
 					}
 				}
 			}
-			Text(
-				text = stringResource(R.string.background_images_provider),
-				style = MaterialTheme.typography.labelLarge,
-				color = MaterialTheme.colorScheme.secondary,
-				modifier = Modifier.align(Alignment.CenterHorizontally)
-			)
+			Row(
+				modifier = Modifier.align(Alignment.CenterHorizontally),
+				horizontalArrangement = Arrangement.spacedBy(1.dp),
+				verticalAlignment = Alignment.CenterVertically
+			) {
+				Text(
+					text = "Images are provided from ",
+					style = MaterialTheme.typography.labelLarge,
+					color = MaterialTheme.colorScheme.secondary,
+				)
+				TextButton(
+					onClick = {
+						try {
+							val intent = Intent(Intent.ACTION_VIEW).apply {
+								data = "https://www.pexels.com/".toUri()
+								flags = Intent.FLAG_ACTIVITY_CLEAR_TOP or
+										Intent.FLAG_ACTIVITY_SINGLE_TOP
+							}
+							context.startActivity(intent)
+						} catch (_: Exception) {
+						}
+					},
+				) {
+					Text(
+						text = "pexels.com",
+						fontWeight = FontWeight.Medium,
+						textDecoration = TextDecoration.Underline
+					)
+				}
+			}
 		}
 	}
 }
@@ -140,7 +170,7 @@ private fun BackgroundImageOption(
 			.build(),
 		contentDescription = "Image for :$photo",
 		contentScale = ContentScale.Crop,
-		filterQuality = FilterQuality.Low,
+		filterQuality = FilterQuality.None,
 		modifier = modifier
 			.border(
 				1.25.dp,

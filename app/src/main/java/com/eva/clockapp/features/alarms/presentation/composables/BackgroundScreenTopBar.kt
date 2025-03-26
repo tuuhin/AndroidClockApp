@@ -25,10 +25,10 @@ import com.eva.clockapp.R
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun BackgroundScreenTopBar(
-	onSelectFromDevice: () -> Unit,
+	onOpenGallery: () -> Unit,
 	modifier: Modifier = Modifier,
+	onGenerate: () -> Unit = {},
 	navigation: @Composable () -> Unit,
-	onDone: () -> Unit = {},
 	scrollBehavior: TopAppBarScrollBehavior? = null,
 ) {
 
@@ -38,8 +38,8 @@ fun BackgroundScreenTopBar(
 		title = { Text(text = stringResource(R.string.select_alarms_background_title)) },
 		navigationIcon = navigation,
 		actions = {
-			TextButton(onClick = onDone) {
-				Text(text = stringResource(R.string.action_done))
+			TextButton(onClick = onOpenGallery) {
+				Text(text = stringResource(R.string.select_image_from_gallery))
 			}
 			Box {
 				IconButton(onClick = { showDropDown = true }) {
@@ -51,12 +51,8 @@ fun BackgroundScreenTopBar(
 					onDismissRequest = { showDropDown = false },
 				) {
 					DropdownMenuItem(
-						text = { Text(text = stringResource(R.string.select_image_from_device)) },
-						onClick = onSelectFromDevice
-					)
-					DropdownMenuItem(
 						text = { Text(text = stringResource(R.string.select_image_generate)) },
-						onClick = {},
+						onClick = onGenerate,
 						enabled = false
 					)
 				}

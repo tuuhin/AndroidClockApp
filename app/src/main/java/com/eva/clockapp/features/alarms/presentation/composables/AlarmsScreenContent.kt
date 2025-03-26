@@ -1,6 +1,8 @@
 package com.eva.clockapp.features.alarms.presentation.composables
 
 import androidx.compose.animation.Crossfade
+import androidx.compose.animation.core.EaseInOut
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -57,16 +59,19 @@ fun AlarmsScreenContent(
 		derivedStateOf {
 			if (!isLoaded) ContentState.Loading
 			else if (alarms.isEmpty()) ContentState.Empty
-			else ContentState.Content(alarms)
+			else ContentState.Content
 		}
 	}
 
-	Crossfade(contentState) { state ->
+	Crossfade(
+		targetState = contentState,
+		animationSpec = tween(durationMillis = 200, easing = EaseInOut)
+	) { state ->
 		when (state) {
 			ContentState.Loading -> BasicLoading()
 			ContentState.Empty -> EmptyAlarmsList(modifier = modifier)
 			is ContentState.Content -> AlarmsListContent(
-				alarms = state.data,
+				alarms = alarms,
 				duration = nextAlarmSchedule,
 				onAlarmClick = onSelectAlarm,
 				onAlarmSelect = onAlarmSelect,
