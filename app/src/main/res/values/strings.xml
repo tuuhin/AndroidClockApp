@@ -97,4 +97,5 @@
   <string name="gallery_screen_tab_images">Images</string>
   <string name="gallery_screen_tab_albums">Albums</string>
   <string name="update_alarm_bulk">Alarms Updated</string>
+  <string name="reschedule_alarm_for_next_day">Rescheduling Alarms</string>
 </resources>

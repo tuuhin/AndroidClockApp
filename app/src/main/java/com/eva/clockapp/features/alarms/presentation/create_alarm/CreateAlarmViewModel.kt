@@ -45,7 +45,6 @@ class CreateAlarmViewModel(
 	// core alarm state
 	private val _selectedDays = MutableStateFlow<WeekDays>(setOf())
 	private val _alarmTime = MutableStateFlow(LocalTime(0, 0))
-	private val _startTime = MutableStateFlow(LocalTime(0, 0))
 
 	// additional states
 	private val _alarmLabel = MutableStateFlow("")
@@ -63,21 +62,19 @@ class CreateAlarmViewModel(
 	private val route: NavRoutes.CreateOrUpdateAlarmRoute
 		get() = savedStateHandle.toRoute<NavRoutes.CreateOrUpdateAlarmRoute>()
 
-	private val _pickerState = combine(
-		_selectedDays, _startTime, _alarmTime,
-		transform = ::DateTimePickerState
-	).stateIn(
-		scope = viewModelScope,
-		started = SharingStarted.Eagerly,
-		initialValue = DateTimePickerState()
-	)
+	private val _pickerState =
+		combine(_selectedDays, _alarmTime, transform = ::DateTimePickerState)
+			.stateIn(
+			scope = viewModelScope,
+			started = SharingStarted.Eagerly,
+			initialValue = DateTimePickerState()
+		)
 
 	val createAlarmState: StateFlow<CreateAlarmState> = combine(
 		_pickerState, _alarmLabel, _selectedSound, _background
 	) { pickerState, label, sound, background ->
 		CreateAlarmState(
 			selectedDays = pickerState.weekDays.toImmutableSet(),
-			startTime = pickerState.startTime,
 			selectedTime = pickerState.selectedTime,
 			labelState = label,
 			ringtone = sound,
@@ -117,7 +114,6 @@ class CreateAlarmViewModel(
 				else days + event.dayOfWeek
 			}
 
-			CreateAlarmEvents.SetStartTimeAsSelectedTime -> _startTime.update { _alarmTime.value }
 			is CreateAlarmEvents.OnSoundSelected -> _selectedSound.update { event.sound }
 			CreateAlarmEvents.OnSaveAlarm -> onCreateNewAlarm()
 			CreateAlarmEvents.OnUpdateAlarm -> onUpdateAlarm()
@@ -217,16 +213,15 @@ class CreateAlarmViewModel(
 	private fun updateParametersForAlarm() = viewModelScope.launch {
 
 		val alarmId = route.alarmId ?: run {
-			updateTimeOnStart(time = AlarmUtils.calculateNextAlarmTime())
+			_alarmTime.update {  AlarmUtils.calculateNextAlarmTime() }
 			return@launch
 		}
 
 		val resource = repository.getAlarmFromId(alarmId)
 		resource.fold(
 			onSuccess = { alarm ->
-				updateTimeOnStart(alarm.time)
 				// Update the alarm parameters
-
+				_alarmTime.update { alarm.time }
 				_selectedDays.update { alarm.weekDays }
 				_alarmFlags.update { alarm.flags }
 				_alarmLabel.update { alarm.label ?: "" }
@@ -246,8 +241,4 @@ class CreateAlarmViewModel(
 		)
 	}
 
-	private fun updateTimeOnStart(time: LocalTime) {
-		_startTime.update { time }
-		_alarmTime.update { time }
-	}
 }

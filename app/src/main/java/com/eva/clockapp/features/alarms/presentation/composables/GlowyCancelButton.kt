@@ -2,6 +2,8 @@ package com.eva.clockapp.features.alarms.presentation.composables
 
 import androidx.compose.animation.animateColor
 import androidx.compose.animation.core.EaseInOut
+import androidx.compose.animation.core.EaseOut
+import androidx.compose.animation.core.FastOutLinearInEasing
 import androidx.compose.animation.core.RepeatMode
 import androidx.compose.animation.core.animateFloat
 import androidx.compose.animation.core.infiniteRepeatable
@@ -9,7 +11,6 @@ import androidx.compose.animation.core.keyframes
 import androidx.compose.animation.core.rememberInfiniteTransition
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.indication
 import androidx.compose.foundation.interaction.MutableInteractionSource
@@ -49,6 +50,7 @@ fun GlowyCancelButton(
 	contentColor: Color = contentColorFor(containerColor),
 	shape: Shape = CircleShape,
 	interactionSource: MutableInteractionSource = remember { MutableInteractionSource() },
+	isAnimated: Boolean = false,
 	size: DpSize = DpSize(56.dp, 56.dp),
 	content: @Composable () -> Unit,
 ) {
@@ -59,7 +61,7 @@ fun GlowyCancelButton(
 		initialValue = 1f,
 		targetValue = 2f,
 		animationSpec = infiniteRepeatable(
-			animation = tween(durationMillis = 500, easing = EaseInOut),
+			animation = tween(durationMillis = 1000, easing = EaseInOut),
 			repeatMode = RepeatMode.Reverse
 		),
 		label = "Ripple Indication for height",
@@ -70,10 +72,10 @@ fun GlowyCancelButton(
 		targetValue = containerColor.copy(.3f),
 		animationSpec = infiniteRepeatable(
 			animation = keyframes {
-				durationMillis = 1000
-				Color.Transparent at 0
-				containerColor.copy(.3f) at 500
-				Color.Transparent at 1000
+				durationMillis = 2000
+				Color.Transparent at 0 using FastOutLinearInEasing
+				containerColor.copy(.3f) at 500 using EaseOut
+				Color.Transparent at 1000 using FastOutLinearInEasing
 			},
 			repeatMode = RepeatMode.Restart
 		),
@@ -85,24 +87,19 @@ fun GlowyCancelButton(
 		contentAlignment = Alignment.Center
 	) {
 		// ripple container
-		Box(
-			modifier = Modifier
-				.size(size = size)
-				.graphicsLayer {
-					scaleX = boxScaleAmount
-					scaleY = boxScaleAmount
-				}
-				.drawBehind {
-					drawCircle(animatedRippleColor)
-				},
-		)
-		// border box
-		Box(
-			modifier = Modifier
-				.size(size = size * 1.2f)
-				.border(width = 2.dp, color = containerColor, shape = shape)
-				.background(color = containerColor.copy(.7f), shape = shape)
-		)
+		if (isAnimated) {
+			Box(
+				modifier = Modifier
+					.size(size = size)
+					.graphicsLayer {
+						scaleX = boxScaleAmount
+						scaleY = boxScaleAmount
+					}
+					.drawBehind {
+						drawCircle(animatedRippleColor)
+					},
+			)
+		}
 		// clickable button
 		Box(
 			modifier = Modifier
@@ -124,7 +121,7 @@ fun GlowyCancelButton(
 @Preview
 @Composable
 fun CaptureButtonPreview() = ClockAppTheme {
-	GlowyCancelButton(onClick = { }) {
+	GlowyCancelButton(onClick = { }, isAnimated = true) {
 		Icon(
 			imageVector = Icons.Default.Close,
 			contentDescription = stringResource(R.string.action_stop)

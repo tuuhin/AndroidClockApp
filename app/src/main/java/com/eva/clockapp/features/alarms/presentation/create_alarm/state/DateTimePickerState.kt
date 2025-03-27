@@ -9,6 +9,5 @@ import kotlinx.datetime.LocalTime
 @Stable
 data class DateTimePickerState(
 	val weekDays: WeekDays = persistentSetOf<DayOfWeek>(),
-	val startTime: LocalTime = LocalTime(0, 0),
 	val selectedTime: LocalTime = LocalTime(0, 0),
 )

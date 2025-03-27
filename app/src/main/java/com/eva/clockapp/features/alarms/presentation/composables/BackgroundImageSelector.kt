@@ -92,7 +92,7 @@ fun BackgroundImageSelector(
 	) {
 		Column(
 			modifier = Modifier.padding(all = dimensionResource(R.dimen.card_internal_padding_large)),
-			verticalArrangement = Arrangement.spacedBy(12.dp)
+			verticalArrangement = Arrangement.spacedBy(4.dp)
 		) {
 
 			val previewHandler = AsyncImagePreviewHandler {
@@ -140,6 +140,7 @@ fun BackgroundImageSelector(
 						} catch (_: Exception) {
 						}
 					},
+					contentPadding = PaddingValues(0.dp)
 				) {
 					Text(
 						text = "pexels.com",

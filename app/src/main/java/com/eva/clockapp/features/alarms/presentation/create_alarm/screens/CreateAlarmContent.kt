@@ -33,7 +33,6 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.core.text.util.LocalePreferences
 import androidx.core.text.util.LocalePreferences.HourCycle
-import androidx.lifecycle.compose.LifecycleStartEffect
 import com.eva.clockapp.R
 import com.eva.clockapp.features.alarms.domain.models.AssociateAlarmFlags
 import com.eva.clockapp.features.alarms.domain.models.RingtoneMusicFile
@@ -202,14 +201,8 @@ fun CreateAlarmContent(
 	contentPadding: PaddingValues = PaddingValues(0.dp),
 ) {
 
-	LifecycleStartEffect (Unit) {
-		onStopOrDispose {
-			onEvent(CreateAlarmEvents.SetStartTimeAsSelectedTime)
-		}
-	}
-
 	CreateAlarmContent(
-		timePickerStartTime = state.startTime,
+		timePickerStartTime = state.selectedTime,
 		selectedDays = state.selectedDays,
 		labelState = state.labelState,
 		repeatMode = flags.snoozeRepeatMode,

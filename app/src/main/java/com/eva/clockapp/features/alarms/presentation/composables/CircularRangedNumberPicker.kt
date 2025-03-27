@@ -63,7 +63,7 @@ fun CircularRangedNumberPicker(
 	)
 
 	val haptic = LocalHapticFeedback.current
-	val updatedOnFocusItem by rememberUpdatedState(onFocusItem)
+	val currentOnFocusItem by rememberUpdatedState(onFocusItem)
 
 	val containerSize = DpSize(elementSize.width, elementSize.height * rowCount)
 	val itemCount = remember(range) { range.last - range.first + 1 }
@@ -82,7 +82,7 @@ fun CircularRangedNumberPicker(
 			?: return@LaunchedEffect
 
 		val indexToFocus = (index + 1) % itemCount
-		updatedOnFocusItem(indexToFocus)
+		currentOnFocusItem(indexToFocus)
 	}
 
 	LaunchedEffect(key1 = isScrollInProgress) {
@@ -93,7 +93,7 @@ fun CircularRangedNumberPicker(
 			?: return@LaunchedEffect
 
 		val indexToFocus = (index + 1) % itemCount
-		updatedOnFocusItem(indexToFocus)
+		currentOnFocusItem(indexToFocus)
 
 		// adjust the focus item
 		if (lazyListState.firstVisibleItemScrollOffset != 0)

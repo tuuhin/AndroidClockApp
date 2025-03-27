@@ -20,6 +20,7 @@ object NotificationsConstants {
 	// we can have reserved notification for this application
 	const val ALARMS_FOREGROUND_SERVICE_NOTIFICATION_ID = 1
 	const val ALARMS_RESCHEDULE_NOTIFICATION_ID = 2
+	const val ALARMS_SYNC_FOREGROUND_NOTIFICATION_ID = 3
 
 	fun notificationIdFromModel(alarm: AlarmsModel) = RESERVED_NOTIFICATION_ID_COUNT + alarm.id
 }

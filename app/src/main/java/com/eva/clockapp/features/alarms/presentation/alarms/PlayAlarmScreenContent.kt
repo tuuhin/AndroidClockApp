@@ -23,7 +23,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.Shadow
 import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
@@ -49,9 +48,9 @@ fun PlayAlarmScreenContent(
 	labelText: String? = null,
 	isActionEnabled: Boolean = true,
 	showSnoozeButton: Boolean = true,
+	isPreview: Boolean = false,
 	textColorPrimary: Color = Color.White,
 	textColorSecondary: Color = Color.White,
-	textShadowColor: Color = Color.White,
 	buttonContentColor: Color = Color.Black,
 	buttonContainerColor: Color = Color.White,
 ) {
@@ -67,10 +66,8 @@ fun PlayAlarmScreenContent(
 		) {
 			Text(
 				text = dateTime.time.format(LocalTime.Formats.HH_MM),
-				style = MaterialTheme.typography.displayLarge.copy(
-					fontSize = 80.sp,
-					shadow = Shadow(color = textShadowColor, blurRadius = 4f)
-				),
+				style = MaterialTheme.typography.displayLarge,
+				fontSize = 80.sp,
 				fontFamily = DownloadableFonts.BUNGEE,
 				color = textColorPrimary,
 				letterSpacing = 2.sp
@@ -78,7 +75,7 @@ fun PlayAlarmScreenContent(
 			Text(
 				text = dateTime.date.format(LocalDate.Formats.WEEK_MONTH_DAY),
 				style = MaterialTheme.typography.headlineMedium,
-				color = textColorSecondary,
+				color = textColorPrimary,
 			)
 			Spacer(modifier = Modifier.height(16.dp))
 			labelText?.let {
@@ -103,12 +100,13 @@ fun PlayAlarmScreenContent(
 			GlowyCancelButton(
 				onClick = onStopAlarm,
 				shape = CircleShape,
+				isAnimated = !isPreview,
 				containerColor = buttonContainerColor,
 				contentColor = buttonContentColor,
 			) {
 				Icon(
 					imageVector = Icons.Default.Close,
-					contentDescription = stringResource(R.string.action_stop)
+					contentDescription = stringResource(R.string.action_stop),
 				)
 			}
 			if (!showSnoozeButton) return
@@ -124,12 +122,12 @@ fun PlayAlarmScreenContent(
 					disabledContentColor = buttonContentColor,
 				),
 				elevation = ButtonDefaults.elevatedButtonElevation(),
-				contentPadding = PaddingValues(vertical = 16.dp, horizontal = 8.dp),
+				contentPadding = PaddingValues(vertical = 12.dp, horizontal = 8.dp),
 				modifier = Modifier.sizeIn(minWidth = 150.dp)
 			) {
 				Text(
 					text = stringResource(R.string.snooze_options_title),
-					style = MaterialTheme.typography.headlineSmall,
+					style = MaterialTheme.typography.titleMedium,
 					fontFamily = DownloadableFonts.CHELSEA_MARKET,
 				)
 			}

@@ -39,6 +39,7 @@ import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.filter
 import kotlinx.datetime.LocalTime
 import java.text.NumberFormat
 import kotlin.time.Duration.Companion.milliseconds
@@ -49,7 +50,7 @@ fun ScrollableTimePicker(
 	onTimeSelected: (LocalTime) -> Unit,
 	modifier: Modifier = Modifier,
 	is24HrFormat: Boolean = false,
-	numberFormatLocale: Boolean = true,
+	formatToLocale: Boolean = true,
 	startTime: LocalTime = LocalTime(0, 0),
 	handsStyle: TextStyle = MaterialTheme.typography.displayMedium,
 	containerColor: Color = MaterialTheme.colorScheme.surfaceContainer,
@@ -60,21 +61,22 @@ fun ScrollableTimePicker(
 	val clockMinuteRange = 0..<60
 	val clockHourRange = 0..<24
 
-	val updatedOnTimeSelected by rememberUpdatedState(onTimeSelected)
+	val currentOnTimeSelected by rememberUpdatedState(onTimeSelected)
 	val formatter = remember { NumberFormat.getInstance() }
 
 	var selectedTime by remember { mutableStateOf(startTime) }
 	var isTimeInAm by remember { mutableStateOf(startTime.hour < 12) }
 
+
 	LaunchedEffect(selectedTime, isTimeInAm, is24HrFormat) {
 
-		val newTime = provideLocaltime(selectedTime, is24HrFormat, isTimeInAm)
+		val newTime = validateLocalTime(selectedTime, is24HrFormat, isTimeInAm)
 
 		snapshotFlow { newTime }
-			.debounce(200.milliseconds)
+			.filter { time -> time != startTime }
+			.debounce(100.milliseconds)
 			.distinctUntilChanged()
-			.collectLatest { time -> updatedOnTimeSelected(time) }
-
+			.collectLatest { time -> currentOnTimeSelected(time) }
 	}
 
 	Card(
@@ -103,8 +105,8 @@ fun ScrollableTimePicker(
 					selectedTime = LocalTime(hour, selectedTime.minute)
 				},
 			) { hour24 ->
-				val hour = formatHour(hour24, is24HrFormat)
-				val hourText = if (numberFormatLocale) formatter.format(hour) else "$hour"
+				val hour = roundToHour(hour24, is24HrFormat)
+				val hourText = if (formatToLocale) formatter.format(hour) else "$hour"
 				Text(
 					text = hourText.padStart(2, '0'),
 					textAlign = TextAlign.Center,
@@ -133,7 +135,7 @@ fun ScrollableTimePicker(
 				},
 			) { idx ->
 				val minute = idx % 60
-				val minuteText = if (numberFormatLocale) formatter.format(minute) else "$minute"
+				val minuteText = if (formatToLocale) formatter.format(minute) else "$minute"
 				Text(
 					text = minuteText.padStart(2, '0'),
 					textAlign = TextAlign.Center,
@@ -142,7 +144,7 @@ fun ScrollableTimePicker(
 					modifier = Modifier.widthIn(min = 40.dp)
 				)
 			}
-			if (!is24HrFormat){
+			if (!is24HrFormat) {
 				CircularRangedNumberPicker(
 					range = 0..1,
 					startIndex = if (startTime.hour > 12) 1 else 0,
@@ -169,7 +171,7 @@ fun ScrollableTimePicker(
 	}
 }
 
-private fun formatHour(hour24: Int, is24HrFormat: Boolean): Int {
+private fun roundToHour(hour24: Int, is24HrFormat: Boolean): Int {
 	return when {
 		is24HrFormat -> hour24
 		hour24 == 0 -> 12
@@ -178,7 +180,7 @@ private fun formatHour(hour24: Int, is24HrFormat: Boolean): Int {
 	}
 }
 
-private fun provideLocaltime(time: LocalTime, is24HrFormat: Boolean, isTimeInAm: Boolean)
+private fun validateLocalTime(time: LocalTime, is24HrFormat: Boolean, isTimeInAm: Boolean)
 		: LocalTime {
 	return when {
 		is24HrFormat -> time
@@ -199,7 +201,7 @@ private fun ScrollableTimePickerPreview(
 ) = ClockAppTheme {
 	ScrollableTimePicker(
 		is24HrFormat = is24HrFormat,
-		onTimeSelected = {},
+		onTimeSelected = { },
 		startTime = LocalTime(0, 0)
 	)
 }

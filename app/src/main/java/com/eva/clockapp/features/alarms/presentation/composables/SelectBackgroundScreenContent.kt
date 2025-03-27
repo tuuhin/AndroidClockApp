@@ -55,6 +55,7 @@ fun SelectBackgroundScreenContent(
 			onSnoozeAlarm = {},
 			onStopAlarm = {},
 			isActionEnabled = false,
+			isPreview = true,
 			backgroundImage = selectedUri,
 			shape = MaterialTheme.shapes.extraLarge,
 			borderStroke = BorderStroke(1.dp, color = MaterialTheme.colorScheme.primary),
