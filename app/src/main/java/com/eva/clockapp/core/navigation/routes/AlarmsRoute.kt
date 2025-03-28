@@ -23,6 +23,8 @@ fun NavGraphBuilder.alarmsRoute(controller: NavController) =
 		val alarms by viewModel.selectableAlarms.collectAsStateWithLifecycle()
 		val isLoaded by viewModel.isLoaded.collectAsStateWithLifecycle()
 		val nextAlarmDuration by viewModel.nextAlarmTime.collectAsStateWithLifecycle()
+		val settings by viewModel.alarmSettings.collectAsStateWithLifecycle()
+
 		val lifecyle by lifecyleOwner.lifecycle.currentStateFlow.collectAsStateWithLifecycle()
 
 		UIEventsSideEffect(viewModel.uiEvents)
@@ -31,6 +33,7 @@ fun NavGraphBuilder.alarmsRoute(controller: NavController) =
 			isContentReady = isLoaded,
 			selectableAlarms = alarms,
 			nextAlarmScheduled = nextAlarmDuration,
+			settings = settings,
 			onEvent = viewModel::onEvent,
 			onCreateNewAlarm = dropUnlessResumed {
 				controller.navigate(NavRoutes.CreateOrUpdateAlarmRoute())
@@ -39,6 +42,9 @@ fun NavGraphBuilder.alarmsRoute(controller: NavController) =
 				if (lifecyle.isAtLeast(Lifecycle.State.RESUMED)) {
 					controller.navigate(NavRoutes.CreateOrUpdateAlarmRoute(alarm.id))
 				}
-			}
+			},
+			onNavigateToSettings = dropUnlessResumed {
+				controller.navigate(NavRoutes.SettingsRoute)
+			},
 		)
 	}

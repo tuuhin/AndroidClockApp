@@ -21,7 +21,6 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -31,8 +30,6 @@ import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
-import androidx.core.text.util.LocalePreferences
-import androidx.core.text.util.LocalePreferences.HourCycle
 import com.eva.clockapp.R
 import com.eva.clockapp.features.alarms.domain.models.AssociateAlarmFlags
 import com.eva.clockapp.features.alarms.domain.models.RingtoneMusicFile
@@ -46,6 +43,10 @@ import com.eva.clockapp.features.alarms.presentation.create_alarm.state.CreateAl
 import com.eva.clockapp.features.alarms.presentation.create_alarm.state.CreateAlarmNavEvent
 import com.eva.clockapp.features.alarms.presentation.create_alarm.state.CreateAlarmState
 import com.eva.clockapp.features.alarms.presentation.util.toText
+import com.eva.clockapp.features.settings.data.utils.is24HrFormat
+import com.eva.clockapp.features.settings.domain.models.AlarmSettingsModel
+import com.eva.clockapp.features.settings.domain.models.StartOfWeekOptions
+import com.eva.clockapp.features.settings.domain.models.TimeFormatOptions
 import com.eva.clockapp.ui.theme.DownloadableFonts
 import kotlinx.collections.immutable.ImmutableSet
 import kotlinx.datetime.DayOfWeek
@@ -67,6 +68,8 @@ private fun CreateAlarmContent(
 	isVibrationEnabled: Boolean = true,
 	isSnoozeEnabled: Boolean = true,
 	isSoundEnabled: Boolean = true,
+	timeFormat: TimeFormatOptions = TimeFormatOptions.SYSTEM_DEFAULT,
+	startOfWeek: StartOfWeekOptions = StartOfWeekOptions.SYSTEM_DEFAULT,
 	onSnoozeEnabledChange: (Boolean) -> Unit = {},
 	onVibrationEnabledChange: (Boolean) -> Unit = {},
 	onLabelStateChange: (String) -> Unit,
@@ -79,8 +82,6 @@ private fun CreateAlarmContent(
 	optionsColors: ListItemColors = ListItemDefaults.colors(containerColor = Color.Transparent),
 ) {
 
-	val is24HourClock = remember { LocalePreferences.getHourCycle() == HourCycle.H23 }
-
 	LazyColumn(
 		modifier = modifier,
 		contentPadding = contentPadding,
@@ -90,7 +91,7 @@ private fun CreateAlarmContent(
 		item {
 			ScrollableTimePicker(
 				startTime = timePickerStartTime,
-				is24HrFormat = is24HourClock,
+				is24HrFormat = timeFormat.is24HrFormat,
 				onTimeSelected = onTimeChange,
 				fontFamily = DownloadableFonts.CHELSEA_MARKET,
 			)
@@ -98,6 +99,7 @@ private fun CreateAlarmContent(
 		item {
 			WeekDayPicker(
 				selectedDays = selectedDays,
+				startOfWeek = startOfWeek,
 				onSelectDay = onWeekDaySelected,
 				modifier = Modifier.fillMaxWidth()
 			)
@@ -198,6 +200,7 @@ fun CreateAlarmContent(
 	onFlagsEvent: (AlarmFlagsChangeEvent) -> Unit,
 	onNavigationEvent: (CreateAlarmNavEvent) -> Unit,
 	modifier: Modifier = Modifier,
+	settings: AlarmSettingsModel = AlarmSettingsModel(),
 	contentPadding: PaddingValues = PaddingValues(0.dp),
 ) {
 
@@ -212,6 +215,8 @@ fun CreateAlarmContent(
 		isSoundEnabled = flags.isSoundEnabled,
 		isSnoozeEnabled = flags.isSnoozeEnabled,
 		snoozeInterval = flags.snoozeInterval,
+		startOfWeek = settings.startOfWeek,
+		timeFormat = settings.timeFormat,
 		onWeekDaySelected = { onEvent(CreateAlarmEvents.OnAddOrRemoveWeekDay(it)) },
 		onTimeChange = { onEvent(CreateAlarmEvents.OnAlarmTimeChange(it)) },
 		onLabelStateChange = { onEvent(CreateAlarmEvents.OnLabelValueChange(it)) },

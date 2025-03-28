@@ -27,6 +27,7 @@ import com.eva.clockapp.features.alarms.presentation.create_alarm.state.CreateAl
 import com.eva.clockapp.features.alarms.presentation.create_alarm.state.CreateAlarmNavEvent
 import com.eva.clockapp.features.alarms.presentation.create_alarm.state.CreateAlarmState
 import com.eva.clockapp.features.alarms.presentation.util.AlarmPreviewFakes
+import com.eva.clockapp.features.settings.domain.models.AlarmSettingsModel
 import com.eva.clockapp.ui.theme.ClockAppTheme
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -34,8 +35,9 @@ import com.eva.clockapp.ui.theme.ClockAppTheme
 fun CreateAlarmScreen(
 	state: CreateAlarmState,
 	flags: AssociateAlarmFlags,
+	settings: AlarmSettingsModel,
 	onCreateEvent: (CreateAlarmEvents) -> Unit,
-	onNavEvent:(CreateAlarmNavEvent)-> Unit,
+	onNavEvent: (CreateAlarmNavEvent) -> Unit,
 	onFlagsEvent: (AlarmFlagsChangeEvent) -> Unit,
 	modifier: Modifier = Modifier,
 	navigation: @Composable () -> Unit = {},
@@ -73,6 +75,7 @@ fun CreateAlarmScreen(
 		CreateAlarmContent(
 			state = state,
 			flags = flags,
+			settings = settings,
 			onEvent = onCreateEvent,
 			onFlagsEvent = onFlagsEvent,
 			onNavigationEvent = onNavEvent,
@@ -91,6 +94,7 @@ private fun AlarmScreenPreview() = ClockAppTheme {
 	CreateAlarmScreen(
 		state = AlarmPreviewFakes.FAKE_CREATE_ALARM_STATE,
 		flags = AlarmPreviewFakes.FAKE_ASSOCIATE_FLAGS_STATE,
+		settings = AlarmSettingsModel(),
 		onCreateEvent = {},
 		onFlagsEvent = {},
 		onNavEvent = {},

@@ -9,6 +9,8 @@ import com.eva.clockapp.features.alarms.domain.repository.AlarmsRepository
 import com.eva.clockapp.features.alarms.domain.utils.AlarmUtils
 import com.eva.clockapp.features.alarms.presentation.alarms.state.AlarmsScreenEvents
 import com.eva.clockapp.features.alarms.presentation.alarms.state.SelectableAlarmModel
+import com.eva.clockapp.features.settings.domain.models.AlarmSettingsModel
+import com.eva.clockapp.features.settings.domain.repository.AlarmSettingsRepository
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.collections.immutable.toImmutableList
 import kotlinx.coroutines.flow.MutableSharedFlow
@@ -27,6 +29,7 @@ import kotlinx.coroutines.launch
 
 class AlarmsViewModel(
 	private val repository: AlarmsRepository,
+	private val settingsRepo: AlarmSettingsRepository,
 ) : AppViewModel() {
 
 	private val _alarms = MutableStateFlow<List<SelectableAlarmModel>>(emptyList())
@@ -49,6 +52,13 @@ class AlarmsViewModel(
 		started = SharingStarted.Eagerly,
 		initialValue = null
 	)
+
+	val alarmSettings = settingsRepo.settingsFlow
+		.stateIn(
+			scope = viewModelScope,
+			started = SharingStarted.Eagerly,
+			initialValue = AlarmSettingsModel()
+		)
 
 	private val _uiEvents = MutableSharedFlow<UiEvents>()
 	override val uiEvents: SharedFlow<UiEvents>

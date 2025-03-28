@@ -46,6 +46,7 @@ fun NavGraphBuilder.creteAlarmsNavGraph(controller: NavController) =
 
 			val state by viewModel.createAlarmState.collectAsStateWithLifecycle()
 			val flagsState by viewModel.flagsState.collectAsStateWithLifecycle()
+			val settings by viewModel.settings.collectAsStateWithLifecycle()
 
 			UIEventsSideEffect(
 				viewModel.uiEvents,
@@ -75,6 +76,7 @@ fun NavGraphBuilder.creteAlarmsNavGraph(controller: NavController) =
 			CreateAlarmScreen(
 				state = state,
 				flags = flagsState,
+				settings = settings,
 				onCreateEvent = viewModel::onEvent,
 				onFlagsEvent = viewModel::onFlagsEvent,
 				onNavEvent = viewModel::onNavEvent,

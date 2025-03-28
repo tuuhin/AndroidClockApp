@@ -34,6 +34,8 @@ import androidx.compose.ui.tooling.preview.PreviewParameter
 import androidx.compose.ui.tooling.preview.datasource.CollectionPreviewParameterProvider
 import androidx.compose.ui.unit.dp
 import com.eva.clockapp.R
+import com.eva.clockapp.features.settings.data.utils.weekEntries
+import com.eva.clockapp.features.settings.domain.models.StartOfWeekOptions
 import com.eva.clockapp.ui.theme.ClockAppTheme
 import kotlinx.collections.immutable.ImmutableSet
 import kotlinx.collections.immutable.persistentSetOf
@@ -55,6 +57,7 @@ fun WeekDayPicker(
 	selectedDays: ImmutableSet<DayOfWeek>,
 	onSelectDay: (DayOfWeek) -> Unit,
 	modifier: Modifier = Modifier,
+	startOfWeek: StartOfWeekOptions = StartOfWeekOptions.SYSTEM_DEFAULT,
 	selectedWeekDayColor: Color = MaterialTheme.colorScheme.secondaryContainer,
 	unSelectedWeekDayColor: Color = Color.Transparent,
 	textStyle: TextStyle = MaterialTheme.typography.titleMedium,
@@ -120,7 +123,7 @@ fun WeekDayPicker(
 			modifier = Modifier.fillMaxWidth(),
 			horizontalArrangement = Arrangement.SpaceEvenly,
 		) {
-			DayOfWeek.entries.forEach { weekDay ->
+			startOfWeek.weekEntries.forEach { weekDay ->
 
 				val shortName = weekDay.getDisplayName(FormatStyles.NARROW_STANDALONE, locale)
 				val isSelected = selectedDays.contains(weekDay)

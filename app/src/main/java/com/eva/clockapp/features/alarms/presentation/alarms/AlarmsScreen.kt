@@ -32,6 +32,7 @@ import com.eva.clockapp.features.alarms.presentation.composables.DeleteAlarmsDia
 import com.eva.clockapp.features.alarms.presentation.composables.HasNotificationPermission
 import com.eva.clockapp.features.alarms.presentation.composables.HasScheduleAlarmPermissionsDialog
 import com.eva.clockapp.features.alarms.presentation.util.AlarmPreviewFakes
+import com.eva.clockapp.features.settings.domain.models.AlarmSettingsModel
 import com.eva.clockapp.ui.theme.ClockAppTheme
 import kotlinx.collections.immutable.ImmutableList
 import kotlin.time.Duration
@@ -41,12 +42,14 @@ import kotlin.time.Duration.Companion.days
 @Composable
 fun AlarmScreen(
 	isContentReady: Boolean,
+	settings: AlarmSettingsModel,
 	selectableAlarms: ImmutableList<SelectableAlarmModel>,
 	onEvent: (AlarmsScreenEvents) -> Unit,
 	modifier: Modifier = Modifier,
 	nextAlarmScheduled: Duration? = null,
 	onSelectAlarm: (AlarmsModel) -> Unit = {},
 	onCreateNewAlarm: () -> Unit = {},
+	onNavigateToSettings: () -> Unit = {},
 	navigation: @Composable () -> Unit = {},
 ) {
 
@@ -86,6 +89,7 @@ fun AlarmScreen(
 				onCreateNewAlarm = onCreateNewAlarm,
 				onSelectAll = { onEvent(AlarmsScreenEvents.OnSelectAllAlarms) },
 				scrollBehavior = scrollBehavior,
+				onNavigateToSettings = onNavigateToSettings,
 				navigation = navigation,
 			)
 		},
@@ -105,6 +109,8 @@ fun AlarmScreen(
 			isLoaded = isContentReady,
 			alarms = selectableAlarms,
 			nextAlarmSchedule = nextAlarmScheduled,
+			hourFormat = settings.timeFormat,
+			startOfWeek = settings.startOfWeek,
 			onEnableAlarm = { _, alarm ->
 				onEvent(AlarmsScreenEvents.OnEnableOrDisAbleAlarm(alarm))
 			},
@@ -137,6 +143,7 @@ private fun AlarmScreenPreview(
 	alarm: ImmutableList<SelectableAlarmModel>,
 ) = ClockAppTheme {
 	AlarmScreen(
+		settings = AlarmSettingsModel(),
 		isContentReady = true,
 		selectableAlarms = alarm,
 		nextAlarmScheduled = 4.days,

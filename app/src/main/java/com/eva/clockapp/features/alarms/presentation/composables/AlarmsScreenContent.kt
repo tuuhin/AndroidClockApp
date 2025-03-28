@@ -32,14 +32,14 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.PreviewLightDark
 import androidx.compose.ui.unit.dp
-import androidx.core.text.util.LocalePreferences
-import androidx.core.text.util.LocalePreferences.FirstDayOfWeek
-import androidx.core.text.util.LocalePreferences.HourCycle
 import com.eva.clockapp.R
 import com.eva.clockapp.features.alarms.domain.models.AlarmsModel
 import com.eva.clockapp.features.alarms.presentation.alarms.state.ContentState
 import com.eva.clockapp.features.alarms.presentation.alarms.state.SelectableAlarmModel
 import com.eva.clockapp.features.alarms.presentation.util.AlarmPreviewFakes
+import com.eva.clockapp.features.settings.data.utils.is24HrFormat
+import com.eva.clockapp.features.settings.domain.models.StartOfWeekOptions
+import com.eva.clockapp.features.settings.domain.models.TimeFormatOptions
 import com.eva.clockapp.ui.theme.ClockAppTheme
 import kotlinx.collections.immutable.ImmutableList
 import kotlin.time.Duration
@@ -52,6 +52,8 @@ fun AlarmsScreenContent(
 	onAlarmSelect: (AlarmsModel) -> Unit,
 	onEnableAlarm: (isEnabled: Boolean, alarm: AlarmsModel) -> Unit,
 	modifier: Modifier = Modifier,
+	hourFormat: TimeFormatOptions = TimeFormatOptions.SYSTEM_DEFAULT,
+	startOfWeek: StartOfWeekOptions = StartOfWeekOptions.SUNDAY,
 	nextAlarmSchedule: Duration? = null,
 	contentPadding: PaddingValues = PaddingValues(),
 ) {
@@ -76,6 +78,8 @@ fun AlarmsScreenContent(
 				onAlarmClick = onSelectAlarm,
 				onAlarmSelect = onAlarmSelect,
 				onEnableAlarm = onEnableAlarm,
+				hourFormat = hourFormat,
+				startOfWeek = startOfWeek,
 				contentPadding = contentPadding,
 				modifier = modifier
 			)
@@ -128,17 +132,12 @@ private fun AlarmsListContent(
 	onEnableAlarm: (isEnabled: Boolean, alarm: AlarmsModel) -> Unit,
 	modifier: Modifier = Modifier,
 	duration: Duration? = null,
+	hourFormat: TimeFormatOptions = TimeFormatOptions.SYSTEM_DEFAULT,
+	startOfWeek: StartOfWeekOptions = StartOfWeekOptions.SUNDAY,
 	contentPadding: PaddingValues = PaddingValues(),
 ) {
 	val isInspectionMode = LocalInspectionMode.current
 
-	val isStartOfWeekSunday = remember {
-		LocalePreferences.getFirstDayOfWeek() == FirstDayOfWeek.SUNDAY
-	}
-
-	val is24HrsFormat = remember {
-		LocalePreferences.getHourCycle() == HourCycle.H23
-	}
 
 	val itemKeys: ((Int, SelectableAlarmModel) -> Any)? = remember {
 		if (isInspectionMode) return@remember null
@@ -180,8 +179,8 @@ private fun AlarmsListContent(
 			AlarmsCompactCard(
 				selectableModel = selectable,
 				isSelectableMode = isAnySelected,
-				isStartOfWeekSunday = isStartOfWeekSunday,
-				is24HrsFormat = is24HrsFormat,
+				startOfWeek = startOfWeek,
+				is24HrsFormat = hourFormat.is24HrFormat,
 				onClick = {
 					if (!isAnySelected) onAlarmClick(alarm)
 					else onAlarmSelect(alarm)

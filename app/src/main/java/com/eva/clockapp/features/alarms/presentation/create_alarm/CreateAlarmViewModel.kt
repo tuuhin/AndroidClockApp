@@ -20,6 +20,8 @@ import com.eva.clockapp.features.alarms.presentation.create_alarm.state.CreateAl
 import com.eva.clockapp.features.alarms.presentation.create_alarm.state.DateTimePickerState
 import com.eva.clockapp.features.alarms.presentation.util.toAlarmModel
 import com.eva.clockapp.features.alarms.presentation.util.toCreateModel
+import com.eva.clockapp.features.settings.domain.models.AlarmSettingsModel
+import com.eva.clockapp.features.settings.domain.repository.AlarmSettingsRepository
 import kotlinx.collections.immutable.toImmutableSet
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -37,6 +39,7 @@ import kotlinx.datetime.LocalTime
 
 class CreateAlarmViewModel(
 	private val ringtonesRepository: RingtonesRepository,
+	private val settingsRepository: AlarmSettingsRepository,
 	private val repository: AlarmsRepository,
 	private val validator: ValidateAlarmUseCase,
 	private val savedStateHandle: SavedStateHandle,
@@ -65,10 +68,10 @@ class CreateAlarmViewModel(
 	private val _pickerState =
 		combine(_selectedDays, _alarmTime, transform = ::DateTimePickerState)
 			.stateIn(
-			scope = viewModelScope,
-			started = SharingStarted.Eagerly,
-			initialValue = DateTimePickerState()
-		)
+				scope = viewModelScope,
+				started = SharingStarted.Eagerly,
+				initialValue = DateTimePickerState()
+			)
 
 	val createAlarmState: StateFlow<CreateAlarmState> = combine(
 		_pickerState, _alarmLabel, _selectedSound, _background
@@ -90,6 +93,13 @@ class CreateAlarmViewModel(
 				isAlarmCreate = route.alarmId == null
 			)
 		)
+
+	// alarm settings
+	val settings = settingsRepository.settingsFlow.stateIn(
+		scope = viewModelScope,
+		started = SharingStarted.Eagerly,
+		initialValue = AlarmSettingsModel()
+	)
 
 	private val _navEvent = MutableSharedFlow<CreateAlarmNavEvent>()
 	val navEvents = _navEvent.asSharedFlow()
@@ -213,7 +223,7 @@ class CreateAlarmViewModel(
 	private fun updateParametersForAlarm() = viewModelScope.launch {
 
 		val alarmId = route.alarmId ?: run {
-			_alarmTime.update {  AlarmUtils.calculateNextAlarmTime() }
+			_alarmTime.update { AlarmUtils.calculateNextAlarmTime() }
 			return@launch
 		}
 

@@ -43,6 +43,8 @@ import com.eva.clockapp.core.utils.HH_MM
 import com.eva.clockapp.core.utils.HH_MM_A
 import com.eva.clockapp.features.alarms.presentation.alarms.state.SelectableAlarmModel
 import com.eva.clockapp.features.alarms.presentation.util.AlarmPreviewFakes
+import com.eva.clockapp.features.settings.data.utils.weekEntries
+import com.eva.clockapp.features.settings.domain.models.StartOfWeekOptions
 import com.eva.clockapp.ui.theme.ClockAppTheme
 import com.eva.clockapp.ui.theme.DownloadableFonts
 import kotlinx.collections.immutable.ImmutableSet
@@ -61,8 +63,8 @@ fun AlarmsCompactCard(
 	modifier: Modifier = Modifier,
 	onEnabledChange: (Boolean) -> Unit = {},
 	isSelectableMode: Boolean = false,
-	isStartOfWeekSunday: Boolean = true,
 	is24HrsFormat: Boolean = false,
+	startOfWeek: StartOfWeekOptions = StartOfWeekOptions.SUNDAY,
 	colors: CardColors = CardDefaults.elevatedCardColors(),
 	shape: Shape = MaterialTheme.shapes.large,
 	overlayColor: Color = MaterialTheme.colorScheme.primary,
@@ -115,7 +117,7 @@ fun AlarmsCompactCard(
 					time = selectableModel.model.time,
 					weekDays = selectableModel.model.weekDays.toImmutableSet(),
 					is24HrsFormat = is24HrsFormat,
-					isStartOfWeekSunday = isStartOfWeekSunday,
+					startOfWeek = startOfWeek,
 					modifier = Modifier.weight(1f)
 				)
 				AnimatedVisibility(
@@ -140,8 +142,8 @@ private fun AlarmsTimeAndWeekdays(
 	time: LocalTime,
 	weekDays: ImmutableSet<DayOfWeek>,
 	modifier: Modifier = Modifier,
-	isStartOfWeekSunday: Boolean = true,
 	is24HrsFormat: Boolean = false,
+	startOfWeek: StartOfWeekOptions = StartOfWeekOptions.SUNDAY,
 	textColor: Color = MaterialTheme.colorScheme.primary,
 	overlayColor: Color = MaterialTheme.colorScheme.secondary,
 ) {
@@ -155,17 +157,6 @@ private fun AlarmsTimeAndWeekdays(
 		time.format(format)
 	}
 
-	val dayOfWeeks = remember {
-		if (!isStartOfWeekSunday) return@remember DayOfWeek.entries
-
-		buildSet {
-			add(DayOfWeek.SUNDAY)
-			val others = DayOfWeek.entries.toMutableList()
-				.apply { remove(DayOfWeek.SUNDAY) }
-			addAll(others)
-		}
-
-	}
 
 	Column(
 		modifier = modifier,
@@ -182,7 +173,7 @@ private fun AlarmsTimeAndWeekdays(
 			modifier = Modifier.wrapContentWidth(),
 			horizontalArrangement = Arrangement.spacedBy(4.dp)
 		) {
-			dayOfWeeks.forEach { day ->
+			startOfWeek.weekEntries.forEach { day ->
 
 				val textStyle = MaterialTheme.typography.labelLarge
 					.copy(fontWeight = FontWeight.SemiBold)
