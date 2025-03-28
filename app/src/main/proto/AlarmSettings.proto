@@ -1,0 +1,38 @@
+syntax = "proto3";
+
+option java_package = "com.eva.clockapp.features.settings.proto";
+option java_multiple_files = true;
+option java_generate_equals_and_hash = true;
+
+message AlarmSettingsProto {
+  UpcomingNotificationTimeProto upcomingAlarm = 1;
+  VolumeButtonControlProto volumeControl = 2;
+  StartOfWeekProto startOfWeek = 3;
+  TimeFormatProto timeFormat = 4;
+}
+
+enum UpcomingNotificationTimeProto{
+  DURATION_30_MINUTES = 0;
+  DURATION_10_MINUTES = 1;
+  DURATION_NONE = 2;
+  DURATION_1_HOUR = 3;
+}
+
+enum VolumeButtonControlProto{
+  STOP_ALARM = 0;
+  SNOOZE_ALARM = 1;
+  CONTROL_ALARM_VOLUME = 2;
+  NONE = 3;
+}
+
+enum StartOfWeekProto{
+  START_OF_WEEK_SYSTEM_DEFAULT = 0;
+  START_OF_WEEK_MONDAY = 1;
+  START_OF_WEEK_SUNDAY = 2;
+}
+
+enum TimeFormatProto{
+  TIME_FORMAT_SYSTEM_DEFAULT = 0;
+  TIME_FORMAT_24_HRS = 1;
+  TIME_FORMAT_12_HRS = 2;
+}

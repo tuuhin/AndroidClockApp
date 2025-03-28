@@ -9,9 +9,13 @@ import androidx.compose.animation.shrinkOut
 import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutVertically
 import androidx.compose.animation.togetherWith
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.MoreVert
+import androidx.compose.material.icons.filled.Settings
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -25,7 +29,9 @@ import androidx.compose.material3.TopAppBarScrollBehavior
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
@@ -41,6 +47,7 @@ fun AlarmsTopAppBar(
 	navigation: @Composable () -> Unit = {},
 	onCreateNewAlarm: () -> Unit = {},
 	onSelectAll: () -> Unit = {},
+	onNavigateToSettings: () -> Unit = {},
 	scrollBehavior: TopAppBarScrollBehavior? = null,
 	colors: TopAppBarColors = TopAppBarDefaults
 		.mediumTopAppBarColors(actionIconContentColor = MaterialTheme.colorScheme.primary),
@@ -52,6 +59,9 @@ fun AlarmsTopAppBar(
 	val selectedItemCount by remember(selectableAlarms) {
 		derivedStateOf { selectableAlarms.count { it.isSelected } }
 	}
+
+	var showDropDown by remember { mutableStateOf(false) }
+
 
 	MediumTopAppBar(
 		title = {
@@ -81,8 +91,29 @@ fun AlarmsTopAppBar(
 					TextButton(onClick = onCreateNewAlarm) {
 						Text(text = stringResource(R.string.create_action))
 					}
-					IconButton(onClick = {}) {
-						Icon(imageVector = Icons.Default.MoreVert, contentDescription = "")
+					Box {
+						IconButton(onClick = { showDropDown = true }) {
+							Icon(
+								imageVector = Icons.Default.MoreVert,
+								contentDescription = "More options"
+							)
+						}
+						DropdownMenu(
+							expanded = showDropDown,
+							onDismissRequest = { showDropDown = false },
+							shape = MaterialTheme.shapes.medium
+						) {
+							DropdownMenuItem(
+								text = { Text(stringResource(R.string.settings_screen_title)) },
+								onClick = onNavigateToSettings,
+								leadingIcon = {
+									Icon(
+										Icons.Default.Settings,
+										contentDescription = stringResource(R.string.settings_screen_title)
+									)
+								},
+							)
+						}
 					}
 				}
 			}

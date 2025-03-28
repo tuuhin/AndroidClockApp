@@ -98,4 +98,21 @@
   <string name="gallery_screen_tab_albums">Albums</string>
   <string name="update_alarm_bulk">Alarms Updated</string>
   <string name="reschedule_alarm_for_next_day">Rescheduling Alarms</string>
+  <string name="settings_option_system_default">System Default</string>
+  <string name="settings_time_format_12_hr">12 hr</string>
+  <string name="settings_time_format_24_hr">24 hr</string>
+  <string name="settings_start_of_week_monday">Monday</string>
+  <string name="settings_start_of_week_sunday">Sunday</string>
+  <string name="settings_volume_control_stop_alarm">Stop</string>
+  <string name="settings_option_none">None</string>
+  <string name="settings_volume_control_volume">Change Volume</string>
+  <string name="settings_volume_control_snooze_alarm">Snooze</string>
+  <string name="settings_volume_controls_title">Volume control</string>
+  <string name="settings_duration_option_30_minutes">30 minutes</string>
+  <string name="settings_duration_option_1_hr">1 hr</string>
+  <string name="settings_duration_option_10_minutes">10 minutes</string>
+  <string name="settings_time_formats_title">Time format</string>
+  <string name="settings_start_of_week_title">Start of week</string>
+  <string name="settings_upcoming_alarm_notification_time_title">Show upcoming notification</string>
+  <string name="settings_screen_title">Settings</string>
 </resources>

@@ -9,4 +9,7 @@ interface NavRoutes {
 
 	@Serializable
 	data class CreateOrUpdateAlarmRoute(val alarmId: Int? = null) : NavRoutes
+
+	@Serializable
+	data object SettingsRoute : NavRoutes
 }

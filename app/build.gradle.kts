@@ -5,6 +5,7 @@ plugins {
 	alias(libs.plugins.kotlinx.serialization)
 	alias(libs.plugins.androidx.room)
 	alias(libs.plugins.ksp)
+	alias(libs.plugins.google.protobuf)
 }
 
 android {
@@ -91,16 +92,14 @@ dependencies {
 
 	//datastore
 	implementation(libs.androidx.datastore.preferences)
+	implementation(libs.protobuf.javalite)
+	implementation(libs.protobuf.kotlin.lite)
+
 	//work manager
 	implementation(libs.androidx.work.runtime.ktx)
 	//coil
 	implementation(libs.coil.compose)
 	implementation(libs.coil.network.okhttp)
-	//ktor-client
-	implementation(libs.ktor.client.core)
-	implementation(libs.ktor.client.cio)
-	//palette
-	implementation(libs.androidx.palette)
 
 	//koin
 	implementation(libs.koin.android)
@@ -119,4 +118,28 @@ dependencies {
 	androidTestImplementation(libs.androidx.ui.test.junit4)
 	debugImplementation(libs.androidx.ui.tooling)
 	debugImplementation(libs.androidx.ui.test.manifest)
+}
+
+protobuf {
+	protoc {
+		artifact = libs.protobuf.protoc.get().toString()
+	}
+	plugins {
+		create("java") {
+			artifact = libs.protobuf.gen.javalite.get().toString()
+		}
+	}
+
+	generateProtoTasks {
+		all().forEach { task ->
+			task.plugins {
+				create("java") {
+					option("lite")
+				}
+				create("kotlin") {
+					option("lite")
+				}
+			}
+		}
+	}
 }

@@ -11,6 +11,7 @@ import androidx.navigation.compose.rememberNavController
 import com.eva.clockapp.core.navigation.navgraphs.NavRoutes
 import com.eva.clockapp.core.navigation.routes.alarmsRoute
 import com.eva.clockapp.core.navigation.routes.creteAlarmsNavGraph
+import com.eva.clockapp.core.navigation.routes.settingsRoute
 import com.eva.clockapp.core.presentation.LocalSnackBarHostState
 import org.koin.compose.KoinContext
 
@@ -34,6 +35,8 @@ fun AppNavHost(
 				alarmsRoute(controller = controller)
 				// create alarms nav graph
 				creteAlarmsNavGraph(controller = controller)
+				//settings route
+				settingsRoute(controller = controller)
 			}
 		}
 	}
