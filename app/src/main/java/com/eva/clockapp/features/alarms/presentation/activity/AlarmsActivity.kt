@@ -22,12 +22,17 @@ import androidx.core.view.WindowInsetsControllerCompat
 import com.eva.clockapp.core.constants.ClockAppIntents
 import com.eva.clockapp.features.alarms.data.services.AlarmsControllerService
 import com.eva.clockapp.features.alarms.presentation.alarms.PlayAlarmsScreen
+import com.eva.clockapp.features.settings.domain.models.AlarmVolumeControlOption
+import com.eva.clockapp.features.settings.domain.repository.AlarmSettingsRepository
 import com.eva.clockapp.ui.theme.ClockAppTheme
 import kotlinx.datetime.Instant
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.toLocalDateTime
+import org.koin.android.ext.android.inject
 
 class AlarmsActivity : ComponentActivity() {
+
+	private val settingsRepo by inject<AlarmSettingsRepository>()
 
 	private val keyguardManager by lazy { getSystemService<KeyguardManager>() }
 
@@ -59,8 +64,8 @@ class AlarmsActivity : ComponentActivity() {
 		val labelText = intent.getStringExtra(ClockAppIntents.EXTRAS_ALARMS_LABEL_TEXT)
 		val imageUri = intent.getStringExtra(ClockAppIntents.EXTRAS_ALARM_BACKGROUND_IMAGE_URI)
 
-		val dateTime = Instant.Companion.fromEpochMilliseconds(timeInMillis)
-			.toLocalDateTime(TimeZone.Companion.currentSystemDefault())
+		val dateTime = Instant.fromEpochMilliseconds(timeInMillis)
+			.toLocalDateTime(TimeZone.currentSystemDefault())
 
 		setContent {
 			ClockAppTheme {
@@ -80,17 +85,21 @@ class AlarmsActivity : ComponentActivity() {
 		val alarmId = intent.getIntExtra(ClockAppIntents.EXTRA_ALARMS_ALARMS_ID, -1)
 		if (alarmId == -1) finishAndRemoveTask()
 
-		val isVolumeUpOrDown = arrayOf(
-			KeyEvent.KEYCODE_VOLUME_DOWN,
-			KeyEvent.KEYCODE_VOLUME_UP,
-		)
+		val isVolumeButtons = arrayOf(KeyEvent.KEYCODE_VOLUME_DOWN, KeyEvent.KEYCODE_VOLUME_UP)
 
-		if (keyCode in isVolumeUpOrDown) {
-			snoozeAlarm(alarmId)
-			return false
+		if (keyCode !in isVolumeButtons) return super.onKeyDown(keyCode, event)
+
+		val settings = settingsRepo.settingsValue
+
+		when (settings.volumeControl) {
+			AlarmVolumeControlOption.NONE -> return true
+			AlarmVolumeControlOption.STOP_ALARM -> stopAlarm(alarmId)
+			AlarmVolumeControlOption.SNOOZE_ALARM -> snoozeAlarm(alarmId)
+			AlarmVolumeControlOption.CONTROL_ALARM_VOLUME ->
+				controlAlarmVolume(alarmId, keyCode == KeyEvent.KEYCODE_VOLUME_UP)
 		}
 
-		return super.onKeyDown(keyCode, event)
+		return false
 	}
 
 	override fun onDestroy() {
@@ -115,6 +124,19 @@ class AlarmsActivity : ComponentActivity() {
 			val intent = Intent(this, AlarmsControllerService::class.java).apply {
 				action = ClockAppIntents.ACTION_SNOOZE_ALARM
 				data = ClockAppIntents.alarmIntentData(alarmId)
+			}
+			applicationContext.startService(intent)
+		} catch (e: Exception) {
+			e.printStackTrace()
+		}
+	}
+
+	private fun controlAlarmVolume(alarmId: Int, isIncrease: Boolean) {
+		try {
+			val intent = Intent(this, AlarmsControllerService::class.java).apply {
+				action = ClockAppIntents.ACTION_CHANGE_ALARM_VOLUME
+				data = ClockAppIntents.alarmIntentData(alarmId)
+				putExtra(ClockAppIntents.EXTRAS_ALARM_VOLUME_INCREASE, isIncrease)
 			}
 			applicationContext.startService(intent)
 		} catch (e: Exception) {

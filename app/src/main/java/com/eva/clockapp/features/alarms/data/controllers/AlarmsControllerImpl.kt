@@ -14,18 +14,26 @@ import com.eva.clockapp.features.alarms.data.receivers.UpcomingAlarmReceiver
 import com.eva.clockapp.features.alarms.data.services.AlarmsControllerService
 import com.eva.clockapp.features.alarms.domain.controllers.AlarmsController
 import com.eva.clockapp.features.alarms.domain.exceptions.ExactAlarmPermissionNotFound
+import com.eva.clockapp.features.alarms.domain.exceptions.UserSettingsDisabledException
 import com.eva.clockapp.features.alarms.domain.models.AlarmsModel
 import com.eva.clockapp.features.alarms.domain.utils.AlarmUtils
+import com.eva.clockapp.features.settings.domain.models.UpcomingAlarmTimeOption
+import com.eva.clockapp.features.settings.domain.repository.AlarmSettingsRepository
 import kotlinx.datetime.Instant
 import kotlinx.datetime.LocalDateTime
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.toKotlinLocalTime
 import kotlinx.datetime.toLocalDateTime
 import java.time.LocalTime
+import kotlin.time.Duration.Companion.hours
+import kotlin.time.Duration.Companion.minutes
 
 private const val TAG = "ALARMS_CONTROLLER"
 
-class AlarmsControllerImpl(private val context: Context) : AlarmsController {
+class AlarmsControllerImpl(
+	private val context: Context,
+	private val settings: AlarmSettingsRepository,
+) : AlarmsController {
 
 	private val alarmManager by lazy { context.getSystemService<AlarmManager>() }
 
@@ -106,7 +114,17 @@ class AlarmsControllerImpl(private val context: Context) : AlarmsController {
 	}
 
 	private fun createUpcomingAlarm(model: AlarmsModel): Result<LocalDateTime> {
-		val triggerMillis = AlarmUtils.calculateUpcomingAlarmTriggerMillis(model)
+
+		val showBefore = when (settings.settingsValue.notificationTime) {
+			UpcomingAlarmTimeOption.DURATION_30_MINUTES -> 30.minutes
+			UpcomingAlarmTimeOption.DURATION_10_MINUTES -> 10.minutes
+			UpcomingAlarmTimeOption.DURATION_1_HOUR -> 1.hours
+			UpcomingAlarmTimeOption.DURATION_NONE -> {
+				return Result.failure(UserSettingsDisabledException())
+			}
+		}
+
+		val triggerMillis = AlarmUtils.calculateUpcomingAlarmTriggerMillis(model, showBefore)
 
 		val intent = Intent(context, UpcomingAlarmReceiver::class.java).apply {
 			data = ClockAppIntents.alarmIntentData(model.id)

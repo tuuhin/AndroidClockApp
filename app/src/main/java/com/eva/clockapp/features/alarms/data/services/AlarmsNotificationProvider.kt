@@ -4,6 +4,7 @@ import android.app.Notification
 import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
+import androidx.annotation.StringRes
 import androidx.core.os.bundleOf
 import com.eva.clockapp.R
 import com.eva.clockapp.core.constants.ClockAppIntents
@@ -67,8 +68,7 @@ class AlarmsNotificationProvider(private val context: Context) {
 
 	fun createNotification(context: Context, alarm: AlarmsModel): Notification {
 
-		val title = context.getString(R.string.notification_title_alarms)
-		val text = buildString {
+		val title = buildString {
 			val time = alarm.time.format(LocalTime.Formats.HH_MM_A)
 			append(time)
 			append(" | ")
@@ -117,13 +117,13 @@ class AlarmsNotificationProvider(private val context: Context) {
 			.setSmallIcon(R.drawable.ic_alam_clock)
 			.setVisibility(Notification.VISIBILITY_PUBLIC)
 			.setCategory(Notification.CATEGORY_ALARM)
+			.setShowWhen(false)
+			.setOnlyAlertOnce(true)
 			.setColorized(true)
 			.setColor(context.getColor(R.color.primary_container))
 			.setContentTitle(title)
-			.setContentText(text)
-			.setShowWhen(false)
-			.setOnlyAlertOnce(true)
-			.setSubText(alarm.label)
+			.setContentText(alarm.label)
+			.setSubText(context.getString(R.string.notification_title_alarms))
 			.setDeleteIntent(disMissPendingIntent)
 			.setActions(snoozeAction, stopAction)
 			.setContentIntent(fullscreenIntent)
@@ -131,17 +131,19 @@ class AlarmsNotificationProvider(private val context: Context) {
 			.build()
 	}
 
-	fun createRescheduleNotification(): Notification {
-		return Notification.Builder(
-			context,
-			NotificationsConstants.CLOCK_EVENT_NOTIFICATION_CHANNEL_ID
-		)
+	fun createRescheduleNotification(
+		@StringRes titleRes: Int = R.string.alarms_rescheduled_notification_title,
+		@StringRes textRes: Int = R.string.alarms_rescheduled_notification_text,
+	): Notification {
+		return Notification
+			.Builder(context, NotificationsConstants.CLOCK_EVENT_NOTIFICATION_CHANNEL_ID)
 			.setSmallIcon(R.drawable.ic_upcoming_alarm)
 			.setVisibility(Notification.VISIBILITY_PUBLIC)
 			.setCategory(Notification.CATEGORY_EVENT)
-			.setContentTitle(context.getString(R.string.alarms_rescheduled_notification_title))
-			.setContentText(context.getString(R.string.alarms_rescheduled_notification_text))
+			.setContentTitle(context.getString(titleRes))
+			.setContentText(context.getString(textRes))
 			.setOnlyAlertOnce(true)
+			.setAutoCancel(true)
 			.build()
 	}
 
@@ -151,10 +153,8 @@ class AlarmsNotificationProvider(private val context: Context) {
 		val dateTimeString = alarm.time.format(LocalTime.Formats.HH_MM)
 		val text = context.getString(R.string.missed_alarm_notification_text, dateTimeString)
 
-		return Notification.Builder(
-			context,
-			NotificationsConstants.CLOCK_EVENT_NOTIFICATION_CHANNEL_ID
-		)
+		return Notification
+			.Builder(context, NotificationsConstants.CLOCK_EVENT_NOTIFICATION_CHANNEL_ID)
 			.setSmallIcon(R.drawable.ic_upcoming_alarm)
 			.setVisibility(Notification.VISIBILITY_PUBLIC)
 			.setCategory(Notification.CATEGORY_EVENT)
@@ -190,10 +190,8 @@ class AlarmsNotificationProvider(private val context: Context) {
 		val title = context.getString(R.string.upcoming_notification_title)
 		val text = dateTime.format(LocalDateTime.Formats.WEEK_DAY_AM_TIME)
 
-		return Notification.Builder(
-			context,
-			NotificationsConstants.CLOCK_EVENT_NOTIFICATION_CHANNEL_ID
-		)
+		return Notification
+			.Builder(context, NotificationsConstants.CLOCK_EVENT_NOTIFICATION_CHANNEL_ID)
 			.setSmallIcon(R.drawable.ic_upcoming_alarm)
 			.setVisibility(Notification.VISIBILITY_PUBLIC)
 			.setCategory(Notification.CATEGORY_EVENT)

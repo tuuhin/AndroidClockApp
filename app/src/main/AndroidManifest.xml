@@ -42,13 +42,13 @@
     tools:targetApi="33">
 
     <receiver
-      android:name=".features.alarms.data.receivers.DeviceBootReceiver"
+      android:name=".features.alarms.data.receivers.RescheduleAlarmReceiver"
       android:enabled="true"
       android:exported="true">
       <intent-filter>
         <action android:name="android.intent.action.BOOT_COMPLETED" />
-        <action android:name="android.intent.action.LOCKED_BOOT_COMPLETED" />
-        <action android:name="android.settings.REQUEST_SCHEDULE_EXACT_ALARM" />
+        <action android:name="android.intent.action.TIMEZONE_CHANGED" />
+        <action android:name="android.app.action.SCHEDULE_EXACT_ALARM_PERMISSION_STATE_CHANGED" />
       </intent-filter>
     </receiver>
 

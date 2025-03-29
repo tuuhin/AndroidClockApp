@@ -43,14 +43,13 @@ fun HasScheduleAlarmPermissionsDialog(
 	val context = LocalContext.current
 	val lifecycleOwner = LocalLifecycleOwner.current
 
-	val hasPermission = remember {
+	var hasPermission by remember {
 		val alarmManager = context.getSystemService<AlarmManager>()
-		alarmManager?.canScheduleExactAlarms() == true
+		val perms = alarmManager?.canScheduleExactAlarms() == true
+		mutableStateOf(perms)
 	}
 
-	var showDialog by remember { mutableStateOf(false) }
-
-	if (hasPermission || !showDialog) return
+	if (hasPermission) return
 
 	DisposableEffect(lifecycleOwner) {
 
@@ -58,9 +57,8 @@ fun HasScheduleAlarmPermissionsDialog(
 			override fun onReceive(context: Context, intent: Intent) {
 				if (intent.action != AlarmManager.ACTION_SCHEDULE_EXACT_ALARM_PERMISSION_STATE_CHANGED) return
 				val manager = context.getSystemService<AlarmManager>()
-				val canSchedule = manager?.canScheduleExactAlarms() == true
-				onChange(canSchedule)
-				showDialog = canSchedule
+				hasPermission = manager?.canScheduleExactAlarms() == true
+				onChange(hasPermission)
 			}
 		}
 

@@ -11,6 +11,7 @@ object ClockAppIntents {
 	const val ACTION_PLAY_ALARM = "$ALARMS_FEATURE.play_alarms"
 	const val ACTION_CANCEL_ALARM = "$ALARMS_FEATURE.cancel_alarm"
 	const val ACTION_SNOOZE_ALARM = "$ALARMS_FEATURE.snooze_alarm"
+	const val ACTION_CHANGE_ALARM_VOLUME = "$ALARMS_FEATURE.change_alarm_volume"
 	const val ACTION_SHOW_ALARMS_ACTIVITY = "$ALARMS_FEATURE.show_alarm_activity"
 	const val ACTION_FINISH_ALARM_ACTIVITY = "$ALARMS_FEATURE.finish_alarms_activity"
 
@@ -26,6 +27,7 @@ object ClockAppIntents {
 	const val EXTRAS_ALARMS_TIME_IN_MILLIS = "EXTRAS_ALARMS_TIME"
 	const val EXTRAS_ALARMS_LABEL_TEXT = "EXTRAS_LABEL_TEXT"
 	const val EXTRAS_ALARM_BACKGROUND_IMAGE_URI = "EXTRAS_BACKGROUND_IMAGE"
+	const val EXTRAS_ALARM_VOLUME_INCREASE = "EXTRAS_INCREASE_VOLUME"
 
 	fun alarmIntentData(alarmId: Int) = "app://$PACKAGE_NAME/alarms/$alarmId".toUri()
 }

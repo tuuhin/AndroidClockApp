@@ -50,8 +50,10 @@ class AlarmsWakeLockManager(private val context: Context) {
 	}
 
 	fun releaseLock() {
-		Log.d(TAG, "ALARM WAKE LOCK RELEASED")
-		_wakeLock?.release()
+		if (_wakeLock != null) {
+			Log.d(TAG, "ALARM WAKE LOCK RELEASED")
+			_wakeLock?.release()
+		}
 		_wakeLock = null
 	}
 }

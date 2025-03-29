@@ -60,7 +60,6 @@
   <string name="notification_action_snooze">Snooze</string>
   <string name="notification_text_swipe_to_dismiss">Swipe to dismiss</string>
   <string name="notification_title_alarms">Alarms</string>
-  <string name="alarms_rescheduled_notification_text">Alarms are rescheduled</string>
   <string name="action_select_all">Select all</string>
   <string name="action_turn_on_alarm">Turn on</string>
   <string name="action_turn_off_alarm">Turn off</string>
@@ -78,7 +77,8 @@
   <string name="next_alarms_at_time">Next alarm after %s</string>
   <string name="next_alarm_within_one_min">Next alarm within 1 minute</string>
   <string name="alarm_set_after_time">Alarm set after %s</string>
-  <string name="alarms_rescheduled_notification_title">Alarms are ready</string>
+  <string name="alarms_rescheduled_notification_title">Alarms are rescheduled</string>
+  <string name="alarms_rescheduled_notification_text">Alarms are granted older alarms will be rescheduled</string>
   <string name="notification_permission_not_found_dialog_title">Notification permissions</string>
   <string name="notification_permission_not_found_dialog_text">This app required notification permission to notify on the set alarm time</string>
   <string name="upcoming_notification_title">Upcoming Alarm</string>
@@ -115,4 +115,7 @@
   <string name="settings_start_of_week_title">Start of week</string>
   <string name="settings_upcoming_alarm_notification_time_title">Show upcoming notification</string>
   <string name="settings_screen_title">Settings</string>
+  <string name="notification_title_time_zone_changed">Time zone changed</string>
+  <string name="notification_title_alarms_turned_off">Alarms turned Off</string>
+  <string name="notification_title_alarms_turned_off_desc">Alarms permissions turned off, cannot set alarms</string>
 </resources>
