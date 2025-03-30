@@ -14,6 +14,7 @@ object ClockAppIntents {
 	const val ACTION_CHANGE_ALARM_VOLUME = "$ALARMS_FEATURE.change_alarm_volume"
 	const val ACTION_SHOW_ALARMS_ACTIVITY = "$ALARMS_FEATURE.show_alarm_activity"
 	const val ACTION_FINISH_ALARM_ACTIVITY = "$ALARMS_FEATURE.finish_alarms_activity"
+	const val ACTION_PLAY_ALARM_AFTER_SNOOZE = "$ALARMS_FEATURE.play_snoozed_alarm"
 
 	// actions for upcoming alarms
 	const val ACTION_UPCOMING_ALARM = "$ALARMS_FEATURE.show_upcoming_alarm"

@@ -81,7 +81,7 @@
   <string name="alarms_rescheduled_notification_text">Alarms are granted older alarms will be rescheduled</string>
   <string name="notification_permission_not_found_dialog_title">Notification permissions</string>
   <string name="notification_permission_not_found_dialog_text">This app required notification permission to notify on the set alarm time</string>
-  <string name="upcoming_notification_title">Upcoming Alarm</string>
+  <string name="upcoming_notification_title">Alarm Soon</string>
   <string name="select_alarms_background_title">Background</string>
   <string name="action_search">Search</string>
   <string name="select_image_from_gallery">Gallery</string>
@@ -89,8 +89,8 @@
   <string name="select_alarms_background_desc">Select Alarm Background</string>
   <string name="action_done">Done</string>
   <string name="action_stop">Stop</string>
-  <string name="missed_alarm_notification_title">Alarm Missed</string>
-  <string name="missed_alarm_notification_text">Missed notification at: %s</string>
+  <string name="missed_alarm_notification_title">Missed Alarm</string>
+  <string name="missed_alarm_notification_text">Alarm at %s now marked was missed</string>
   <string name="read_images_permission_title">Cannot read images</string>
   <string name="read_images_permission_desc">Images permission need to granted in order to read and use images in your phone</string>
   <string name="image_gallery_screen_title">Gallery</string>
@@ -118,4 +118,5 @@
   <string name="notification_title_time_zone_changed">Time zone changed</string>
   <string name="notification_title_alarms_turned_off">Alarms turned Off</string>
   <string name="notification_title_alarms_turned_off_desc">Alarms permissions turned off, cannot set alarms</string>
+  <string name="upcoming_notification_text">Ringing at %s</string>
 </resources>

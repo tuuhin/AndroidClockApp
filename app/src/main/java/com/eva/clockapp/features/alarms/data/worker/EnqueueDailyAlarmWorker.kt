@@ -34,8 +34,8 @@ import kotlinx.datetime.toLocalDateTime
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
 import java.time.LocalDateTime
-import java.time.temporal.ChronoUnit
 import kotlin.time.Duration.Companion.days
+import kotlin.time.Duration.Companion.minutes
 import kotlin.time.toJavaDuration
 
 private const val TAG = "ALARM_RE_ENQUEUE_WORKER"
@@ -45,8 +45,8 @@ class EnqueueDailyAlarmWorker(
 	params: WorkerParameters,
 ) : CoroutineWorker(context, params), KoinComponent {
 
-	val repository by inject<AlarmsRepository>()
-	val controller by inject<AlarmsController>()
+	private val repository by inject<AlarmsRepository>()
+	private val controller by inject<AlarmsController>()
 
 	override suspend fun doWork(): Result {
 
@@ -97,6 +97,7 @@ class EnqueueDailyAlarmWorker(
 				NotificationsConstants.CLOCK_EVENT_NOTIFICATION_CHANNEL_ID
 			)
 				.setSmallIcon(R.drawable.ic_upcoming_alarm)
+				.setOngoing(true)
 				.setContentTitle(title)
 				.build()
 
@@ -129,31 +130,25 @@ class EnqueueDailyAlarmWorker(
 
 		fun startWorker(
 			context: Context,
-			policy: ExistingPeriodicWorkPolicy = ExistingPeriodicWorkPolicy.KEEP,
+			policy: ExistingPeriodicWorkPolicy = ExistingPeriodicWorkPolicy.UPDATE,
 		) {
 
-			val currentDateTime = Clock.System.now()
-				.toLocalDateTime(TimeZone.currentSystemDefault())
+			val timeZone = TimeZone.currentSystemDefault()
+			val currentDateTime = Clock.System.now().toLocalDateTime(timeZone)
 
 			val tomorrowMidnight = currentDateTime.date.plus(DatePeriod(days = 1))
 				.atTime(LocalTime(0, 0))
-				.toInstant(TimeZone.currentSystemDefault())
+				.toInstant(timeZone)
 
-			val durationDifference =
-				tomorrowMidnight - currentDateTime.toInstant(TimeZone.currentSystemDefault())
+			val durationDifference = tomorrowMidnight - Clock.System.now()
 
 			val periodicWorker = PeriodicWorkRequestBuilder<EnqueueDailyAlarmWorker>(
 				repeatInterval = 1.days.toJavaDuration(),
+				flexTimeInterval = 1.minutes.toJavaDuration()
 			)
 				.setInitialDelay(durationDifference.toJavaDuration())
 				.build()
 
-
-			val startTime = LocalDateTime.now()
-				.plus(durationDifference.inWholeMilliseconds, ChronoUnit.MILLIS)
-				.toKotlinLocalDateTime()
-
-			Log.d(TAG, "WORK REQUEST ENQUEUED, WILL RUN AT :$startTime")
 
 			val workManager = WorkManager.getInstance(context)
 

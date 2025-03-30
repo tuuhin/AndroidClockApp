@@ -124,6 +124,7 @@ class AlarmsActivity : ComponentActivity() {
 			val intent = Intent(this, AlarmsControllerService::class.java).apply {
 				action = ClockAppIntents.ACTION_SNOOZE_ALARM
 				data = ClockAppIntents.alarmIntentData(alarmId)
+				putExtra(ClockAppIntents.EXTRA_ALARMS_ALARMS_ID, alarmId)
 			}
 			applicationContext.startService(intent)
 		} catch (e: Exception) {

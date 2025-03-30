@@ -1,7 +1,6 @@
 package com.eva.clockapp.features.alarms.data.receivers
 
 import android.app.AlarmManager
-import android.app.NotificationManager
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
@@ -9,7 +8,6 @@ import android.os.Build
 import android.util.Log
 import androidx.core.content.getSystemService
 import com.eva.clockapp.R
-import com.eva.clockapp.core.constants.NotificationsConstants
 import com.eva.clockapp.features.alarms.data.services.AlarmsNotificationProvider
 import com.eva.clockapp.features.alarms.domain.controllers.AlarmsController
 import com.eva.clockapp.features.alarms.domain.models.AlarmsModel
@@ -64,7 +62,7 @@ class RescheduleAlarmReceiver : BroadcastReceiver(), KoinComponent {
 				onSuccess = { alarms ->
 					val enabledAlarms = alarms.filter { it.isAlarmEnabled }
 					createAlarms(
-						context, enabledAlarms,
+						alarms = enabledAlarms,
 						type = rescheduleType,
 					)
 				},
@@ -73,11 +71,9 @@ class RescheduleAlarmReceiver : BroadcastReceiver(), KoinComponent {
 	}
 
 	private suspend fun createAlarms(
-		context: Context,
 		alarms: List<AlarmsModel>,
 		type: RescheduleType = RescheduleType.RESCHEDULE_ALARMS_DUE_TO_BOOT,
 	) {
-		val manager = context.getSystemService<NotificationManager>()
 
 		supervisorScope {
 
@@ -90,26 +86,19 @@ class RescheduleAlarmReceiver : BroadcastReceiver(), KoinComponent {
 				Log.d(TAG, "ALARMS READY")
 
 				// show the notification
-				val notification = when (type) {
+				when (type) {
 					RescheduleType.RESCHEDULE_ALARMS_TIME_ZONE ->
-						notificationUtils.createRescheduleNotification(
-							titleRes = R.string.notification_title_time_zone_changed
-						)
+						notificationUtils.showRescheduleNotification(titleRes = R.string.notification_title_time_zone_changed)
 
-					RescheduleType.CANCEL_ALARMS ->
-						notificationUtils.createRescheduleNotification(
-							titleRes = R.string.notification_title_alarms_turned_off,
-							textRes = R.string.notification_title_alarms_turned_off_desc
-						)
+					RescheduleType.CANCEL_ALARMS -> notificationUtils.showRescheduleNotification(
+						titleRes = R.string.notification_title_alarms_turned_off,
+						textRes = R.string.notification_title_alarms_turned_off_desc
+					)
 
-					RescheduleType.RESCHEDULE_ALARMS_NORMAL -> notificationUtils.createRescheduleNotification()
-					RescheduleType.RESCHEDULE_ALARMS_DUE_TO_BOOT -> return@supervisorScope
+					RescheduleType.RESCHEDULE_ALARMS_NORMAL -> notificationUtils.showRescheduleNotification()
+					RescheduleType.RESCHEDULE_ALARMS_DUE_TO_BOOT -> {}
 				}
 
-				manager?.notify(
-					NotificationsConstants.ALARMS_RESCHEDULE_NOTIFICATION_ID,
-					notification
-				)
 			} catch (e: Exception) {
 				e.printStackTrace()
 			}

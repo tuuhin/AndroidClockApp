@@ -7,4 +7,5 @@ enum class IntentRequestCodes(val code: Int) {
 	SHOW_ALARMS_ACTIVITY(103),
 	DISMISS_ALARM(104),
 	UPCOMING_ALARM(105),
+	PLAY_SNOOZE_ALARM(106),
 }

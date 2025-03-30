@@ -1,10 +1,12 @@
 package com.eva.clockapp.features.alarms.data.services
 
 import android.app.Notification
+import android.app.NotificationManager
 import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
 import androidx.annotation.StringRes
+import androidx.core.content.getSystemService
 import androidx.core.os.bundleOf
 import com.eva.clockapp.R
 import com.eva.clockapp.core.constants.ClockAppIntents
@@ -29,6 +31,8 @@ import kotlinx.datetime.toInstant
 import kotlinx.datetime.toKotlinLocalDateTime
 
 class AlarmsNotificationProvider(private val context: Context) {
+
+	private val _notificationManager by lazy { context.getSystemService<NotificationManager>() }
 
 	private fun createFullScreenIntent(alarm: AlarmsModel): PendingIntent {
 
@@ -66,7 +70,7 @@ class AlarmsNotificationProvider(private val context: Context) {
 	}
 
 
-	fun createNotification(context: Context, alarm: AlarmsModel): Notification {
+	fun createAlarmNotification(alarm: AlarmsModel): Notification {
 
 		val title = buildString {
 			val time = alarm.time.format(LocalTime.Formats.HH_MM_A)
@@ -121,6 +125,7 @@ class AlarmsNotificationProvider(private val context: Context) {
 			.setOnlyAlertOnce(true)
 			.setColorized(true)
 			.setColor(context.getColor(R.color.primary_container))
+			.setStyle(Notification.DecoratedCustomViewStyle())
 			.setContentTitle(title)
 			.setContentText(alarm.label)
 			.setSubText(context.getString(R.string.notification_title_alarms))
@@ -131,23 +136,20 @@ class AlarmsNotificationProvider(private val context: Context) {
 			.build()
 	}
 
-	fun createRescheduleNotification(
-		@StringRes titleRes: Int = R.string.alarms_rescheduled_notification_title,
-		@StringRes textRes: Int = R.string.alarms_rescheduled_notification_text,
-	): Notification {
+	private fun createRescheduleNotification(title: String, text: String): Notification {
 		return Notification
 			.Builder(context, NotificationsConstants.CLOCK_EVENT_NOTIFICATION_CHANNEL_ID)
 			.setSmallIcon(R.drawable.ic_upcoming_alarm)
 			.setVisibility(Notification.VISIBILITY_PUBLIC)
 			.setCategory(Notification.CATEGORY_EVENT)
-			.setContentTitle(context.getString(titleRes))
-			.setContentText(context.getString(textRes))
+			.setContentTitle(title)
+			.setContentText(text)
 			.setOnlyAlertOnce(true)
 			.setAutoCancel(true)
 			.build()
 	}
 
-	fun createMissedAlarmNotification(alarm: AlarmsModel): Notification {
+	private fun createMissedAlarmNotification(alarm: AlarmsModel): Notification {
 
 		val title = context.getString(R.string.missed_alarm_notification_title)
 		val dateTimeString = alarm.time.format(LocalTime.Formats.HH_MM)
@@ -157,7 +159,7 @@ class AlarmsNotificationProvider(private val context: Context) {
 			.Builder(context, NotificationsConstants.CLOCK_EVENT_NOTIFICATION_CHANNEL_ID)
 			.setSmallIcon(R.drawable.ic_upcoming_alarm)
 			.setVisibility(Notification.VISIBILITY_PUBLIC)
-			.setCategory(Notification.CATEGORY_EVENT)
+			.setCategory(Notification.CATEGORY_ALARM)
 			.setContentTitle(title)
 			.setContentText(text)
 			.setShowWhen(false)
@@ -165,7 +167,7 @@ class AlarmsNotificationProvider(private val context: Context) {
 			.build()
 	}
 
-	fun createUpcomingNotification(alarm: AlarmsModel): Notification {
+	private fun createUpcomingNotification(alarm: AlarmsModel): Notification {
 
 		val today = java.time.LocalDateTime.now().toKotlinLocalDateTime()
 		val dateTime = today.date.atTime(alarm.time)
@@ -188,7 +190,8 @@ class AlarmsNotificationProvider(private val context: Context) {
 		)
 
 		val title = context.getString(R.string.upcoming_notification_title)
-		val text = dateTime.format(LocalDateTime.Formats.WEEK_DAY_AM_TIME)
+		val time = dateTime.format(LocalDateTime.Formats.WEEK_DAY_AM_TIME)
+		val text = context.getString(R.string.upcoming_notification_text, time)
 
 		return Notification
 			.Builder(context, NotificationsConstants.CLOCK_EVENT_NOTIFICATION_CHANNEL_ID)
@@ -201,5 +204,45 @@ class AlarmsNotificationProvider(private val context: Context) {
 			.setAutoCancel(true)
 			.setActions(action)
 			.build()
+	}
+
+	fun cancelAlarmNotificationIfActive(alarm: AlarmsModel) {
+		val notificationIfPresent = _notificationManager?.activeNotifications
+			?.find { it.id == NotificationsConstants.notificationIdFromModel(alarm) }
+			?: return
+		// cancel the notification if shown
+		_notificationManager?.cancel(notificationIfPresent.id)
+	}
+
+	fun showAlarmMissedNotification(alarm: AlarmsModel) {
+		val notificationId = NotificationsConstants.notificationIdFromModel(alarm)
+		val missedNotification = createMissedAlarmNotification(alarm)
+		_notificationManager?.notify(notificationId, missedNotification)
+	}
+
+	fun showUpcomingAlarmNotification(alarm: AlarmsModel) {
+		val notification = createUpcomingNotification(alarm)
+		val notificationId = NotificationsConstants.notificationIdFromModel(alarm)
+		// show notification
+		_notificationManager?.notify(notificationId, notification)
+	}
+
+	fun cancelUpcomingNotification(alarm: AlarmsModel) {
+		val notificationId = NotificationsConstants.notificationIdFromModel(alarm)
+		_notificationManager?.cancel(notificationId)
+	}
+
+	fun showRescheduleNotification(
+		@StringRes titleRes: Int = R.string.alarms_rescheduled_notification_title,
+		@StringRes textRes: Int = R.string.alarms_rescheduled_notification_text,
+	) {
+		val notification = createRescheduleNotification(
+			title = context.getString(titleRes),
+			text = context.getString(textRes)
+		)
+		_notificationManager?.notify(
+			NotificationsConstants.ALARMS_RESCHEDULE_NOTIFICATION_ID,
+			notification
+		)
 	}
 }

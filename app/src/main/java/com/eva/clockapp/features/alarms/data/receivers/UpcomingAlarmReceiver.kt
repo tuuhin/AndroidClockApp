@@ -1,13 +1,10 @@
 package com.eva.clockapp.features.alarms.data.receivers
 
-import android.app.NotificationManager
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.util.Log
-import androidx.core.content.getSystemService
 import com.eva.clockapp.core.constants.ClockAppIntents
-import com.eva.clockapp.core.constants.NotificationsConstants
 import com.eva.clockapp.features.alarms.data.services.AlarmsNotificationProvider
 import com.eva.clockapp.features.alarms.domain.controllers.AlarmsController
 import com.eva.clockapp.features.alarms.domain.repository.AlarmsRepository
@@ -32,24 +29,18 @@ class UpcomingAlarmReceiver : BroadcastReceiver(), KoinComponent {
 		}
 
 		when (intent.action) {
-			ClockAppIntents.ACTION_UPCOMING_ALARM -> showNotification(context, alarmId)
-			ClockAppIntents.ACTION_DISMISS_ALARM -> cancelAlarm(context, alarmId)
+			ClockAppIntents.ACTION_UPCOMING_ALARM -> showNotification(alarmId)
+			ClockAppIntents.ACTION_DISMISS_ALARM -> cancelAlarm(alarmId)
 		}
 	}
 
 
-	private fun showNotification(context: Context, alarmId: Int) {
-
-		val notificationManager = context.getSystemService<NotificationManager>()
-
-		goAsync(Dispatchers.Main) {
+	private fun showNotification(alarmId: Int) {
+		goAsync(Dispatchers.IO) {
 			val query = repository.getAlarmFromId(alarmId)
 			query.fold(
 				onSuccess = { alarm ->
-					val notification = notificationUtils.createUpcomingNotification(alarm)
-					val notificationId = NotificationsConstants.notificationIdFromModel(alarm)
-					// show notification
-					notificationManager?.notify(notificationId, notification)
+					notificationUtils.showUpcomingAlarmNotification(alarm)
 					Log.d(TAG, "UPCOMING ALARM NOTIFICATION SHOWN")
 				},
 				onError = { err, _ -> err.printStackTrace() }
@@ -57,19 +48,15 @@ class UpcomingAlarmReceiver : BroadcastReceiver(), KoinComponent {
 		}
 	}
 
-	private fun cancelAlarm(context: Context, alarmId: Int) {
-
-		val notificationManager = context.getSystemService<NotificationManager>()
-
-		goAsync(Dispatchers.Default) {
+	private fun cancelAlarm(alarmId: Int) {
+		goAsync(Dispatchers.IO) {
 			val query = repository.getAlarmFromId(alarmId)
 			query.fold(
 				onSuccess = { alarm ->
 					Log.d(TAG, "ALARM CANCEL ACTION ")
 					controller.cancelAlarm(alarm)
 					// then cancel the notification
-					val notificationId = NotificationsConstants.notificationIdFromModel(alarm)
-					notificationManager?.cancel(notificationId)
+					notificationUtils.cancelUpcomingNotification(alarm)
 				},
 				onError = { err, _ -> err.printStackTrace() }
 			)
