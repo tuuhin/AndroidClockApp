@@ -3,8 +3,10 @@ package com.eva.clockapp
 import android.app.Application
 import android.app.NotificationChannel
 import android.app.NotificationManager
+import android.util.Log
 import androidx.core.app.NotificationCompat
 import androidx.core.content.getSystemService
+import androidx.work.Configuration
 import coil3.ImageLoader
 import coil3.PlatformContext
 import coil3.SingletonImageLoader
@@ -24,7 +26,7 @@ import org.koin.android.ext.koin.androidContext
 import org.koin.android.ext.koin.androidLogger
 import org.koin.core.context.startKoin
 
-class ClockApp : Application(), SingletonImageLoader.Factory {
+class ClockApp : Application(), SingletonImageLoader.Factory, Configuration.Provider {
 
 	private val notificationManager by lazy { getSystemService<NotificationManager>() }
 
@@ -98,4 +100,12 @@ class ClockApp : Application(), SingletonImageLoader.Factory {
 			.logger(debugLogger)
 			.build()
 	}
+
+	override val workManagerConfiguration: Configuration
+		get() {
+			val level = if (BuildConfig.DEBUG) Log.DEBUG else Log.WARN
+			return Configuration.Builder()
+				.setMinimumLoggingLevel(level)
+				.build()
+		}
 }

@@ -50,34 +50,34 @@ val TimeFormatOptions.toProto: TimeFormatProto
 
 val UpcomingNotificationTimeProto.toDomainModel: UpcomingAlarmTimeOption
 	get() = when (this) {
-		UpcomingNotificationTimeProto.DURATION_30_MINUTES ->  UpcomingAlarmTimeOption.DURATION_30_MINUTES
-		UpcomingNotificationTimeProto.DURATION_10_MINUTES ->  UpcomingAlarmTimeOption.DURATION_10_MINUTES
-		UpcomingNotificationTimeProto.DURATION_NONE ->  UpcomingAlarmTimeOption.DURATION_NONE
-		UpcomingNotificationTimeProto.DURATION_1_HOUR ->  UpcomingAlarmTimeOption.DURATION_1_HOUR
-		UpcomingNotificationTimeProto.UNRECOGNIZED ->  UpcomingAlarmTimeOption.DURATION_30_MINUTES
+		UpcomingNotificationTimeProto.DURATION_30_MINUTES -> UpcomingAlarmTimeOption.DURATION_30_MINUTES
+		UpcomingNotificationTimeProto.DURATION_10_MINUTES -> UpcomingAlarmTimeOption.DURATION_10_MINUTES
+		UpcomingNotificationTimeProto.DURATION_NONE -> UpcomingAlarmTimeOption.DURATION_NONE
+		UpcomingNotificationTimeProto.DURATION_1_HOUR -> UpcomingAlarmTimeOption.DURATION_1_HOUR
+		UpcomingNotificationTimeProto.UNRECOGNIZED -> UpcomingAlarmTimeOption.DURATION_30_MINUTES
 	}
 
-val  UpcomingAlarmTimeOption.toProto: UpcomingNotificationTimeProto
+val UpcomingAlarmTimeOption.toProto: UpcomingNotificationTimeProto
 	get() = when (this) {
-		 UpcomingAlarmTimeOption.DURATION_30_MINUTES -> UpcomingNotificationTimeProto.DURATION_30_MINUTES
-		 UpcomingAlarmTimeOption.DURATION_10_MINUTES -> UpcomingNotificationTimeProto.DURATION_10_MINUTES
-		 UpcomingAlarmTimeOption.DURATION_NONE -> UpcomingNotificationTimeProto.DURATION_NONE
-		 UpcomingAlarmTimeOption.DURATION_1_HOUR -> UpcomingNotificationTimeProto.DURATION_1_HOUR
+		UpcomingAlarmTimeOption.DURATION_30_MINUTES -> UpcomingNotificationTimeProto.DURATION_30_MINUTES
+		UpcomingAlarmTimeOption.DURATION_10_MINUTES -> UpcomingNotificationTimeProto.DURATION_10_MINUTES
+		UpcomingAlarmTimeOption.DURATION_NONE -> UpcomingNotificationTimeProto.DURATION_NONE
+		UpcomingAlarmTimeOption.DURATION_1_HOUR -> UpcomingNotificationTimeProto.DURATION_1_HOUR
 	}
 
 val VolumeButtonControlProto.toDomainModel: AlarmVolumeControlOption
 	get() = when (this) {
-		VolumeButtonControlProto.STOP_ALARM ->  AlarmVolumeControlOption.STOP_ALARM
-		VolumeButtonControlProto.SNOOZE_ALARM ->  AlarmVolumeControlOption.SNOOZE_ALARM
-		VolumeButtonControlProto.CONTROL_ALARM_VOLUME ->  AlarmVolumeControlOption.CONTROL_ALARM_VOLUME
-		VolumeButtonControlProto.NONE ->  AlarmVolumeControlOption.NONE
-		VolumeButtonControlProto.UNRECOGNIZED ->  AlarmVolumeControlOption.STOP_ALARM
+		VolumeButtonControlProto.STOP_ALARM -> AlarmVolumeControlOption.STOP_ALARM
+		VolumeButtonControlProto.SNOOZE_ALARM -> AlarmVolumeControlOption.SNOOZE_ALARM
+		VolumeButtonControlProto.CONTROL_ALARM_VOLUME -> AlarmVolumeControlOption.CONTROL_ALARM_VOLUME
+		VolumeButtonControlProto.NONE -> AlarmVolumeControlOption.NONE
+		VolumeButtonControlProto.UNRECOGNIZED -> AlarmVolumeControlOption.STOP_ALARM
 	}
 
-val  AlarmVolumeControlOption.toProto: VolumeButtonControlProto
+val AlarmVolumeControlOption.toProto: VolumeButtonControlProto
 	get() = when (this) {
-		 AlarmVolumeControlOption.STOP_ALARM -> VolumeButtonControlProto.STOP_ALARM
-		 AlarmVolumeControlOption.SNOOZE_ALARM -> VolumeButtonControlProto.SNOOZE_ALARM
-		 AlarmVolumeControlOption.CONTROL_ALARM_VOLUME -> VolumeButtonControlProto.CONTROL_ALARM_VOLUME
-		 AlarmVolumeControlOption.NONE -> VolumeButtonControlProto.NONE
+		AlarmVolumeControlOption.STOP_ALARM -> VolumeButtonControlProto.STOP_ALARM
+		AlarmVolumeControlOption.SNOOZE_ALARM -> VolumeButtonControlProto.SNOOZE_ALARM
+		AlarmVolumeControlOption.CONTROL_ALARM_VOLUME -> VolumeButtonControlProto.CONTROL_ALARM_VOLUME
+		AlarmVolumeControlOption.NONE -> VolumeButtonControlProto.NONE
 	}

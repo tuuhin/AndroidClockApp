@@ -20,21 +20,23 @@ import com.eva.clockapp.features.alarms.domain.repository.AlarmsRepository
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
+import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.supervisorScope
 import kotlinx.coroutines.withContext
 import kotlinx.datetime.Clock
 import kotlinx.datetime.DatePeriod
+import kotlinx.datetime.LocalDateTime
 import kotlinx.datetime.LocalTime
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.atTime
 import kotlinx.datetime.plus
 import kotlinx.datetime.toInstant
-import kotlinx.datetime.toKotlinLocalDateTime
 import kotlinx.datetime.toLocalDateTime
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
-import java.time.LocalDateTime
-import kotlin.time.Duration.Companion.days
+import java.util.UUID
+import kotlin.time.Duration.Companion.hours
+import kotlin.time.Duration.Companion.milliseconds
 import kotlin.time.Duration.Companion.minutes
 import kotlin.time.toJavaDuration
 
@@ -50,8 +52,7 @@ class EnqueueDailyAlarmWorker(
 
 	override suspend fun doWork(): Result {
 
-		val datetime = LocalDateTime.now()
-		Log.i(TAG, "ENQUEUE ALARMS AGAIN AT :${datetime.toKotlinLocalDateTime()}")
+		Log.i(TAG, "ENQUEUE ALARMS AGAIN AT :${currentDateTime}")
 
 		// show foreground info
 		setForegroundAsync(rescheduleAlarmsForegroundInfo)
@@ -68,20 +69,21 @@ class EnqueueDailyAlarmWorker(
 
 						// work data
 						val workData = workDataOf(
-							AlarmWorkParams.WORK_RESULT_SUCCESS to
-									AlarmWorkParams.WORK_RESULT_SUCCESS_MESSAGE
+							AlarmWorkParams.WORK_RESULT_SUCCESS to AlarmWorkParams.WORK_RESULT_SUCCESS_MESSAGE,
 						)
 						return@withContext Result.success(workData)
 					},
 				)
 				val workData = workDataOf(
-					AlarmWorkParams.WORK_RESULT_FAILED to
-							AlarmWorkParams.WORK_RESULT_FAILED_INCOMPLETE
+					AlarmWorkParams.WORK_RESULT_FAILED to AlarmWorkParams.WORK_RESULT_FAILED_INCOMPLETE,
 				)
 				Result.success(workData)
 			} catch (e: Exception) {
 				val message = e.message ?: "Unknown error occurred"
-				Result.failure(workDataOf(AlarmWorkParams.WORK_RESULT_FAILED to message))
+				val workData = workDataOf(
+					AlarmWorkParams.WORK_RESULT_FAILED to message,
+				)
+				Result.failure(workData)
 			}
 		}
 	}
@@ -126,34 +128,56 @@ class EnqueueDailyAlarmWorker(
 	companion object {
 
 		// DO-NOT CHANGE THE NAME
-		private const val UNIQUE_NAME = "ALARM_RE_ENQUEUE_WORKER"
+		private const val UNIQUE_NAME = "SET_DAILY_ALARMS_WORKER"
+		private val workerId = UUID.fromString("62252616-d55f-4e1a-96a5-076e598b1082")
+
+		val timeZone: TimeZone
+			get() = TimeZone.currentSystemDefault()
+
+		val currentDateTime: LocalDateTime
+			get() = Clock.System.now().toLocalDateTime(timeZone)
 
 		fun startWorker(
 			context: Context,
-			policy: ExistingPeriodicWorkPolicy = ExistingPeriodicWorkPolicy.UPDATE,
+			policy: ExistingPeriodicWorkPolicy = ExistingPeriodicWorkPolicy.KEEP,
 		) {
-
-			val timeZone = TimeZone.currentSystemDefault()
-			val currentDateTime = Clock.System.now().toLocalDateTime(timeZone)
 
 			val tomorrowMidnight = currentDateTime.date.plus(DatePeriod(days = 1))
 				.atTime(LocalTime(0, 0))
 				.toInstant(timeZone)
 
-			val durationDifference = tomorrowMidnight - Clock.System.now()
+			val initialDelay = tomorrowMidnight - Clock.System.now()
 
 			val periodicWorker = PeriodicWorkRequestBuilder<EnqueueDailyAlarmWorker>(
-				repeatInterval = 1.days.toJavaDuration(),
-				flexTimeInterval = 1.minutes.toJavaDuration()
+				repeatInterval = 12.hours.toJavaDuration(),
+				flexTimeInterval = 30.minutes.toJavaDuration()
 			)
-				.setInitialDelay(durationDifference.toJavaDuration())
+				.setInitialDelay(duration = initialDelay.toJavaDuration())
+				.addTag(AlarmWorkParams.TAG)
+				.setId(workerId)
 				.build()
-
 
 			val workManager = WorkManager.getInstance(context)
 
 			workManager.enqueueUniquePeriodicWork(UNIQUE_NAME, policy, periodicWorker)
 		}
+
+		suspend fun checkWorkerState(context: Context) {
+			val workManager = WorkManager.getInstance(context)
+			workManager.getWorkInfoByIdFlow(workerId)
+				.filterNotNull()
+				.collect { info ->
+
+					val repeatInterval = info.periodicityInfo?.repeatIntervalMillis?.milliseconds
+					val flexInterval = info.periodicityInfo?.flexIntervalMillis?.milliseconds
+					val initDelay = info.initialDelayMillis.milliseconds
+
+					Log.i(TAG, "STATE:${info.state}")
+					Log.i(TAG, "INITIAL DELAY :$initDelay")
+					Log.i(TAG, "PERIODIC $repeatInterval FLEX: $flexInterval")
+				}
+		}
+
 
 		fun cancelWorker(context: Context) {
 			val workManager = WorkManager.getInstance(context)
