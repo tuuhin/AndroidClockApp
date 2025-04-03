@@ -1,4 +1,4 @@
-package com.eva.clockapp.core.navigation.navgraphs
+package com.eva.clockapp.core.navigation
 
 import kotlinx.serialization.Serializable
 

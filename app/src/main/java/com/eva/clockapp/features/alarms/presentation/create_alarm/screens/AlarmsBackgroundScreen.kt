@@ -38,6 +38,7 @@ private fun AlarmsBackgroundScreen(
 	selectedBackground: String? = null,
 	alarmTime: LocalTime = LocalTime(0, 0),
 	navigation: @Composable () -> Unit = {},
+	onNavigateToPreviewScreen: () -> Unit = {},
 	onOpenGallery: () -> Unit = {},
 ) {
 
@@ -60,8 +61,9 @@ private fun AlarmsBackgroundScreen(
 			isLoaded = isItemsLoaded,
 			selectedUri = selectedBackground,
 			options = wallpaperOptions,
-			alarmTime = alarmTime,
+			startTime = alarmTime,
 			onSelectUri = onSelectUri,
+			onPreviewAlarm = onNavigateToPreviewScreen,
 			modifier = Modifier
 				.padding(scPadding)
 				.padding(dimensionResource(R.dimen.sc_padding))
@@ -78,6 +80,7 @@ fun AlarmsBackgroundScreen(
 	modifier: Modifier = Modifier,
 	navigation: @Composable () -> Unit = {},
 	onSelectFromDevice: () -> Unit = {},
+	onNavigateToPreviewScreen: () -> Unit = {},
 ) = AlarmsBackgroundScreen(
 	isItemsLoaded = wallpapersState.isLoaded,
 	wallpaperOptions = wallpapersState.options,
@@ -87,6 +90,7 @@ fun AlarmsBackgroundScreen(
 	modifier = modifier,
 	navigation = navigation,
 	onOpenGallery = onSelectFromDevice,
+	onNavigateToPreviewScreen = onNavigateToPreviewScreen
 )
 
 

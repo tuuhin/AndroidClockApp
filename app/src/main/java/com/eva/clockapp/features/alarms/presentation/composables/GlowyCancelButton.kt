@@ -51,6 +51,7 @@ fun GlowyCancelButton(
 	shape: Shape = CircleShape,
 	interactionSource: MutableInteractionSource = remember { MutableInteractionSource() },
 	isAnimated: Boolean = false,
+	enabled: Boolean = true,
 	size: DpSize = DpSize(56.dp, 56.dp),
 	content: @Composable () -> Unit,
 ) {
@@ -107,7 +108,7 @@ fun GlowyCancelButton(
 				.clip(shape = shape)
 				.background(color = containerColor)
 				.indication(interactionSource = interactionSource, indication = ripple())
-				.clickable(role = Role.Button, onClick = onClick),
+				.clickable(role = Role.Button, enabled = enabled, onClick = onClick),
 			contentAlignment = Alignment.Center
 		) {
 			CompositionLocalProvider(LocalContentColor provides contentColor) {

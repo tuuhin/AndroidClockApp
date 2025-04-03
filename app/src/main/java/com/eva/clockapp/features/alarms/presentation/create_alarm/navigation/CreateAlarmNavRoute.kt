@@ -1,4 +1,4 @@
-package com.eva.clockapp.core.navigation.navgraphs
+package com.eva.clockapp.features.alarms.presentation.create_alarm.navigation
 
 import kotlinx.serialization.Serializable
 
@@ -21,4 +21,7 @@ interface CreateAlarmNavRoute {
 
 	@Serializable
 	data object GalleryRoute : CreateAlarmNavRoute
+
+	@Serializable
+	data object AlarmsPreviewRoute : CreateAlarmNavRoute
 }

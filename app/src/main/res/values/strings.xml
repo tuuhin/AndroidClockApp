@@ -108,9 +108,9 @@
   <string name="settings_volume_control_volume">Change Volume</string>
   <string name="settings_volume_control_snooze_alarm">Snooze</string>
   <string name="settings_volume_controls_title">Volume control</string>
-  <string name="settings_duration_option_30_minutes">30 minutes</string>
+  <string name="settings_duration_option_30_minutes">30 min</string>
   <string name="settings_duration_option_1_hr">1 hr</string>
-  <string name="settings_duration_option_10_minutes">10 minutes</string>
+  <string name="settings_duration_option_10_minutes">10 min</string>
   <string name="settings_time_formats_title">Time format</string>
   <string name="settings_start_of_week_title">Start of week</string>
   <string name="settings_upcoming_alarm_notification_time_title">Show upcoming notification</string>
@@ -118,5 +118,9 @@
   <string name="notification_title_time_zone_changed">Time zone changed</string>
   <string name="notification_title_alarms_turned_off">Alarms turned Off</string>
   <string name="notification_title_alarms_turned_off_desc">Alarms permissions turned off, cannot set alarms</string>
+  <string name="settings_subtitle_alarms">Alarms</string>
   <string name="upcoming_notification_text">Ringing at %s</string>
+  <string name="update_alarm_canceled_dialog_title">Alarm not updated</string>
+  <string name="update_alarm_canceled_dialog_text">You made some changes to this alarm, update the alarm for changes</string>
+  <string name="preview_string">Preview</string>
 </resources>

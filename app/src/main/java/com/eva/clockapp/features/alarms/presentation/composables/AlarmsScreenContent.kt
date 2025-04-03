@@ -1,8 +1,6 @@
 package com.eva.clockapp.features.alarms.presentation.composables
 
-import androidx.compose.animation.Crossfade
-import androidx.compose.animation.core.EaseInOut
-import androidx.compose.animation.core.tween
+import androidx.compose.animation.AnimatedContent
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -65,13 +63,14 @@ fun AlarmsScreenContent(
 		}
 	}
 
-	Crossfade(
+	AnimatedContent(
 		targetState = contentState,
-		animationSpec = tween(durationMillis = 200, easing = EaseInOut)
+		modifier = modifier,
+		contentAlignment = Alignment.Center,
 	) { state ->
 		when (state) {
 			ContentState.Loading -> BasicLoading()
-			ContentState.Empty -> EmptyAlarmsList(modifier = modifier)
+			ContentState.Empty -> EmptyAlarmsList()
 			is ContentState.Content -> AlarmsListContent(
 				alarms = alarms,
 				duration = nextAlarmSchedule,
@@ -81,7 +80,7 @@ fun AlarmsScreenContent(
 				hourFormat = hourFormat,
 				startOfWeek = startOfWeek,
 				contentPadding = contentPadding,
-				modifier = modifier
+				modifier = Modifier.fillMaxSize()
 			)
 		}
 	}
@@ -90,7 +89,7 @@ fun AlarmsScreenContent(
 @Composable
 private fun BasicLoading(modifier: Modifier = Modifier) {
 	Box(
-		modifier = modifier,
+		modifier = modifier.fillMaxSize(),
 		contentAlignment = Alignment.Center
 	) {
 		CircularProgressIndicator()
@@ -100,7 +99,7 @@ private fun BasicLoading(modifier: Modifier = Modifier) {
 @Composable
 private fun EmptyAlarmsList(modifier: Modifier = Modifier) {
 	Column(
-		modifier = modifier,
+		modifier = modifier.fillMaxSize(),
 		horizontalAlignment = Alignment.CenterHorizontally,
 		verticalArrangement = Arrangement.Center,
 	) {

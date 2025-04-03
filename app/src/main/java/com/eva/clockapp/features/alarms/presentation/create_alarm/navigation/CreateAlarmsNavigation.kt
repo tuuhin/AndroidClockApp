@@ -1,4 +1,4 @@
-package com.eva.clockapp.core.navigation.routes
+package com.eva.clockapp.features.alarms.presentation.create_alarm.navigation
 
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
@@ -16,9 +16,8 @@ import androidx.navigation.NavController
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.compose.navigation
 import com.eva.clockapp.R
+import com.eva.clockapp.core.navigation.NavRoutes
 import com.eva.clockapp.core.navigation.animatedComposable
-import com.eva.clockapp.core.navigation.navgraphs.CreateAlarmNavRoute
-import com.eva.clockapp.core.navigation.navgraphs.NavRoutes
 import com.eva.clockapp.core.presentation.composables.UIEventsSideEffect
 import com.eva.clockapp.core.presentation.composables.sharedViewModel
 import com.eva.clockapp.features.alarms.presentation.create_alarm.AlarmVibrationViewModel
@@ -30,6 +29,7 @@ import com.eva.clockapp.features.alarms.presentation.create_alarm.screens.AlarmS
 import com.eva.clockapp.features.alarms.presentation.create_alarm.screens.AlarmVibrationScreen
 import com.eva.clockapp.features.alarms.presentation.create_alarm.screens.AlarmsBackgroundScreen
 import com.eva.clockapp.features.alarms.presentation.create_alarm.screens.CreateAlarmScreen
+import com.eva.clockapp.features.alarms.presentation.create_alarm.screens.PlayAlarmsSneakPeekScreen
 import com.eva.clockapp.features.alarms.presentation.create_alarm.state.CreateAlarmNavEvent
 import com.eva.clockapp.features.alarms.presentation.gallery.GalleryImageScreen
 import com.eva.clockapp.features.alarms.presentation.gallery.GalleryScreenViewModel
@@ -183,7 +183,12 @@ fun NavGraphBuilder.creteAlarmsNavGraph(controller: NavController) =
 				wallpapersState = screenState,
 				state = state,
 				onEvent = sharedViewmodel::onEvent,
-				onSelectFromDevice = dropUnlessResumed { controller.navigate(CreateAlarmNavRoute.GalleryRoute) },
+				onSelectFromDevice = dropUnlessResumed {
+					controller.navigate(CreateAlarmNavRoute.GalleryRoute)
+				},
+				onNavigateToPreviewScreen = dropUnlessResumed {
+					controller.navigate(CreateAlarmNavRoute.AlarmsPreviewRoute)
+				},
 				navigation = {
 					IconButton(onClick = dropUnlessResumed(block = controller::popBackStack)) {
 						Icon(
@@ -221,5 +226,14 @@ fun NavGraphBuilder.creteAlarmsNavGraph(controller: NavController) =
 					}
 				},
 			)
+		}
+
+		animatedComposable<CreateAlarmNavRoute.AlarmsPreviewRoute> { backStack ->
+
+			val sharedViewmodel = backStack.sharedViewModel<CreateAlarmViewModel>(controller)
+
+			val state by sharedViewmodel.createAlarmState.collectAsStateWithLifecycle()
+
+			PlayAlarmsSneakPeekScreen(state = state)
 		}
 	}

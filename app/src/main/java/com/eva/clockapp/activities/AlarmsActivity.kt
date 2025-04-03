@@ -1,4 +1,4 @@
-package com.eva.clockapp.features.alarms.presentation.activity
+package com.eva.clockapp.activities
 
 import android.app.KeyguardManager
 import android.content.BroadcastReceiver
@@ -21,7 +21,8 @@ import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.WindowInsetsControllerCompat
 import com.eva.clockapp.core.constants.ClockAppIntents
 import com.eva.clockapp.features.alarms.data.services.AlarmsControllerService
-import com.eva.clockapp.features.alarms.presentation.alarms.PlayAlarmsScreen
+import com.eva.clockapp.features.alarms.presentation.play_alarm.PlayAlarmsScreen
+import com.eva.clockapp.features.settings.data.utils.is24HrFormat
 import com.eva.clockapp.features.settings.domain.models.AlarmVolumeControlOption
 import com.eva.clockapp.features.settings.domain.repository.AlarmSettingsRepository
 import com.eva.clockapp.ui.theme.ClockAppTheme
@@ -64,8 +65,8 @@ class AlarmsActivity : ComponentActivity() {
 		val labelText = intent.getStringExtra(ClockAppIntents.EXTRAS_ALARMS_LABEL_TEXT)
 		val imageUri = intent.getStringExtra(ClockAppIntents.EXTRAS_ALARM_BACKGROUND_IMAGE_URI)
 
-		val dateTime = Instant.fromEpochMilliseconds(timeInMillis)
-			.toLocalDateTime(TimeZone.currentSystemDefault())
+		val dateTime = Instant.Companion.fromEpochMilliseconds(timeInMillis)
+			.toLocalDateTime(TimeZone.Companion.currentSystemDefault())
 
 		setContent {
 			ClockAppTheme {
@@ -73,9 +74,10 @@ class AlarmsActivity : ComponentActivity() {
 					dateTime = dateTime,
 					labelText = labelText,
 					backgroundImage = imageUri,
+					is24HrFormat = settingsRepo.settingsValue.timeFormat.is24HrFormat,
 					onStopAlarm = { stopAlarm(alarmId) },
 					onSnoozeAlarm = { snoozeAlarm(alarmId) },
-					modifier = Modifier.fillMaxSize()
+					modifier = Modifier.Companion.fillMaxSize()
 				)
 			}
 		}

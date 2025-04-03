@@ -2,12 +2,14 @@ package com.eva.clockapp.features.settings.presentation
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.MediumTopAppBar
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
@@ -56,38 +58,51 @@ fun AlarmSettingsScreen(
 			contentPadding = scPadding,
 			modifier = Modifier
 				.fillMaxSize()
-				.padding(horizontal = dimensionResource(R.dimen.sc_padding)),
-			verticalArrangement = Arrangement.spacedBy(4.dp)
+				.padding(
+					horizontal = dimensionResource(R.dimen.sc_padding),
+					vertical = dimensionResource(R.dimen.sc_padding_secondary)
+				),
+			verticalArrangement = Arrangement.spacedBy(8.dp)
 		) {
+			item {
+				Text(
+					text = stringResource(R.string.settings_subtitle_alarms),
+					color = MaterialTheme.colorScheme.primary,
+					style = MaterialTheme.typography.titleMedium,
+					modifier = Modifier
+						.fillMaxWidth()
+						.padding(vertical = 4.dp),
+				)
+			}
 			item {
 				UpcomingAlarmSettingsItem(
 					option = settings.notificationTime,
-					onSelectOption = {
-						onEvent(ChangeAlarmSettingsEvent.OnUpcomingNotificationTimeChange(it))
+					onSelectOption = { time ->
+						onEvent(ChangeAlarmSettingsEvent.OnUpcomingNotificationTimeChange(time))
 					},
 				)
 			}
 			item {
 				StartOfWeekSettingsItem(
 					startOfWeek = settings.startOfWeek,
-					onStartOfWeekChange = {
-						onEvent(ChangeAlarmSettingsEvent.OnStartOfWeekChange(it))
+					onStartOfWeekChange = { startOfWeek ->
+						onEvent(ChangeAlarmSettingsEvent.OnStartOfWeekChange(startOfWeek))
 					},
 				)
 			}
 			item {
 				TimeFormatSettingsItem(
 					option = settings.timeFormat,
-					onSelectOption = {
-						onEvent(ChangeAlarmSettingsEvent.OnTimeFormatChange(it))
+					onSelectOption = { timeOption ->
+						onEvent(ChangeAlarmSettingsEvent.OnTimeFormatChange(timeOption))
 					},
 				)
 			}
 			item {
 				VolumeControlSettingsItem(
 					option = settings.volumeControl,
-					onSelectOption = {
-						onEvent(ChangeAlarmSettingsEvent.OnVolumeControlChange(it))
+					onSelectOption = { volumeOption ->
+						onEvent(ChangeAlarmSettingsEvent.OnVolumeControlChange(volumeOption))
 					},
 				)
 			}

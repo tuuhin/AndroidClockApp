@@ -9,6 +9,7 @@ import androidx.annotation.StringRes
 import androidx.core.content.getSystemService
 import androidx.core.os.bundleOf
 import com.eva.clockapp.R
+import com.eva.clockapp.activities.AlarmsActivity
 import com.eva.clockapp.core.constants.ClockAppIntents
 import com.eva.clockapp.core.constants.IntentRequestCodes
 import com.eva.clockapp.core.constants.NotificationsConstants
@@ -20,7 +21,6 @@ import com.eva.clockapp.core.utils.buildPendingIntentForegroundService
 import com.eva.clockapp.core.utils.buildPendingIntentReceiver
 import com.eva.clockapp.features.alarms.data.receivers.UpcomingAlarmReceiver
 import com.eva.clockapp.features.alarms.domain.models.AlarmsModel
-import com.eva.clockapp.features.alarms.presentation.activity.AlarmsActivity
 import kotlinx.datetime.LocalDateTime
 import kotlinx.datetime.LocalTime
 import kotlinx.datetime.TimeZone

@@ -1,4 +1,4 @@
-package com.eva.clockapp.core.navigation.routes
+package com.eva.clockapp.features.alarms.presentation.alarms.navigation
 
 import androidx.compose.runtime.getValue
 import androidx.lifecycle.Lifecycle
@@ -8,7 +8,7 @@ import androidx.lifecycle.compose.dropUnlessResumed
 import androidx.navigation.NavController
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.compose.composable
-import com.eva.clockapp.core.navigation.navgraphs.NavRoutes
+import com.eva.clockapp.core.navigation.NavRoutes
 import com.eva.clockapp.core.presentation.composables.UIEventsSideEffect
 import com.eva.clockapp.features.alarms.presentation.alarms.AlarmScreen
 import com.eva.clockapp.features.alarms.presentation.alarms.AlarmsViewModel

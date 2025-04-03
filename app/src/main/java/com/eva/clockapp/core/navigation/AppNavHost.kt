@@ -8,11 +8,10 @@ import androidx.compose.ui.Modifier
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.rememberNavController
-import com.eva.clockapp.core.navigation.navgraphs.NavRoutes
-import com.eva.clockapp.core.navigation.routes.alarmsRoute
-import com.eva.clockapp.core.navigation.routes.creteAlarmsNavGraph
-import com.eva.clockapp.core.navigation.routes.settingsRoute
 import com.eva.clockapp.core.presentation.LocalSnackBarHostState
+import com.eva.clockapp.features.alarms.presentation.alarms.navigation.alarmsRoute
+import com.eva.clockapp.features.alarms.presentation.create_alarm.navigation.creteAlarmsNavGraph
+import com.eva.clockapp.features.settings.presentation.navigation.settingsRoute
 import org.koin.compose.KoinContext
 
 @Composable

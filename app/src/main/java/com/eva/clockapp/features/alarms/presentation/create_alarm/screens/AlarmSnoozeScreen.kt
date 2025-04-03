@@ -50,7 +50,7 @@ private fun AlarmSnoozeScreen(
 ) {
 
 	val snackBarHostState = LocalSnackBarHostState.current
-	val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
+	val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior()
 
 	Scaffold(
 		topBar = {

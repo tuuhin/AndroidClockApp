@@ -1,4 +1,4 @@
-package com.eva.clockapp.features.alarms.presentation.alarms
+package com.eva.clockapp.features.alarms.presentation.play_alarm.composables
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -14,8 +14,11 @@ import androidx.compose.foundation.layout.sizeIn
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.outlined.RemoveRedEye
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.FloatingActionButton
+import androidx.compose.material3.FloatingActionButtonDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -31,6 +34,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.eva.clockapp.R
 import com.eva.clockapp.core.utils.HH_MM
+import com.eva.clockapp.core.utils.HH_MM_A
 import com.eva.clockapp.core.utils.WEEK_MONTH_DAY
 import com.eva.clockapp.features.alarms.presentation.composables.GlowyCancelButton
 import com.eva.clockapp.ui.theme.DownloadableFonts
@@ -46,9 +50,9 @@ fun PlayAlarmScreenContent(
 	onSnoozeAlarm: () -> Unit,
 	modifier: Modifier = Modifier,
 	labelText: String? = null,
-	isActionEnabled: Boolean = true,
-	showSnoozeButton: Boolean = true,
+	is24HrFormat: Boolean = true,
 	isPreview: Boolean = false,
+	onPreview: () -> Unit = {},
 	textColorPrimary: Color = Color.White,
 	textColorSecondary: Color = Color.White,
 	buttonContentColor: Color = Color.Black,
@@ -60,14 +64,30 @@ fun PlayAlarmScreenContent(
 			.fillMaxSize(),
 		contentAlignment = Alignment.Center
 	) {
+		if (isPreview) {
+			FloatingActionButton(
+				onClick = onPreview,
+				containerColor = MaterialTheme.colorScheme.primaryContainer,
+				contentColor = MaterialTheme.colorScheme.onPrimaryContainer,
+				modifier = Modifier.align(Alignment.TopEnd),
+				elevation = FloatingActionButtonDefaults.elevation(defaultElevation = 4.dp),
+				shape = MaterialTheme.shapes.large,
+			) {
+				Icon(
+					imageVector = Icons.Outlined.RemoveRedEye,
+					contentDescription = null
+				)
+			}
+		}
 		Column(
 			verticalArrangement = Arrangement.spacedBy(12.dp),
 			horizontalAlignment = Alignment.CenterHorizontally,
 		) {
 			Text(
-				text = dateTime.time.format(LocalTime.Formats.HH_MM),
+				text = if (is24HrFormat) dateTime.time.format(LocalTime.Formats.HH_MM)
+				else dateTime.time.format(LocalTime.Formats.HH_MM_A),
 				style = MaterialTheme.typography.displayLarge,
-				fontSize = 80.sp,
+				fontSize = 70.sp,
 				fontFamily = DownloadableFonts.BUNGEE,
 				color = textColorPrimary,
 				letterSpacing = 2.sp
@@ -100,6 +120,7 @@ fun PlayAlarmScreenContent(
 			GlowyCancelButton(
 				onClick = onStopAlarm,
 				shape = CircleShape,
+				enabled = !isPreview,
 				isAnimated = !isPreview,
 				containerColor = buttonContainerColor,
 				contentColor = buttonContentColor,
@@ -109,11 +130,10 @@ fun PlayAlarmScreenContent(
 					contentDescription = stringResource(R.string.action_stop),
 				)
 			}
-			if (!showSnoozeButton) return
 
 			Button(
 				onClick = onSnoozeAlarm,
-				enabled = isActionEnabled,
+				enabled = !isPreview,
 				shape = MaterialTheme.shapes.extraLarge,
 				colors = ButtonDefaults.buttonColors(
 					containerColor = buttonContainerColor,

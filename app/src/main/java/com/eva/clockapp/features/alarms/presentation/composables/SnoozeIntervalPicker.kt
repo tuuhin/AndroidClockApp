@@ -46,6 +46,7 @@ import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.filter
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.milliseconds
 import kotlin.time.Duration.Companion.minutes
@@ -135,6 +136,7 @@ private fun CustomSnoozeTimePicker(
 
 	LaunchedEffect(selectedDuration) {
 		snapshotFlow { selectedDuration }
+			.filter { it != starTime }
 			.distinctUntilChanged()
 			.debounce(50.milliseconds)
 			.collectLatest { duration -> currentOnTimeChange(duration) }
