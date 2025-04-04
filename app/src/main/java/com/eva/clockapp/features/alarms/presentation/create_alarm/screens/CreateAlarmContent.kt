@@ -93,7 +93,7 @@ private fun CreateAlarmContent(
 				startTime = timePickerStartTime,
 				is24HrFormat = timeFormat.is24HrFormat,
 				onTimeSelected = onTimeChange,
-				fontFamily = DownloadableFonts.CHELSEA_MARKET,
+				fontFamily = DownloadableFonts.FUNNEL_DISPLAY,
 			)
 		}
 		item {

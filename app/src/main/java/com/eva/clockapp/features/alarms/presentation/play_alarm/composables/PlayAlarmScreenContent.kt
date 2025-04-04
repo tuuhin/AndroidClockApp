@@ -28,13 +28,16 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.font.FontFamily
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.eva.clockapp.R
 import com.eva.clockapp.core.utils.HH_MM
-import com.eva.clockapp.core.utils.HH_MM_A
 import com.eva.clockapp.core.utils.WEEK_MONTH_DAY
 import com.eva.clockapp.features.alarms.presentation.composables.GlowyCancelButton
 import com.eva.clockapp.ui.theme.DownloadableFonts
@@ -42,6 +45,8 @@ import kotlinx.datetime.LocalDate
 import kotlinx.datetime.LocalDateTime
 import kotlinx.datetime.LocalTime
 import kotlinx.datetime.format
+import kotlinx.datetime.format.Padding
+import kotlinx.datetime.format.char
 
 @Composable
 fun PlayAlarmScreenContent(
@@ -75,7 +80,7 @@ fun PlayAlarmScreenContent(
 			) {
 				Icon(
 					imageVector = Icons.Outlined.RemoveRedEye,
-					contentDescription = null
+					contentDescription = stringResource(R.string.preview_alarm_screen)
 				)
 			}
 		}
@@ -83,19 +88,16 @@ fun PlayAlarmScreenContent(
 			verticalArrangement = Arrangement.spacedBy(12.dp),
 			horizontalAlignment = Alignment.CenterHorizontally,
 		) {
-			Text(
-				text = if (is24HrFormat) dateTime.time.format(LocalTime.Formats.HH_MM)
-				else dateTime.time.format(LocalTime.Formats.HH_MM_A),
-				style = MaterialTheme.typography.displayLarge,
-				fontSize = 70.sp,
-				fontFamily = DownloadableFonts.BUNGEE,
-				color = textColorPrimary,
-				letterSpacing = 2.sp
+			AlarmTimeText(
+				time = dateTime.time,
+				is24HrFormat = is24HrFormat,
+				color = textColorPrimary
 			)
 			Text(
 				text = dateTime.date.format(LocalDate.Formats.WEEK_MONTH_DAY),
 				style = MaterialTheme.typography.headlineMedium,
 				color = textColorPrimary,
+				fontWeight = FontWeight.SemiBold
 			)
 			Spacer(modifier = Modifier.height(16.dp))
 			labelText?.let {
@@ -148,9 +150,68 @@ fun PlayAlarmScreenContent(
 				Text(
 					text = stringResource(R.string.snooze_options_title),
 					style = MaterialTheme.typography.titleMedium,
-					fontFamily = DownloadableFonts.CHELSEA_MARKET,
 				)
 			}
+		}
+	}
+}
+
+@Composable
+private fun AlarmTimeText(
+	time: LocalTime,
+	modifier: Modifier = Modifier,
+	is24HrFormat: Boolean = true,
+	style: TextStyle = MaterialTheme.typography.displayLarge,
+	fontSize: TextUnit = 70.sp,
+	fontFamily: FontFamily = DownloadableFonts.INSTRUMENT_SANS,
+	color: Color = Color.White,
+) {
+	if (is24HrFormat) {
+		Text(
+			text = time.format(LocalTime.Formats.HH_MM),
+			style = style,
+			fontSize = fontSize,
+			fontFamily = fontFamily,
+			textAlign = TextAlign.Center,
+			color = color,
+			letterSpacing = 2.sp, modifier = modifier
+		)
+	} else {
+
+		val amMarker = stringResource(R.string.ante_meridian)
+		val pmMarker = stringResource(R.string.post_meridian)
+
+		Column(
+			modifier = modifier,
+			verticalArrangement = Arrangement.Center,
+			horizontalAlignment = Alignment.CenterHorizontally
+		) {
+			Text(
+				text = time.format(
+					LocalTime.Format {
+						amPmHour(padding = Padding.ZERO)
+						char(':')
+						minute(padding = Padding.ZERO)
+					},
+				),
+				style = style,
+				fontSize = fontSize,
+				fontFamily = fontFamily,
+				textAlign = TextAlign.Center,
+				color = color,
+				letterSpacing = 2.sp
+			)
+			Text(
+				text = time.format(
+					LocalTime.Format { amPmMarker(am = amMarker, pm = pmMarker) },
+				),
+				style = style,
+				fontSize = 50.sp,
+				fontFamily = fontFamily,
+				textAlign = TextAlign.Center,
+				color = color,
+				letterSpacing = 2.sp
+			)
 		}
 	}
 }

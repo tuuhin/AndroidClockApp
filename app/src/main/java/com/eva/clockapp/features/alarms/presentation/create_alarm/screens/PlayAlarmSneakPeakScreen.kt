@@ -53,8 +53,6 @@ fun PlayAlarmsSneakPeekScreen(
 		labelText = state.labelState,
 		backgroundImage = state.backgroundImageUri,
 		isPreview = false,
-		onStopAlarm = { },
-		onSnoozeAlarm = {},
 		modifier = modifier.fillMaxSize()
 	)
 }

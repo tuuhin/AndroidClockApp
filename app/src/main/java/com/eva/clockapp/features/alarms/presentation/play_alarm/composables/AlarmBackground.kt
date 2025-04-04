@@ -11,11 +11,11 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.drawWithCache
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.FilterQuality
+import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalConfiguration
@@ -68,7 +68,6 @@ fun AlarmsBackground(
 						Box(
 							modifier = Modifier
 								.background(color = MaterialTheme.colorScheme.surfaceContainerHigh)
-								.clip(MaterialTheme.shapes.medium),
 						)
 					}
 
@@ -76,10 +75,13 @@ fun AlarmsBackground(
 						Box(
 							modifier = Modifier
 								.fillMaxSize()
-								.background(MaterialTheme.colorScheme.surfaceContainerHigh),
-							contentAlignment = Alignment.Center,
+								.background(color = MaterialTheme.colorScheme.surfaceContainerHigh),
+							contentAlignment = Alignment.Center
 						) {
-							CircularProgressIndicator(color = MaterialTheme.colorScheme.onPrimary)
+							CircularProgressIndicator(
+								strokeCap = StrokeCap.Round,
+								color = MaterialTheme.colorScheme.onPrimary
+							)
 						}
 					}
 
@@ -97,7 +99,10 @@ fun AlarmsBackground(
 }
 
 
-private fun Modifier.overlayModifier(isImagePresent: Boolean, overlayColor: Color) = then(
+private fun Modifier.overlayModifier(
+	isImagePresent: Boolean,
+	overlayColor: Color,
+) = then(
 	Modifier.drawWithCache {
 		val colors = buildList {
 			add(Color.Transparent)

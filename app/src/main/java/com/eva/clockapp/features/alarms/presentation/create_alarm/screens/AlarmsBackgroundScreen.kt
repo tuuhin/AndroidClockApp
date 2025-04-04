@@ -37,6 +37,7 @@ private fun AlarmsBackgroundScreen(
 	modifier: Modifier = Modifier,
 	selectedBackground: String? = null,
 	alarmTime: LocalTime = LocalTime(0, 0),
+	alarmLabelText: String? = null,
 	navigation: @Composable () -> Unit = {},
 	onNavigateToPreviewScreen: () -> Unit = {},
 	onOpenGallery: () -> Unit = {},
@@ -63,6 +64,7 @@ private fun AlarmsBackgroundScreen(
 			options = wallpaperOptions,
 			startTime = alarmTime,
 			onSelectUri = onSelectUri,
+			labelText = alarmLabelText,
 			onPreviewAlarm = onNavigateToPreviewScreen,
 			modifier = Modifier
 				.padding(scPadding)
@@ -85,6 +87,7 @@ fun AlarmsBackgroundScreen(
 	isItemsLoaded = wallpapersState.isLoaded,
 	wallpaperOptions = wallpapersState.options,
 	selectedBackground = state.backgroundImageUri,
+	alarmLabelText = state.labelState,
 	alarmTime = state.selectedTime,
 	onSelectUri = { onEvent(CreateAlarmEvents.OnSelectUriForBackground(it)) },
 	modifier = modifier,

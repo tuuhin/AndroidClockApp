@@ -32,6 +32,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.PreviewLightDark
 import androidx.compose.ui.tooling.preview.PreviewParameter
@@ -107,6 +108,7 @@ fun SnoozeIntervalPicker(
 				},
 				containerColor = containerColor,
 				contentColor = contentColor,
+				fontFamily = DownloadableFonts.FUNNEL_DISPLAY,
 				modifier = Modifier.fillMaxWidth()
 			)
 		}
@@ -121,6 +123,7 @@ private fun CustomSnoozeTimePicker(
 	modifier: Modifier = Modifier,
 	containerColor: Color = MaterialTheme.colorScheme.background,
 	contentColor: Color = MaterialTheme.colorScheme.onBackground,
+	fontFamily: FontFamily = FontFamily.Default,
 ) {
 
 	val minuteRange = 0..98
@@ -163,7 +166,7 @@ private fun CustomSnoozeTimePicker(
 			Text(
 				text = "$minute".padStart(2, '0'),
 				textAlign = TextAlign.Center,
-				fontFamily = DownloadableFonts.CHELSEA_MARKET,
+				fontFamily = fontFamily,
 				style = MaterialTheme.typography.titleLarge,
 				modifier = Modifier.widthIn(min = 40.dp)
 			)

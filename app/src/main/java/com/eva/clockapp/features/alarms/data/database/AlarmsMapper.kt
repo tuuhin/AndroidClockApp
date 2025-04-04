@@ -1,5 +1,6 @@
 package com.eva.clockapp.features.alarms.data.database
 
+import com.eva.clockapp.core.utils.roundToNDecimals
 import com.eva.clockapp.features.alarms.domain.models.AlarmsModel
 import com.eva.clockapp.features.alarms.domain.models.AssociateAlarmFlags
 import com.eva.clockapp.features.alarms.domain.models.CreateAlarmModel
@@ -16,7 +17,7 @@ fun AlarmsEntity.toModel(): AlarmsModel = AlarmsModel(
 		snoozeInterval = snoozeInterval,
 		snoozeRepeatMode = snoozeRepeatMode,
 		vibrationPattern = vibrationPattern,
-		alarmVolume = alarmVolume
+		alarmVolume = alarmVolume.roundToNDecimals()
 	),
 	isAlarmEnabled = isAlarmEnabled,
 	label = label,
@@ -37,7 +38,7 @@ fun CreateAlarmModel.toEntity(): AlarmsEntity = AlarmsEntity(
 	snoozeInterval = flags.snoozeInterval,
 	snoozeRepeatMode = flags.snoozeRepeatMode,
 	vibrationPattern = flags.vibrationPattern,
-	alarmVolume = flags.alarmVolume,
+	alarmVolume = flags.alarmVolume.roundToNDecimals(2),
 	alarmSoundUri = ringtone?.uri.toString(),
 	background = background,
 )
@@ -55,7 +56,7 @@ fun AlarmsModel.toEntity(): AlarmsEntity = AlarmsEntity(
 	snoozeInterval = flags.snoozeInterval,
 	snoozeRepeatMode = flags.snoozeRepeatMode,
 	vibrationPattern = flags.vibrationPattern,
-	alarmVolume = flags.alarmVolume,
+	alarmVolume = flags.alarmVolume.roundToNDecimals(2),
 	alarmSoundUri = soundUri,
 	background = background,
 )

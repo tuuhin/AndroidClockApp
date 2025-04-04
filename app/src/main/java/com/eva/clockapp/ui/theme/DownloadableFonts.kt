@@ -13,11 +13,11 @@ private val provider = GoogleFont.Provider(
 
 object DownloadableFonts {
 
-	val CHELSEA_MARKET = FontFamily(
-		Font(googleFont = GoogleFont("Chelsea Market"), fontProvider = provider)
+	val FUNNEL_DISPLAY = FontFamily(
+		Font(googleFont = GoogleFont("Funnel Display"), fontProvider = provider)
 	)
 
-	val BUNGEE = FontFamily(
-		Font(googleFont = GoogleFont("Bungee"), fontProvider = provider)
+	val INSTRUMENT_SANS = FontFamily(
+		Font(googleFont = GoogleFont("Instrument Sans"), fontProvider = provider)
 	)
 }

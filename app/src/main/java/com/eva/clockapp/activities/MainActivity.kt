@@ -9,12 +9,8 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.ui.Modifier
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
-import androidx.lifecycle.lifecycleScope
-import com.eva.clockapp.BuildConfig
 import com.eva.clockapp.core.navigation.AppNavHost
-import com.eva.clockapp.features.alarms.data.worker.EnqueueDailyAlarmWorker
 import com.eva.clockapp.ui.theme.ClockAppTheme
-import kotlinx.coroutines.launch
 
 class MainActivity : ComponentActivity() {
 
@@ -24,12 +20,6 @@ class MainActivity : ComponentActivity() {
 		super.onCreate(savedInstanceState)
 
 		enableEdgeToEdge()
-
-		if (BuildConfig.DEBUG) {
-			lifecycleScope.launch {
-				EnqueueDailyAlarmWorker.Companion.checkWorkerState(applicationContext)
-			}
-		}
 
 		setContent {
 			ClockAppTheme {

@@ -167,7 +167,7 @@ private fun AlarmsTimeAndWeekdays(
 			style = MaterialTheme.typography.headlineLarge,
 			color = textColor,
 			fontWeight = FontWeight.SemiBold,
-			fontFamily = DownloadableFonts.CHELSEA_MARKET
+			fontFamily = DownloadableFonts.INSTRUMENT_SANS,
 		)
 		Row(
 			modifier = Modifier.wrapContentWidth(),

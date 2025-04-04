@@ -35,6 +35,7 @@ fun SelectBackgroundScreenContent(
 	options: ImmutableList<WallpaperPhoto> = persistentListOf(),
 	onPreviewAlarm: () -> Unit = {},
 	selectedUri: String? = null,
+	labelText: String? = null,
 	startTime: LocalTime = LocalTime(0, 0),
 ) {
 	val config = LocalConfiguration.current
@@ -57,6 +58,7 @@ fun SelectBackgroundScreenContent(
 			isPreview = true,
 			onPreview = onPreviewAlarm,
 			backgroundImage = selectedUri,
+			labelText = labelText,
 			shape = MaterialTheme.shapes.extraLarge,
 			borderStroke = BorderStroke(2.dp, color = MaterialTheme.colorScheme.secondary),
 			modifier = Modifier

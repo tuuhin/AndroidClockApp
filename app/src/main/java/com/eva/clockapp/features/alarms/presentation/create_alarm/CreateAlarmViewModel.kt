@@ -3,11 +3,12 @@ package com.eva.clockapp.features.alarms.presentation.create_alarm
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.viewModelScope
 import androidx.navigation.toRoute
-import com.eva.clockapp.core.navigation.navgraphs.NavRoutes
+import com.eva.clockapp.core.navigation.NavRoutes
 import com.eva.clockapp.core.presentation.AppViewModel
 import com.eva.clockapp.core.presentation.UiEvents
 import com.eva.clockapp.core.utils.Resource
 import com.eva.clockapp.features.alarms.domain.models.AssociateAlarmFlags
+import com.eva.clockapp.features.alarms.domain.models.GalleryImageModel
 import com.eva.clockapp.features.alarms.domain.models.WeekDays
 import com.eva.clockapp.features.alarms.domain.repository.AlarmsRepository
 import com.eva.clockapp.features.alarms.domain.repository.RingtonesRepository
@@ -38,8 +39,8 @@ import kotlinx.coroutines.launch
 import kotlinx.datetime.LocalTime
 
 class CreateAlarmViewModel(
+	settingsRepository: AlarmSettingsRepository,
 	private val ringtonesRepository: RingtonesRepository,
-	private val settingsRepository: AlarmSettingsRepository,
 	private val repository: AlarmsRepository,
 	private val validator: ValidateAlarmUseCase,
 	private val savedStateHandle: SavedStateHandle,
@@ -113,10 +114,6 @@ class CreateAlarmViewModel(
 			is CreateAlarmEvents.OnAlarmTimeChange -> _alarmTime.update { event.time }
 			is CreateAlarmEvents.OnLabelValueChange -> _alarmLabel.update { event.newValue }
 			is CreateAlarmEvents.OnSelectUriForBackground -> _background.update { event.background }
-			is CreateAlarmEvents.OnSelectGalleryImage -> {
-				_background.update { event.model.uri }
-				viewModelScope.launch { _uiEvents.emit(UiEvents.NavigateBack) }
-			}
 
 			is CreateAlarmEvents.OnAddOrRemoveWeekDay -> _selectedDays.update { days ->
 				if (event.dayOfWeek in days)
@@ -125,6 +122,7 @@ class CreateAlarmViewModel(
 			}
 
 			is CreateAlarmEvents.OnSoundSelected -> _selectedSound.update { event.sound }
+			is CreateAlarmEvents.OnSelectGalleryImage -> onBackgroundUriChangeViaGallery(event.model)
 			CreateAlarmEvents.OnSaveAlarm -> onCreateNewAlarm()
 			CreateAlarmEvents.OnUpdateAlarm -> onUpdateAlarm()
 		}
@@ -167,6 +165,11 @@ class CreateAlarmViewModel(
 		}
 	}
 
+	private fun onBackgroundUriChangeViaGallery(model: GalleryImageModel) = viewModelScope.launch {
+		_background.update { model.uri }
+		_uiEvents.emit(UiEvents.NavigateBack)
+	}
+
 
 	private fun onCreateNewAlarm() = viewModelScope.launch {
 		val model = createAlarmState.value.toCreateModel(flags = flagsState.value)
@@ -177,7 +180,6 @@ class CreateAlarmViewModel(
 			return@launch
 		}
 
-		// TODO: Add a validator
 		when (val result = repository.createAlarm(model)) {
 			is Resource.Error -> (result.message ?: result.message)?.let { message ->
 				_uiEvents.emit(UiEvents.ShowSnackBar(message))
