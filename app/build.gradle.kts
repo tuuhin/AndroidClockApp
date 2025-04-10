@@ -106,6 +106,8 @@ dependencies {
 	//koin
 	implementation(libs.koin.android)
 	implementation(libs.koin.compose.viewmodel)
+	implementation(libs.koin.workmanager)
+	implementation(libs.koin.androidx.startup)
 
 	//others
 	implementation(libs.androidx.core.splashscreen)

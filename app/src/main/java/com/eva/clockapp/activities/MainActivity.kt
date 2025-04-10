@@ -24,7 +24,7 @@ class MainActivity : ComponentActivity() {
 		setContent {
 			ClockAppTheme {
 				Surface(color = MaterialTheme.colorScheme.background) {
-					AppNavHost(modifier = Modifier.Companion.fillMaxSize())
+					AppNavHost(modifier = Modifier.fillMaxSize())
 				}
 			}
 		}

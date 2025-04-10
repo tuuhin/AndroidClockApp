@@ -2,7 +2,6 @@
   xmlns:tools="http://schemas.android.com/tools"
   android:width="108dp"
   android:height="108dp"
-  android:tint="@color/on_primary_container"
   android:viewportWidth="24"
   android:viewportHeight="24">
   <group

@@ -63,6 +63,18 @@ class AlarmsRepositoryImpl(
 		}
 	}
 
+	override suspend fun getAllEnabledAlarms(): Result<List<AlarmsModel>> {
+		return withContext(Dispatchers.IO) {
+			try {
+				val result = alarmsDao.getAllEnabledAlarms()
+					.map(AlarmsEntity::toModel)
+				Result.success(result)
+			} catch (e: Exception) {
+				Result.failure(e)
+			}
+		}
+	}
+
 	override suspend fun toggleIsAlarmEnabled(isEnabled: Boolean, model: AlarmsModel)
 			: Resource<AlarmsModel, Exception> {
 		return withContext(Dispatchers.IO) {

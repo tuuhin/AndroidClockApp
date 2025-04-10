@@ -11,6 +11,8 @@ interface AlarmsRepository {
 
 	suspend fun getAllAlarms(): Resource<List<AlarmsModel>, Exception>
 
+	suspend fun getAllEnabledAlarms(): Result<List<AlarmsModel>>
+
 	suspend fun toggleIsAlarmEnabled(isEnabled: Boolean, model: AlarmsModel)
 			: Resource<AlarmsModel, Exception>
 

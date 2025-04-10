@@ -3,10 +3,8 @@ package com.eva.clockapp
 import android.app.Application
 import android.app.NotificationChannel
 import android.app.NotificationManager
-import android.util.Log
 import androidx.core.app.NotificationCompat
 import androidx.core.content.getSystemService
-import androidx.work.Configuration
 import coil3.ImageLoader
 import coil3.PlatformContext
 import coil3.SingletonImageLoader
@@ -24,20 +22,24 @@ import com.eva.clockapp.features.settings.di.settingsModule
 import kotlinx.coroutines.Dispatchers
 import org.koin.android.ext.koin.androidContext
 import org.koin.android.ext.koin.androidLogger
-import org.koin.core.context.startKoin
+import org.koin.androidx.workmanager.koin.workManagerFactory
+import org.koin.androix.startup.KoinStartup
+import org.koin.core.annotation.KoinExperimentalAPI
+import org.koin.dsl.KoinConfiguration
+import org.koin.dsl.koinConfiguration
 
-class ClockApp : Application(), SingletonImageLoader.Factory, Configuration.Provider {
+
+@OptIn(KoinExperimentalAPI::class)
+class ClockApp : Application(), KoinStartup, SingletonImageLoader.Factory {
 
 	private val notificationManager by lazy { getSystemService<NotificationManager>() }
 
 	override fun onCreate() {
 		super.onCreate()
-		// koin setup
-		koinSetup()
 		// create notification channels
 		notificationChannelSetup()
 		// add workers
-		addWorkers()
+		beingWorkers()
 	}
 
 
@@ -64,19 +66,9 @@ class ClockApp : Application(), SingletonImageLoader.Factory, Configuration.Prov
 	}
 
 
-	private fun koinSetup() {
-		val modules = listOf(alarmsModule, settingsModule, commonModule)
-
-		startKoin {
-			androidLogger()
-			androidContext(this@ClockApp)
-			modules(modules)
-		}
-	}
-
-	private fun addWorkers() {
+	private fun beingWorkers() {
 		// enqueue alarms at midnight
-		EnqueueDailyAlarmWorker.startWorker(applicationContext)
+		EnqueueDailyAlarmWorker.startPeriodicWorker(applicationContext)
 	}
 
 	override fun newImageLoader(context: PlatformContext): ImageLoader {
@@ -87,8 +79,6 @@ class ClockApp : Application(), SingletonImageLoader.Factory, Configuration.Prov
 			.maxSizePercent(.7)
 			.build()
 
-		val debugLogger = DebugLogger()
-
 		return ImageLoader.Builder(context)
 			.crossfade(true)
 			.crossfade(400)
@@ -97,15 +87,16 @@ class ClockApp : Application(), SingletonImageLoader.Factory, Configuration.Prov
 			.precision(Precision.EXACT)
 			.diskCachePolicy(CachePolicy.ENABLED)
 			.diskCache(diskCache)
-			.logger(debugLogger)
+			.logger(DebugLogger())
 			.build()
 	}
 
-	override val workManagerConfiguration: Configuration
-		get() {
-			val level = if (BuildConfig.DEBUG) Log.DEBUG else Log.WARN
-			return Configuration.Builder()
-				.setMinimumLoggingLevel(level)
-				.build()
-		}
+
+	override fun onKoinStartup(): KoinConfiguration = koinConfiguration {
+		val modules = listOf(alarmsModule, settingsModule, commonModule)
+		androidLogger()
+		androidContext(this@ClockApp)
+		modules(modules)
+		workManagerFactory()
+	}
 }

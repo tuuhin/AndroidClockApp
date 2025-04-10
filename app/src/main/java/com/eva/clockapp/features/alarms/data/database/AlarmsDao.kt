@@ -26,6 +26,9 @@ interface AlarmsDao {
 	@Query("UPDATE ALARMS_TABLE SET IS_ALARM_ENABLED=:isEnabled WHERE _ID=:alarmId")
 	suspend fun switchIsEnableAlarm(alarmId: Int, isEnabled: Boolean)
 
+	@Query("SELECT * FROM ALARMS_TABLE WHERE IS_ALARM_ENABLED=1")
+	suspend fun getAllEnabledAlarms(): List<AlarmsEntity>
+
 	@Query("SELECT * FROM ALARMS_TABLE WHERE _ID=:id")
 	suspend fun getAlarmFromId(id: Int): AlarmsEntity?
 

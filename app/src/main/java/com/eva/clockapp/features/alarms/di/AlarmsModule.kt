@@ -10,6 +10,7 @@ import com.eva.clockapp.features.alarms.data.providers.GalleryImageProviderImpl
 import com.eva.clockapp.features.alarms.data.repository.AlarmsRepositoryImpl
 import com.eva.clockapp.features.alarms.data.repository.RingtonesRepositoryImpl
 import com.eva.clockapp.features.alarms.data.services.AlarmsNotificationProvider
+import com.eva.clockapp.features.alarms.data.worker.EnqueueDailyAlarmWorker
 import com.eva.clockapp.features.alarms.domain.controllers.AlarmsController
 import com.eva.clockapp.features.alarms.domain.controllers.AlarmsSoundPlayer
 import com.eva.clockapp.features.alarms.domain.controllers.AppRingtoneProvider
@@ -26,6 +27,7 @@ import com.eva.clockapp.features.alarms.presentation.create_alarm.AlarmsBackgrou
 import com.eva.clockapp.features.alarms.presentation.create_alarm.AlarmsSoundsViewmodel
 import com.eva.clockapp.features.alarms.presentation.create_alarm.CreateAlarmViewModel
 import com.eva.clockapp.features.alarms.presentation.gallery.GalleryScreenViewModel
+import org.koin.androidx.workmanager.dsl.workerOf
 import org.koin.core.module.dsl.factoryOf
 import org.koin.core.module.dsl.singleOf
 import org.koin.core.module.dsl.viewModelOf
@@ -60,4 +62,7 @@ val alarmsModule = module {
 	viewModelOf(::GalleryScreenViewModel)
 	viewModelOf(::AlarmsSoundsViewmodel)
 	viewModelOf(::AlarmVibrationViewModel)
+
+	//worker
+	workerOf(::EnqueueDailyAlarmWorker)
 }
