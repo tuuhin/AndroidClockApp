@@ -1,10 +1,8 @@
 package com.eva.clockapp.features.alarms.data.database.convertors
 
-import androidx.room.ProvidedTypeConverter
 import androidx.room.TypeConverter
 import com.eva.clockapp.features.alarms.domain.models.VibrationPattern
 
-@ProvidedTypeConverter
 class VibrationPatternConvertor {
 
 	@TypeConverter

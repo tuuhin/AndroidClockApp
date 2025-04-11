@@ -13,8 +13,6 @@ import com.eva.clockapp.features.alarms.data.database.AlarmsEntity
 import com.eva.clockapp.features.alarms.data.database.convertors.SnoozeIntervalConvertor
 import com.eva.clockapp.features.alarms.data.database.convertors.SnoozeRepeatConvertor
 import com.eva.clockapp.features.alarms.data.database.convertors.VibrationPatternConvertor
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.asExecutor
 
 @Database(
 	version = 2,
@@ -42,13 +40,6 @@ abstract class ClockAppDatabase : RoomDatabase() {
 	companion object {
 		fun createDatabase(context: Context): ClockAppDatabase =
 			Room.databaseBuilder(context, ClockAppDatabase::class.java, "APP_DATABASE")
-				.addTypeConverter(LocalTimeConvertor())
-				.addTypeConverter(SnoozeRepeatConvertor())
-				.addTypeConverter(SnoozeIntervalConvertor())
-				.addTypeConverter(VibrationPatternConvertor())
-				.addTypeConverter(WeekdaysConvertor())
-				.setQueryExecutor(Dispatchers.IO.asExecutor())
-				.setTransactionExecutor(Dispatchers.IO.asExecutor())
 				.build()
 	}
 }

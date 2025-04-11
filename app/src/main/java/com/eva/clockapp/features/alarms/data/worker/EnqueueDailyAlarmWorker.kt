@@ -31,7 +31,6 @@ import kotlinx.datetime.TimeZone
 import kotlinx.datetime.plus
 import kotlinx.datetime.toInstant
 import kotlinx.datetime.toLocalDateTime
-import org.koin.core.component.KoinComponent
 import kotlin.time.Duration.Companion.hours
 import kotlin.time.Duration.Companion.minutes
 import kotlin.time.toJavaDuration
@@ -43,7 +42,7 @@ class EnqueueDailyAlarmWorker(
 	params: WorkerParameters,
 	private val repository: AlarmsRepository,
 	private val controller: AlarmsController,
-) : CoroutineWorker(context, params), KoinComponent {
+) : CoroutineWorker(context, params) {
 
 	override suspend fun doWork(): Result {
 
@@ -143,7 +142,7 @@ class EnqueueDailyAlarmWorker(
 
 			val periodicWorker = PeriodicWorkRequestBuilder<EnqueueDailyAlarmWorker>(
 				repeatInterval = 6.hours.toJavaDuration(),
-				flexTimeInterval = 30.minutes.toJavaDuration()
+				flexTimeInterval = 15.minutes.toJavaDuration()
 			)
 				.setInitialDelay(duration = initialDelay.toJavaDuration())
 				.addTag(AlarmWorkParams.TAG)
@@ -153,7 +152,6 @@ class EnqueueDailyAlarmWorker(
 			val workManager = WorkManager.getInstance(context)
 
 			Log.d(TAG, "ALARMS TO BE SCHEDULED AT :$nextRescheduleTime AFTER:$initialDelay")
-
 			workManager.enqueueUniquePeriodicWork(UNIQUE_NAME, policy, periodicWorker)
 		}
 	}

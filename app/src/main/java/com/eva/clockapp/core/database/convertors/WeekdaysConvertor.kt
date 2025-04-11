@@ -1,12 +1,9 @@
 package com.eva.clockapp.core.database.convertors
 
-import androidx.room.ProvidedTypeConverter
 import androidx.room.TypeConverter
 import kotlinx.datetime.DayOfWeek
-import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 
-@ProvidedTypeConverter
 class WeekdaysConvertor {
 
 	private val json = Json { ignoreUnknownKeys = true }

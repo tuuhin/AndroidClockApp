@@ -1,11 +1,9 @@
 package com.eva.clockapp.core.database.convertors
 
-import androidx.room.ProvidedTypeConverter
 import androidx.room.TypeConverter
 import kotlinx.datetime.LocalTime
 import kotlinx.datetime.format
 
-@ProvidedTypeConverter
 class LocalTimeConvertor {
 
 	@TypeConverter
