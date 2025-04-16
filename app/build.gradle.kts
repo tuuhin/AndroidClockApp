@@ -116,10 +116,18 @@ dependencies {
 
 	//testing
 	testImplementation(libs.junit)
+	testImplementation(libs.junit.jupiter)
+	testImplementation(libs.kotlinx.coroutines.test)
+	testImplementation(libs.mockk)
+	implementation(kotlin("test"))
+	testImplementation(libs.turbine)
+
+	// android testing
 	androidTestImplementation(libs.androidx.junit)
 	androidTestImplementation(libs.androidx.espresso.core)
 	androidTestImplementation(platform(libs.androidx.compose.bom))
 	androidTestImplementation(libs.androidx.ui.test.junit4)
+
 	debugImplementation(libs.androidx.ui.tooling)
 	debugImplementation(libs.androidx.ui.test.manifest)
 }
