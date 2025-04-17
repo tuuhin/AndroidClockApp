@@ -19,6 +19,7 @@ import com.eva.clockapp.core.di.commonModule
 import com.eva.clockapp.features.alarms.data.worker.EnqueueDailyAlarmWorker
 import com.eva.clockapp.features.alarms.di.alarmsModule
 import com.eva.clockapp.features.settings.di.settingsModule
+import com.eva.clockapp.features.timer.di.timerModule
 import kotlinx.coroutines.Dispatchers
 import org.koin.android.ext.koin.androidContext
 import org.koin.android.ext.koin.androidLogger
@@ -93,7 +94,7 @@ class ClockApp : Application(), KoinStartup, SingletonImageLoader.Factory {
 
 
 	override fun onKoinStartup(): KoinConfiguration = koinConfiguration {
-		val modules = listOf(alarmsModule, settingsModule, commonModule)
+		val modules = listOf(alarmsModule, settingsModule, commonModule, timerModule)
 		androidLogger()
 		androidContext(this@ClockApp)
 		modules(modules)

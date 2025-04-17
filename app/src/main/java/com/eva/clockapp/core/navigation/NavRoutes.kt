@@ -2,10 +2,8 @@ package com.eva.clockapp.core.navigation
 
 import kotlinx.serialization.Serializable
 
-interface NavRoutes {
-
-	@Serializable
-	data object AlarmsRoute : NavRoutes
+@Serializable
+sealed interface NavRoutes {
 
 	@Serializable
 	data class CreateOrUpdateAlarmRoute(val alarmId: Int? = null) : NavRoutes

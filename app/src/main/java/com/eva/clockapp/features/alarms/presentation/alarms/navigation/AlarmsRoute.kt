@@ -7,15 +7,16 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.compose.dropUnlessResumed
 import androidx.navigation.NavController
 import androidx.navigation.NavGraphBuilder
-import androidx.navigation.compose.composable
+import com.eva.clockapp.core.navigation.BottomBarNavRoutes
 import com.eva.clockapp.core.navigation.NavRoutes
+import com.eva.clockapp.core.navigation.tabAnimatedComposable
 import com.eva.clockapp.core.presentation.composables.UIEventsSideEffect
 import com.eva.clockapp.features.alarms.presentation.alarms.AlarmScreen
 import com.eva.clockapp.features.alarms.presentation.alarms.AlarmsViewModel
 import org.koin.compose.viewmodel.koinViewModel
 
 fun NavGraphBuilder.alarmsRoute(controller: NavController) =
-	composable<NavRoutes.AlarmsRoute> {
+	tabAnimatedComposable<BottomBarNavRoutes.AlarmsRoute> {
 
 		val viewModel = koinViewModel<AlarmsViewModel>()
 		val lifecyleOwner = LocalLifecycleOwner.current

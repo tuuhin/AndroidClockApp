@@ -11,6 +11,7 @@ import androidx.compose.ui.Modifier
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import com.eva.clockapp.core.navigation.AppNavHost
 import com.eva.clockapp.ui.theme.ClockAppTheme
+import org.koin.compose.KoinContext
 
 class MainActivity : ComponentActivity() {
 
@@ -22,9 +23,11 @@ class MainActivity : ComponentActivity() {
 		enableEdgeToEdge()
 
 		setContent {
-			ClockAppTheme {
-				Surface(color = MaterialTheme.colorScheme.background) {
-					AppNavHost(modifier = Modifier.fillMaxSize())
+			KoinContext {
+				ClockAppTheme {
+					Surface(color = MaterialTheme.colorScheme.background) {
+						AppNavHost(modifier = Modifier.fillMaxSize())
+					}
 				}
 			}
 		}

@@ -31,23 +31,43 @@ inline fun <reified T : Any> NavGraphBuilder.animatedComposable(
 ) = composable<T>(
 	typeMap = typeMap,
 	deepLinks = deepLinks,
-	enterTransition = { slideIntoContainerAndFadeIn },
-	exitTransition = { slideOutOfContainerAndFadeOut },
-	popEnterTransition = { slideIntoContainerAndFadeIn },
-	popExitTransition = { slideOutOfContainerAndFadeOut },
+	enterTransition = { slideIntoContainerAndFadeIn() },
+	exitTransition = { slideOutOfContainerAndFadeOut() },
+	popEnterTransition = { slideIntoContainerAndFadeIn() },
+	popExitTransition = { slideOutOfContainerAndFadeOut() },
 	sizeTransform = sizeTransform,
 	content = content
 )
 
-val AnimatedContentTransitionScope<NavBackStackEntry>.slideIntoContainerAndFadeIn: EnterTransition
-	get() = slideIntoContainer(
-		AnimatedContentTransitionScope.SlideDirection.Up,
-		animationSpec = tween(durationMillis = 300, easing = EaseInCubic)
-	) + fadeIn(animationSpec = tween(easing = EaseIn, durationMillis = 300))
+inline fun <reified T : Any> NavGraphBuilder.tabAnimatedComposable(
+	typeMap: Map<KType, @JvmSuppressWildcards NavType<*>> = emptyMap(),
+	deepLinks: List<NavDeepLink> = emptyList(),
+	noinline sizeTransform: (AnimatedContentTransitionScope<NavBackStackEntry>.() -> @JvmSuppressWildcards SizeTransform?)? = {
+		SizeTransform(clip = false) { _, _ -> spring() }
+	},
+	noinline content: @Composable AnimatedContentScope.(NavBackStackEntry) -> Unit,
+) = composable<T>(
+	typeMap = typeMap,
+	deepLinks = deepLinks,
+	enterTransition = { slideIntoContainerAndFadeIn(slideDirection = AnimatedContentTransitionScope.SlideDirection.Start) },
+	popEnterTransition = { slideIntoContainerAndFadeIn(slideDirection = AnimatedContentTransitionScope.SlideDirection.Start) },
+	exitTransition = { slideOutOfContainerAndFadeOut(slideDirection = AnimatedContentTransitionScope.SlideDirection.End) },
+	popExitTransition = { slideOutOfContainerAndFadeOut(slideDirection = AnimatedContentTransitionScope.SlideDirection.End) },
+	sizeTransform = sizeTransform,
+	content = content
+)
+
+fun AnimatedContentTransitionScope<NavBackStackEntry>.slideIntoContainerAndFadeIn(
+	slideDirection: AnimatedContentTransitionScope.SlideDirection = AnimatedContentTransitionScope.SlideDirection.Up
+): EnterTransition = slideIntoContainer(
+	towards = slideDirection,
+	animationSpec = tween(durationMillis = 300, easing = EaseInCubic)
+) + fadeIn(animationSpec = tween(easing = EaseIn, durationMillis = 300))
 
 
-val AnimatedContentTransitionScope<NavBackStackEntry>.slideOutOfContainerAndFadeOut: ExitTransition
-	get() = slideOutOfContainer(
-		AnimatedContentTransitionScope.SlideDirection.Up,
-		animationSpec = tween(durationMillis = 300, easing = EaseOutCubic)
-	) + fadeOut(animationSpec = tween(easing = EaseOut, durationMillis = 300))
+fun AnimatedContentTransitionScope<NavBackStackEntry>.slideOutOfContainerAndFadeOut(
+	slideDirection: AnimatedContentTransitionScope.SlideDirection = AnimatedContentTransitionScope.SlideDirection.Up
+): ExitTransition = slideOutOfContainer(
+	towards = slideDirection,
+	animationSpec = tween(durationMillis = 300, easing = EaseOutCubic)
+) + fadeOut(animationSpec = tween(easing = EaseOut, durationMillis = 300))

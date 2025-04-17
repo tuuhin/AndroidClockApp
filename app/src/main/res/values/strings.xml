@@ -124,4 +124,7 @@
   <string name="update_alarm_canceled_dialog_text">You made some changes to this alarm, update the alarm for changes</string>
   <string name="preview_alarm_screen">Preview</string>
   <string name="reschedule_alarm_for_next_day_text">Preparing your alarms for next day</string>
+  <string name="clock_seconds">Seconds</string>
+  <string name="clock_hours">Hours</string>
+  <string name="timer_screen_title">Timer</string>
 </resources>
